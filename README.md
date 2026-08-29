@@ -89,6 +89,9 @@ Two signals, both of which the console can produce honestly:
 `Same network` (closest to real StreetPass), `Nearby`, or `Anywhere` - a
 world plaza, so an empty town is not a dead app.
 
+**`Anywhere` is the default.** The narrower settings are closer to what
+StreetPass actually was.
+
 Exchanges are mutual and rate limited: at most 12 crossings a day by default,
 one crossing per pair per six hours.
 
