@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/crossing_file.h"
 #include "core/model.h"
 #include "core/util.h"
 
@@ -86,6 +87,14 @@ public:
     // ------------------------------------------------------------ crossings
 
     std::vector<Crossing> crossings() const; //< newest first
+
+    // Bumped whenever the collection changes in any way a screen would notice.
+    //
+    // crossings() hands back a copy of the whole vector, and the plaza and the
+    // collection both used to ask for one every frame - eight heap strings per
+    // card, copied sixty times a second, for a list that changes when a pass
+    // arrives. A screen compares this instead and only copies when it moves.
+    uint64_t crossingsGeneration() const;
     bool findCrossing(const std::string& id, Crossing& out) const;
 
     // Folds an incoming pass into the database. Returns true when this is a
@@ -125,6 +134,11 @@ private:
 
     bool m_profileDirty = false;
     bool m_crossingsDirty = false;
+    uint64_t m_crossingsGeneration = 1;
+    // Something structural happened - a card removed, the lot cleared - and
+    // the files have to be rebuilt rather than patched.
+    bool m_crossingsNeedRewrite = false;
+    CrossingFile m_crossingFile;
     bool m_loaded = false;
 };
 

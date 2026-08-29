@@ -16,10 +16,11 @@ namespace {
     const char* kProfileFile = "profile.json";
     const char* kCrossingsFile = "crossings.json";
 
-    // The 3DS kept 10 StreetPass slots per title. We are not that cramped,
-    // but the collection still needs a ceiling so the file stays small and
-    // parsing stays instant.
-    constexpr size_t kMaxCrossings = 500;
+    // The 3DS kept 10 StreetPass slots per title.
+    // crossings.idx/.dat write one 96-byte record instead, so the ceiling is
+    // now about what is reasonable to hold in memory and draw, not what is
+    // affordable to rewrite. 5000 is roughly 600 KB of index.
+    constexpr size_t kMaxCrossings = 5000;
 
     uint64_t startOfLocalDay(uint64_t when)
     {
@@ -107,20 +108,33 @@ void Store::load()
     if (m_pass.isBlank())
         m_pass = Pass::makeDefault(suggestedHandle());
 
-    // ---- crossings.json: the collection
-    json_t* db = js::readFile(dataPath(kCrossingsFile));
-    if (db) {
-        json_t* list = js::getArr(db, "crossings");
-        if (list) {
-            size_t index;
-            json_t* value;
-            json_array_foreach(list, index, value) {
-                Crossing c = Crossing::fromJson(value);
-                if (!c.id.empty())
-                    m_crossings.push_back(std::move(c));
+    // ---- the collection: crossings.idx + crossings.dat
+    if (CrossingFile::absent()) {
+        // A collection written by an older build. Read it once, write it out in
+        // the new shape, and leave the JSON where it is - if this goes wrong
+        // the old file is still the collection.
+        json_t* db = js::readFile(dataPath(kCrossingsFile));
+        if (db) {
+            json_t* list = js::getArr(db, "crossings");
+            if (list) {
+                size_t index;
+                json_t* value;
+                json_array_foreach(list, index, value) {
+                    Crossing c = Crossing::fromJson(value);
+                    if (!c.id.empty())
+                        m_crossings.push_back(std::move(c));
+                }
+            }
+            json_decref(db);
+
+            if (!m_crossings.empty()) {
+                LOG("store: migrating %zu crossings out of JSON", m_crossings.size());
+                m_crossingFile.compact(m_crossings);
             }
         }
-        json_decref(db);
+    } else {
+        m_crossings = m_crossingFile.load();
+        m_crossingsNeedRewrite = m_crossingFile.needsCompaction();
     }
 
     std::stable_sort(m_crossings.begin(), m_crossings.end(),
@@ -172,17 +186,42 @@ void Store::saveProfileLocked()
 
 void Store::saveCrossingsLocked()
 {
-    json_t* list = json_array();
-    for (const Crossing& c : m_crossings)
-        json_array_append_new(list, c.toJson());
+    // A card removed, the collection cleared, or enough superseded text piled up
+    // in the blob: rebuild both files. This is the only path that rewrites
+    // everything, and the only one that is atomic.
+    if (m_crossingsNeedRewrite || m_crossingFile.needsCompaction()) {
+        if (m_crossingFile.compact(m_crossings)) {
+            for (Crossing& c : m_crossings) {
+                c.recordDirty = false;
+                c.textDirty = false;
+            }
+            m_crossingsNeedRewrite = false;
+            m_crossingsDirty = false;
+        }
+        return;
+    }
 
-    json_t* root = json_object();
-    json_object_set_new(root, "version", json_integer(1));
-    json_object_set_new(root, "owner", json_string(identity().id.c_str()));
-    json_object_set_new(root, "crossings", list);
+    // Otherwise only what changed. Marking a card as read is a 96-byte write,
+    // whatever the collection is holding.
+    bool ok = true;
+    for (Crossing& c : m_crossings) {
+        if (c.slot == Crossing::kNoSlot) {
+            ok = m_crossingFile.append(c) && ok;
+        } else if (c.textDirty) {
+            ok = m_crossingFile.writeOne(c, true) && ok;
+        } else if (c.recordDirty) {
+            ok = m_crossingFile.writeOne(c, false) && ok;
+        } else {
+            continue;
+        }
+        c.recordDirty = false;
+        c.textDirty = false;
+    }
 
-    m_crossingsDirty = !js::writeFile(dataPath(kCrossingsFile), root);
-    json_decref(root);
+    // Something would not write. Fall back to a full rebuild next time rather
+    // than leaving the files disagreeing with what is on screen.
+    m_crossingsNeedRewrite = !ok;
+    m_crossingsDirty = !ok;
 }
 
 void Store::pruneLocked()
@@ -203,6 +242,7 @@ void Store::pruneLocked()
 
     dropFromBack(true);
     dropFromBack(false);
+    m_crossingsNeedRewrite = true;
 }
 
 Settings Store::settings() const
@@ -258,6 +298,12 @@ std::vector<Crossing> Store::crossings() const
     return m_crossings;
 }
 
+uint64_t Store::crossingsGeneration() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_crossingsGeneration;
+}
+
 bool Store::findCrossing(const std::string& id, Crossing& out) const
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -294,7 +340,9 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
         if (!place.empty())
             c.place = place;
         c.opened = false;
+        c.textDirty = true; // the pass itself was replaced
         m_crossingsDirty = true;
+        m_crossingsGeneration++;
 
         std::stable_sort(m_crossings.begin(), m_crossings.end(),
             [](const Crossing& a, const Crossing& b) { return a.lastSeen > b.lastSeen; });
@@ -314,6 +362,7 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
 
     pruneLocked();
     m_crossingsDirty = true;
+    m_crossingsGeneration++;
     return true;
 }
 
@@ -323,7 +372,9 @@ void Store::markOpened(const std::string& id)
     for (Crossing& c : m_crossings) {
         if (c.id == id && !c.opened) {
             c.opened = true;
+            c.recordDirty = true;
             m_crossingsDirty = true;
+            m_crossingsGeneration++;
         }
     }
 }
@@ -335,7 +386,9 @@ void Store::markTradedBack(const std::string& id)
         if (c.id == id && !c.tradedBack) {
             c.tradedBack = true;
             c.opened = true;
+            c.recordDirty = true;
             m_crossingsDirty = true;
+            m_crossingsGeneration++;
         }
     }
 }
@@ -346,7 +399,9 @@ void Store::markAllOpened()
     for (Crossing& c : m_crossings) {
         if (!c.opened) {
             c.opened = true;
+            c.recordDirty = true;
             m_crossingsDirty = true;
+            m_crossingsGeneration++;
         }
     }
 }
@@ -363,6 +418,8 @@ void Store::block(const std::string& id)
         m_crossings.end());
     m_profileDirty = true;
     m_crossingsDirty = true;
+    m_crossingsGeneration++;
+    m_crossingsNeedRewrite = true;
 }
 
 bool Store::isBlocked(const std::string& id) const
@@ -377,6 +434,8 @@ void Store::deleteAllCrossings()
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     m_crossings.clear();
     m_crossingsDirty = true;
+    m_crossingsGeneration++;
+    m_crossingsNeedRewrite = true;
     saveCrossingsLocked();
 }
 

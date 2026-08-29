@@ -28,9 +28,20 @@ public:
 
     void onEnter(App& app) override
     {
-        m_crossings = app.store().crossings();
+        syncCrossings(app);
         restoreCursor(app);
         clampSelection();
+    }
+
+    // Copies the collection only when the store says it changed. The strip is
+    // rebuilt every frame, and a copy is eight heap strings per card.
+    void syncCrossings(App& app)
+    {
+        uint64_t generation = app.store().crossingsGeneration();
+        if (generation == m_generation)
+            return;
+        m_crossings = app.store().crossings();
+        m_generation = generation;
     }
 
     // Put the cursor back on the pass the detail view was last showing.
@@ -52,7 +63,7 @@ public:
 
     void update(App& app, const Input& input, float dt) override
     {
-        m_crossings = app.store().crossings();
+        syncCrossings(app);
         restoreCursor(app);
         clampSelection();
 
@@ -99,7 +110,9 @@ public:
 
         if (input.pressed(HidNpadButton_Y) && count > 0) {
             app.store().markAllOpened();
-            m_crossings = app.store().crossings();
+            // markAllOpened moved the generation, so this picks the change up
+            // rather than copying unconditionally.
+            syncCrossings(app);
         }
 
         m_focusPulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
@@ -540,6 +553,8 @@ private:
     }
 
     std::vector<Crossing> m_crossings;
+    // What the store looked like when m_crossings was copied from it.
+    uint64_t m_generation = 0;
     int m_selected = 0;
     float m_focusPulse = 0.0f;
 

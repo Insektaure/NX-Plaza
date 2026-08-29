@@ -28,12 +28,14 @@ public:
 
     void onEnter(App& app) override
     {
-        reload(app);
+        syncCrossings(app);
+        restoreCursor(app);
     }
 
     void update(App& app, const Input& input, float dt) override
     {
-        reload(app);
+        syncCrossings(app);
+        restoreCursor(app);
 
         int count = static_cast<int>(m_crossings.size());
         int columns = kColumns;
@@ -77,7 +79,9 @@ public:
 
             if (input.pressed(HidNpadButton_X)) {
                 m_sortByName = !m_sortByName;
-                sort();
+                // Re-sorted on the next sync, which also keeps the cursor on
+                // the card it was on rather than on the slot.
+                m_sortDirty = true;
             }
         }
 
@@ -243,35 +247,59 @@ private:
         m_selected = std::min(std::max(candidate, 0), static_cast<int>(m_crossings.size()) - 1);
     }
 
-    void reload(App& app)
+    // Copies the collection out of the store only when it has actually changed,
+    // and sorts only when it has been copied or the sort was toggled.
+    //
+    // Both used to happen every frame. A copy is eight heap strings per card and
+    // the sort is O(n log n) on top; at five thousand cards that was most of a
+    // frame's budget spent rebuilding a list that changes when a pass arrives.
+    void syncCrossings(App& app)
     {
-        // Which pass the cursor is on, not which slot. Sorting changes the
-        // slots, and a pass arriving pushes every one of them along.
-        std::string wanted = app.takeLastViewedCrossing();
-        bool fromDetail = !wanted.empty();
-        if (wanted.empty() && m_selected >= 0
-            && m_selected < static_cast<int>(m_crossings.size())) {
-            wanted = m_crossings[static_cast<size_t>(m_selected)].id;
-        }
+        uint64_t generation = app.store().crossingsGeneration();
+        if (generation == m_generation && !m_sortDirty)
+            return;
 
-        m_crossings = app.store().crossings();
+        // Which pass the cursor is on, not which slot: sorting moves the slots,
+        // and a pass arriving pushes every one of them along.
+        std::string wanted;
+        if (m_selected >= 0 && m_selected < static_cast<int>(m_crossings.size()))
+            wanted = m_crossings[static_cast<size_t>(m_selected)].id;
+
+        if (generation != m_generation) {
+            m_crossings = app.store().crossings();
+            m_generation = generation;
+        }
         sort();
+        m_sortDirty = false;
 
         int count = static_cast<int>(m_crossings.size());
         m_selected = count == 0 ? 0 : std::min(std::max(m_selected, 0), count - 1);
 
         if (wanted.empty())
             return;
-
         for (size_t i = 0; i < m_crossings.size(); i++) {
-            if (m_crossings[i].id != wanted)
-                continue;
-            m_selected = static_cast<int>(i);
+            if (m_crossings[i].id == wanted) {
+                m_selected = static_cast<int>(i);
+                break;
+            }
+        }
+    }
 
-            // And scroll to it.
-            if (fromDetail)
+    // Puts the cursor back on the pass the detail view was last showing, and
+    // scrolls to it. Separate from syncCrossings because closing a card the user
+    // had already read changes nothing in the store, so there is no generation
+    // to notice - and the cursor still has to move.
+    void restoreCursor(App& app)
+    {
+        std::string wanted = app.takeLastViewedCrossing();
+        if (wanted.empty())
+            return;
+        for (size_t i = 0; i < m_crossings.size(); i++) {
+            if (m_crossings[i].id == wanted) {
+                m_selected = static_cast<int>(i);
                 revealSelection(kColumns);
-            break;
+                return;
+            }
         }
     }
 
@@ -351,6 +379,10 @@ private:
 
     ui::ScrollView m_scroll;
     Rect m_gridRect;
+    // What the store looked like when m_crossings was copied from it.
+    uint64_t m_generation = 0;
+    bool m_sortDirty = false;
+
     float m_rowPitch = 0.0f;   // cached from draw
     float m_cellHeight = 0.0f;
     bool m_dragging = false;

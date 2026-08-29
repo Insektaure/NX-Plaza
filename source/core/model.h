@@ -82,6 +82,18 @@ struct Crossing {
     bool opened = false;     // has the user looked at it yet
     bool tradedBack = false; // did the user send something back
 
+    // Which record in crossings.idx this is, so one card can be written back
+    // without rewriting the collection. Travels with the crossing through the
+    // re-sorting the list does, and is not part of the pass or the wire.
+    static constexpr uint32_t kNoSlot = 0xFFFFFFFFu;
+    uint32_t slot = kNoSlot;
+
+    // What still has to reach the disk. Transient: never serialised, and kept
+    // on the crossing rather than in a list of slots so it survives the store
+    // re-sorting itself.
+    bool recordDirty = false; // a fixed-width field changed (read, traded back)
+    bool textDirty = false;   // the pass itself changed, so the blob must grow
+
     json_t* toJson() const;
     static Crossing fromJson(json_t* obj);
 };
