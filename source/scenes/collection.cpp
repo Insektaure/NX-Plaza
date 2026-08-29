@@ -116,8 +116,21 @@ public:
         app.hint("X", m_sortByName ? "sort by recent" : "sort by name");
 
         float titleBlock = 40.0f + title.size * theme::leadingSnug + theme::s5;
+
+        // The grid stops short of the control strip.
+        //
+        // contentArea() already ends where the strip begins, and this screen's
+        // content rect only takes an inset off the top, so the grid ran to the
+        // exact pixel the strip starts on. Scrolled to the bottom, the last row
+        // of cards ended flush against it: no card edge, no rounded corner, and
+        // a focused card's ring -- which is drawn *outside* the card -- clipped
+        // away entirely. It read as a row cut in half.
+        //
+        // Shrinking the viewport also lifts the last row clear, because the
+        // scroll can now travel this much further.
+        constexpr float kBottomMargin = theme::s6;
         Rect grid { content.x, content.y + titleBlock, content.w,
-            content.h - titleBlock };
+            content.h - titleBlock - kBottomMargin };
 
         if (m_crossings.empty()) {
             TextStyle empty;
