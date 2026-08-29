@@ -169,6 +169,8 @@ private:
         Id_DeleteAll,
         Id_NewIdentity,
         Id_About,
+        Id_Source,
+        Id_ConsoleId,
     };
 
     enum class Kind { Toggle, Segmented, Value, Action, Danger };
@@ -370,7 +372,13 @@ private:
             value(Id_NewIdentity, "Start over as someone new",
                 "New id, new pass; everything you handed out goes unlinkable", "",
                 Kind::Danger);
-            value(Id_About, "nx-plaza " APP_VERSION, identity().id, "", Kind::Value);
+            // What this is, who made it, where it lives, and - on a row of its
+            // own, having nothing to do with the three above it - the id to
+            // quote when something has gone wrong.
+            value(Id_About, "NX Plaza - Online StreetPass | " APP_VERSION, "Developed by Insektaure", "",
+                Kind::Value);
+            value(Id_Source, "Find us on GitHub !", "https://github.com/Insektaure/NX-Plaza", "", Kind::Value);
+            value(Id_ConsoleId, "This console's id", identity().id, "", Kind::Value);
             break;
         }
 
