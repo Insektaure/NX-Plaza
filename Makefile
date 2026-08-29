@@ -56,8 +56,10 @@ PLAZA_REPO := Insektaure/NX-Plaza
 ARCH    :=  -march=armv8-a+crc+crypto -mtune=cortex-a57 -mtp=soft -fPIE
 
 PKGCONF :=  $(DEVKITPRO)/portlibs/switch/bin/aarch64-none-elf-pkg-config
-PORT_CFLAGS :=  $(shell $(PKGCONF) freetype2 jansson libcurl --cflags)
-PORT_LIBS   :=  $(shell $(PKGCONF) freetype2 jansson libcurl --libs)
+# minizip for the updater, which has to open a release published as a zip;
+# zlib comes with it, and the play-history NACP inflate uses that too.
+PORT_CFLAGS :=  $(shell $(PKGCONF) freetype2 jansson libcurl minizip zlib --cflags)
+PORT_LIBS   :=  $(shell $(PKGCONF) freetype2 jansson libcurl minizip zlib --libs)
 
 # Single-quoted around the double quotes, so a value containing a space stays
 # one argument. Written as \"...\" it does not: APP_TITLE of "NX Plaza" reached
