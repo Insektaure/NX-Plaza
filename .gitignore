@@ -1,0 +1,38 @@
+# build output
+build/
+romfs/shaders/
+*.nro
+*.nso
+*.nacp
+*.elf
+*.map
+
+# server state
+server/plaza.sqlite3
+server/plaza.secret
+
+# the PHP server's deployment secrets -- never commit these
+server/php/config.php
+server/php/*.secret
+plaza.sqlite3
+plaza.secret
+__pycache__/
+*.pyc
+
+# editors
+.idea/
+.vscode/
+
+# simulator state (fake console identities)
+tools/sim-consoles.json
+
+#external
+external/
+
+#server
+server/
+
+docs/
+site/
+
+tools/fflcache

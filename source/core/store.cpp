@@ -1,0 +1,432 @@
+#include "core/store.h"
+
+#include "core/identity.h"
+#include "core/json.h"
+#include "core/log.h"
+#include "core/place.h"
+#include "core/util.h"
+
+#include <algorithm>
+#include <ctime>
+#include <set>
+
+namespace nxp {
+
+namespace {
+    const char* kProfileFile = "profile.json";
+    const char* kCrossingsFile = "crossings.json";
+
+    // The 3DS kept 10 StreetPass slots per title. We are not that cramped,
+    // but the collection still needs a ceiling so the file stays small and
+    // parsing stays instant.
+    constexpr size_t kMaxCrossings = 500;
+
+    uint64_t startOfLocalDay(uint64_t when)
+    {
+        time_t t = static_cast<time_t>(when);
+        struct tm tmv {};
+        localtime_r(&t, &tmv);
+        tmv.tm_hour = 0;
+        tmv.tm_min = 0;
+        tmv.tm_sec = 0;
+        return static_cast<uint64_t>(mktime(&tmv));
+    }
+}
+
+std::string Settings::sharedPlaceLabel() const
+{
+    switch (placeSharing) {
+    case Place_District:
+        return districtLabel.empty() ? cityLabel : districtLabel;
+    case Place_City:
+        return cityLabel;
+    case Place_Off:
+    default:
+        return std::string();
+    }
+}
+
+Store& Store::get()
+{
+    static Store instance;
+    return instance;
+}
+
+void Store::load()
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (m_loaded)
+        return;
+    m_loaded = true;
+
+    ensureDataDir();
+
+    // ---- profile.json: settings + our own pass
+    json_t* profile = js::readFile(dataPath(kProfileFile));
+    if (profile) {
+        json_t* s = js::getObj(profile, "settings");
+        if (s) {
+            // A released build ignores whatever is on the card. There is one
+            // plaza, and a profile carried over from a development build would otherwise leave
+            // the console pointed at a server that is not there, with no way to
+            // put it right.
+            if (kServerIsEditable)
+                m_settings.serverUrl = js::getStr(s, "server_url", m_settings.serverUrl);
+            else
+                m_settings.serverUrl = kPlazaServer;
+            m_settings.autoExchange = js::getBool(s, "auto_exchange", true);
+            m_settings.reach = static_cast<Reach>(
+                std::min<int64_t>(std::max<int64_t>(js::getInt(s, "reach", Reach_World), 0),
+                    Reach_Count - 1));
+            m_settings.placeSharing = static_cast<PlaceSharing>(
+                std::min<int64_t>(std::max<int64_t>(js::getInt(s, "place_sharing", Place_District), 0),
+                    Place_Count - 1));
+            m_settings.districtLabel = clampUtf8(js::getStr(s, "district"), 24);
+            m_settings.cityLabel = clampUtf8(js::getStr(s, "city"), 24);
+            m_settings.sharePlaying = js::getBool(s, "share_playing", true);
+            m_settings.notify = js::getBool(s, "notify", true);
+            m_settings.logToFile = js::getBool(s, "logToFile", false);
+            m_settings.dailyLimit = static_cast<int>(js::getInt(s, "daily_limit", 12));
+            m_settings.firstRunDone = js::getBool(s, "first_run_done", false);
+            m_settings.themeMode = static_cast<int>(js::getInt(s, "theme", 0));
+            m_settings.blocked = js::getStrArray(s, "blocked", 128);
+        }
+
+        json_t* p = json_object_get(profile, "pass");
+        if (json_is_object(p))
+            m_pass = Pass::fromJson(p);
+
+        json_decref(profile);
+    }
+
+    if (m_settings.dailyLimit < 1 || m_settings.dailyLimit > 99)
+        m_settings.dailyLimit = 12;
+    if (m_settings.themeMode < 0 || m_settings.themeMode > 2)
+        m_settings.themeMode = 0;
+
+    if (m_pass.isBlank())
+        m_pass = Pass::makeDefault(suggestedHandle());
+
+    // ---- crossings.json: the collection
+    json_t* db = js::readFile(dataPath(kCrossingsFile));
+    if (db) {
+        json_t* list = js::getArr(db, "crossings");
+        if (list) {
+            size_t index;
+            json_t* value;
+            json_array_foreach(list, index, value) {
+                Crossing c = Crossing::fromJson(value);
+                if (!c.id.empty())
+                    m_crossings.push_back(std::move(c));
+            }
+        }
+        json_decref(db);
+    }
+
+    std::stable_sort(m_crossings.begin(), m_crossings.end(),
+        [](const Crossing& a, const Crossing& b) { return a.lastSeen > b.lastSeen; });
+
+    LOG("store: %zu crossings, handle '%s'", m_crossings.size(), m_pass.handle.c_str());
+}
+
+bool Store::flush()
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    bool wrote = false;
+    if (m_profileDirty) {
+        saveProfileLocked();
+        wrote = true;
+    }
+    if (m_crossingsDirty) {
+        saveCrossingsLocked();
+        wrote = true;
+    }
+    return wrote;
+}
+
+void Store::saveProfileLocked()
+{
+    json_t* s = json_object();
+    json_object_set_new(s, "server_url", json_string(m_settings.serverUrl.c_str()));
+    json_object_set_new(s, "auto_exchange", json_boolean(m_settings.autoExchange));
+    json_object_set_new(s, "reach", json_integer(m_settings.reach));
+    json_object_set_new(s, "place_sharing", json_integer(m_settings.placeSharing));
+    json_object_set_new(s, "district", json_string(m_settings.districtLabel.c_str()));
+    json_object_set_new(s, "city", json_string(m_settings.cityLabel.c_str()));
+    json_object_set_new(s, "share_playing", json_boolean(m_settings.sharePlaying));
+    json_object_set_new(s, "notify", json_boolean(m_settings.notify));
+    json_object_set_new(s, "logToFile", json_boolean(m_settings.logToFile));
+    json_object_set_new(s, "daily_limit", json_integer(m_settings.dailyLimit));
+    json_object_set_new(s, "first_run_done", json_boolean(m_settings.firstRunDone));
+    json_object_set_new(s, "theme", json_integer(m_settings.themeMode));
+    json_object_set_new(s, "blocked", js::strArray(m_settings.blocked));
+
+    json_t* root = json_object();
+    json_object_set_new(root, "version", json_integer(1));
+    json_object_set_new(root, "settings", s);
+    json_object_set_new(root, "pass", m_pass.toJson());
+
+    m_profileDirty = !js::writeFile(dataPath(kProfileFile), root);
+    json_decref(root);
+}
+
+void Store::saveCrossingsLocked()
+{
+    json_t* list = json_array();
+    for (const Crossing& c : m_crossings)
+        json_array_append_new(list, c.toJson());
+
+    json_t* root = json_object();
+    json_object_set_new(root, "version", json_integer(1));
+    json_object_set_new(root, "owner", json_string(identity().id.c_str()));
+    json_object_set_new(root, "crossings", list);
+
+    m_crossingsDirty = !js::writeFile(dataPath(kCrossingsFile), root);
+    json_decref(root);
+}
+
+void Store::pruneLocked()
+{
+    if (m_crossings.size() <= kMaxCrossings)
+        return;
+
+    // The list is sorted newest first, so walking backwards visits the oldest
+    // passes. Drop ones the user has already read before touching unread news.
+    auto dropFromBack = [&](bool openedOnly) {
+        size_t i = m_crossings.size();
+        while (i > 0 && m_crossings.size() > kMaxCrossings) {
+            --i;
+            if (!openedOnly || m_crossings[i].opened)
+                m_crossings.erase(m_crossings.begin() + static_cast<ptrdiff_t>(i));
+        }
+    };
+
+    dropFromBack(true);
+    dropFromBack(false);
+}
+
+Settings Store::settings() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_settings;
+}
+
+void Store::setSettings(const Settings& s)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_settings = s;
+    m_profileDirty = true;
+}
+
+Pass Store::myPass() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_pass;
+}
+
+void Store::setMyPass(const Pass& p)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_pass = p;
+    m_pass.sanitize();
+    m_profileDirty = true;
+}
+
+Pass Store::outgoingPass() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    Pass out = m_pass;
+    out.district = m_settings.sharedPlaceLabel();
+    // Hours go with the title. On their own they say how much of your life a
+    // game has had, which is more than the title does, and hiding the title
+    // while still sending "412h" would be a strange kind of private.
+    if (!m_settings.sharePlaying) {
+        out.playing = std::string();
+        out.hours = 0;
+    }
+
+    out.met = static_cast<uint32_t>(m_crossings.size());
+
+    out.sanitize();
+    return out;
+}
+
+std::vector<Crossing> Store::crossings() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_crossings;
+}
+
+bool Store::findCrossing(const std::string& id, Crossing& out) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (const Crossing& c : m_crossings) {
+        if (c.id == id) {
+            out = c;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Store::recordCrossing(const std::string& id, const Pass& pass,
+    const std::string& place, uint64_t when)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    if (id.empty() || id == identity().id || isBlocked(id))
+        return false;
+
+    if (when == 0)
+        when = nowUnix();
+
+    for (Crossing& c : m_crossings) {
+        if (c.id != id)
+            continue;
+
+        // A repeat crossing: keep the freshest pass, bump the counter, and put
+        // it back at the top of the inbox as unopened news.
+        c.pass = pass;
+        c.pass.sanitize();
+        c.lastSeen = when;
+        c.count++;
+        if (!place.empty())
+            c.place = place;
+        c.opened = false;
+        m_crossingsDirty = true;
+
+        std::stable_sort(m_crossings.begin(), m_crossings.end(),
+            [](const Crossing& a, const Crossing& b) { return a.lastSeen > b.lastSeen; });
+        return false;
+    }
+
+    Crossing c;
+    c.id = id;
+    c.pass = pass;
+    c.pass.sanitize();
+    c.firstSeen = when;
+    c.lastSeen = when;
+    c.count = 1;
+    c.place = place;
+    c.opened = false;
+    m_crossings.insert(m_crossings.begin(), std::move(c));
+
+    pruneLocked();
+    m_crossingsDirty = true;
+    return true;
+}
+
+void Store::markOpened(const std::string& id)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (Crossing& c : m_crossings) {
+        if (c.id == id && !c.opened) {
+            c.opened = true;
+            m_crossingsDirty = true;
+        }
+    }
+}
+
+void Store::markTradedBack(const std::string& id)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (Crossing& c : m_crossings) {
+        if (c.id == id && !c.tradedBack) {
+            c.tradedBack = true;
+            c.opened = true;
+            m_crossingsDirty = true;
+        }
+    }
+}
+
+void Store::markAllOpened()
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    for (Crossing& c : m_crossings) {
+        if (!c.opened) {
+            c.opened = true;
+            m_crossingsDirty = true;
+        }
+    }
+}
+
+void Store::block(const std::string& id)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (id.empty() || isBlocked(id))
+        return;
+
+    m_settings.blocked.push_back(id);
+    m_crossings.erase(std::remove_if(m_crossings.begin(), m_crossings.end(),
+                          [&](const Crossing& c) { return c.id == id; }),
+        m_crossings.end());
+    m_profileDirty = true;
+    m_crossingsDirty = true;
+}
+
+bool Store::isBlocked(const std::string& id) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return std::find(m_settings.blocked.begin(), m_settings.blocked.end(), id)
+        != m_settings.blocked.end();
+}
+
+void Store::deleteAllCrossings()
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_crossings.clear();
+    m_crossingsDirty = true;
+    saveCrossingsLocked();
+}
+
+Stats Store::stats() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    Stats s;
+    uint64_t now = nowUnix();
+    uint64_t today = startOfLocalDay(now);
+    std::set<std::string> places;
+
+    s.uniquePeople = static_cast<uint32_t>(m_crossings.size());
+    for (const Crossing& c : m_crossings) {
+        s.totalCrossings += c.count;
+        if (!c.opened) {
+            s.unopened++;
+            if (s.oldestUnopened == 0 || c.lastSeen < s.oldestUnopened)
+                s.oldestUnopened = c.lastSeen;
+        }
+        if (!c.place.empty())
+            places.insert(c.place);
+
+        if (c.lastSeen >= today)
+            s.today++;
+
+        // Bucket the last seven local days; index 6 is today.
+        for (int d = 0; d < 7; d++) {
+            uint64_t dayStart = today - static_cast<uint64_t>(6 - d) * 24 * 3600;
+            uint64_t dayEnd = dayStart + 24 * 3600;
+            if (c.lastSeen >= dayStart && c.lastSeen < dayEnd) {
+                s.week[d]++;
+                break;
+            }
+        }
+    }
+    s.places = static_cast<uint32_t>(places.size());
+    return s;
+}
+
+int Store::acceptedToday() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    uint64_t today = startOfLocalDay(nowUnix());
+    int n = 0;
+    for (const Crossing& c : m_crossings) {
+        if (c.lastSeen >= today)
+            n++;
+    }
+    return n;
+}
+
+} // namespace nxp
