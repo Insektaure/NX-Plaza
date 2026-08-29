@@ -172,13 +172,15 @@ public:
         constexpr float portraitWidth = 860.0f;
         drawPortrait(r, Rect { screen.x, screen.y, portraitWidth, screen.h });
 
-        // The artboard pads this column --space-9 top and --space-8 bottom. The
-        // control strip now sits under it and does the work that bottom padding
-        // was doing, so both come in one step: a full pass needs 843 of the 848
-        // that leaves.
+        //  --space-9 top and --space-8 bottom.
+        // The control strip sits under it and does most of the work that bottom
+        // padding was doing, so only --space-5 is kept here: a pass carrying
+        // four things wraps its chips onto a second row, and that row has to
+        // come from somewhere. The strip below is its own visual edge, so the
+        // buttons can sit closer to it than to anything else on the screen.
         Rect body { portraitWidth + theme::s9, theme::s8,
             screen.w - portraitWidth - theme::s9 - theme::edge,
-            screen.h - theme::s8 - theme::s7 };
+            screen.h - theme::s8 - theme::s5 };
 
         drawHeader(r, body);
         float y = body.y + headerHeight() + theme::s6;
@@ -190,9 +192,14 @@ public:
             y += drawCarrying(r, Rect { body.x, y, body.w, 0.0f }) + theme::s6;
         }
 
-        drawStats(r, Rect { body.x, y, body.w, kStatsHeight });
-        drawActions(app, r, Rect { body.x, body.bottom() - kActionHeight, body.w,
-                               kActionHeight });
+        // The actions are pinned to the bottom, so the stats are what has to
+        // yield. Held clear of them whatever is above: a column that ends up
+        // tight is a great deal better than numbers printed over buttons.
+        float actionsTop = body.bottom() - kActionHeight;
+        float statsTop = std::min(y, actionsTop - theme::s4 - kStatsHeight);
+
+        drawStats(r, Rect { body.x, statsTop, body.w, kStatsHeight });
+        drawActions(app, r, Rect { body.x, actionsTop, body.w, kActionHeight });
     }
 
 private:
