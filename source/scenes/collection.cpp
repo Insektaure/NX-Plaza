@@ -55,7 +55,7 @@ public:
         TouchTarget tap;
         if (!m_brakedTap && app.takeTap(tap) && tap.is(Zone_Cell) && tap.index < count) {
             m_selected = tap.index;
-            app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id);
+            app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id, orderedIds());
             return;
         }
 
@@ -73,7 +73,7 @@ public:
                 revealSelection(columns);
 
             if (input.accept())
-                app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id);
+                app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id, orderedIds());
 
             if (input.pressed(HidNpadButton_X)) {
                 m_sortByName = !m_sortByName;
@@ -216,6 +216,18 @@ private:
         m_scroll.centerOn(row * m_rowPitch + m_cellHeight * 0.5f);
     }
 
+    // The ids as they are laid out right now, so the detail view steps through
+    // them in the order the screen is showing - which for this one depends on
+    // the sort, not on the store.
+    std::vector<std::string> orderedIds() const
+    {
+        std::vector<std::string> ids;
+        ids.reserve(m_crossings.size());
+        for (const Crossing& c : m_crossings)
+            ids.push_back(c.id);
+        return ids;
+    }
+
     // After a drag, put the cursor on a row the user can actually see.
     void clampSelectionToView(int columns)
     {
@@ -233,10 +245,34 @@ private:
 
     void reload(App& app)
     {
+        // Which pass the cursor is on, not which slot. Sorting changes the
+        // slots, and a pass arriving pushes every one of them along.
+        std::string wanted = app.takeLastViewedCrossing();
+        bool fromDetail = !wanted.empty();
+        if (wanted.empty() && m_selected >= 0
+            && m_selected < static_cast<int>(m_crossings.size())) {
+            wanted = m_crossings[static_cast<size_t>(m_selected)].id;
+        }
+
         m_crossings = app.store().crossings();
         sort();
+
         int count = static_cast<int>(m_crossings.size());
         m_selected = count == 0 ? 0 : std::min(std::max(m_selected, 0), count - 1);
+
+        if (wanted.empty())
+            return;
+
+        for (size_t i = 0; i < m_crossings.size(); i++) {
+            if (m_crossings[i].id != wanted)
+                continue;
+            m_selected = static_cast<int>(i);
+
+            // And scroll to it.
+            if (fromDetail)
+                revealSelection(kColumns);
+            break;
+        }
     }
 
     void sort()

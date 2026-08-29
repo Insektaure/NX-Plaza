@@ -83,7 +83,20 @@ public:
     void popOverlay();
     bool hasOverlay() const { return !m_overlays.empty(); }
 
-    void openEncounter(const std::string& crossingId);
+    void openEncounter(const std::string& crossingId,
+        std::vector<std::string> siblings = {});
+
+    void setLastViewedCrossing(const std::string& id) { m_lastViewedCrossing = id; }
+
+    // Reads it once and forgets it. The lists rebuild themselves every frame,
+    // so a value that stayed put would pin the cursor there and the stick would
+    // stop working.
+    std::string takeLastViewedCrossing()
+    {
+        std::string id;
+        id.swap(m_lastViewedCrossing);
+        return id;
+    }
 
     // ---------------------------------------------------------------- touch
 
@@ -175,6 +188,7 @@ private:
     TouchTarget m_tap;
 
     Tab m_tab = Tab::Plaza;
+    std::string m_lastViewedCrossing;
     float m_time = 0.0f;
     float m_tabHighlight = 0.0f; // animated rail highlight position
 

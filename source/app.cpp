@@ -137,9 +137,9 @@ void App::popOverlay()
     }
 }
 
-void App::openEncounter(const std::string& crossingId)
+void App::openEncounter(const std::string& crossingId, std::vector<std::string> siblings)
 {
-    pushOverlay(makeEncounterScene(crossingId));
+    pushOverlay(makeEncounterScene(crossingId, std::move(siblings)));
 }
 
 void App::toast(const std::string& title, const std::string& body)

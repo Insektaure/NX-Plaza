@@ -29,12 +29,31 @@ public:
     void onEnter(App& app) override
     {
         m_crossings = app.store().crossings();
+        restoreCursor(app);
         clampSelection();
+    }
+
+    // Put the cursor back on the pass the detail view was last showing.
+    void restoreCursor(App& app)
+    {
+        std::string wanted = app.takeLastViewedCrossing();
+        if (wanted.empty())
+            return;
+        for (size_t i = 0; i < m_crossings.size(); i++) {
+            if (m_crossings[i].id == wanted) {
+                m_selected = static_cast<int>(i);
+
+                // And slide the strip to it.
+                revealSelection();
+                return;
+            }
+        }
     }
 
     void update(App& app, const Input& input, float dt) override
     {
         m_crossings = app.store().crossings();
+        restoreCursor(app);
         clampSelection();
 
         int count = static_cast<int>(m_crossings.size());
@@ -56,7 +75,7 @@ public:
         TouchTarget tap;
         if (!m_brakedTap && app.takeTap(tap) && tap.is(Zone_Card) && tap.index < count) {
             m_selected = tap.index;
-            app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id);
+            app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id, orderedIds());
             return;
         }
 
@@ -70,7 +89,7 @@ public:
                 revealSelection();
 
             if (input.accept())
-                app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id);
+                app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id, orderedIds());
         }
 
         if (input.pressed(HidNpadButton_X)) {
@@ -106,6 +125,17 @@ private:
     static constexpr float kTileHeight = 404.0f; // stage plus the text block
     static constexpr float kTileGap = theme::s5;
     static constexpr float kMoreWidth = 170.0f;
+
+    // The ids as they are laid out right now, so the detail view steps through
+    // them in the order the screen is showing rather than the store's.
+    std::vector<std::string> orderedIds() const
+    {
+        std::vector<std::string> ids;
+        ids.reserve(m_crossings.size());
+        for (const Crossing& c : m_crossings)
+            ids.push_back(c.id);
+        return ids;
+    }
 
     void clampSelection()
     {

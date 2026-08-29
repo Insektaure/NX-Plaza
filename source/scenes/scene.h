@@ -32,7 +32,11 @@ std::unique_ptr<Scene> makeNearbyScene();
 std::unique_ptr<Scene> makeCollectionScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
-std::unique_ptr<Scene> makeEncounterScene(const std::string& crossingId);
+// One collected pass, close up. `siblings` is the list the caller was showing,
+// in the order it was showing it, so the shoulder buttons can step through it
+// without going back to the grid. Empty means no stepping.
+std::unique_ptr<Scene> makeEncounterScene(const std::string& crossingId,
+    std::vector<std::string> siblings = {});
 // One console on the radar, close up. Read-only: a peer is not a crossing.
 std::unique_ptr<Scene> makePeerScene(const Peer& peer);
 std::unique_ptr<Scene> makeFirstRunScene();

@@ -28,20 +28,58 @@ public:
         Zone_Block,
     };
 
-    explicit EncounterScene(std::string id)
+    EncounterScene(std::string id, std::vector<std::string> siblings)
         : m_id(std::move(id))
+        , m_siblings(std::move(siblings))
     {
+        for (size_t i = 0; i < m_siblings.size(); i++) {
+            if (m_siblings[i] == m_id) {
+                m_index = static_cast<int>(i);
+                break;
+            }
+        }
     }
 
-    void onEnter(App& app) override
+    void onEnter(App& app) override { load(app); }
+
+    // Reads the crossing this view is on, and marks it read.
+    void load(App& app)
     {
         if (!app.store().findCrossing(m_id, m_crossing)) {
             m_missing = true;
             return;
         }
+        m_missing = false;
         app.store().markOpened(m_id);
         m_crossing.opened = true;
         m_action = 0;
+    }
+
+    // Leaves, remembering which pass this ended on so the list behind can put
+    // its cursor there. Every ordinary way out goes through here; blocking does
+    // not, because the pass it was on is the one being thrown away.
+    void close(App& app)
+    {
+        app.setLastViewedCrossing(m_id);
+        app.popOverlay();
+    }
+
+    // Steps to the next or previous pass without going back to the grid.
+    void step(App& app, int delta)
+    {
+        if (m_index < 0 || m_siblings.size() < 2)
+            return;
+
+        int count = static_cast<int>(m_siblings.size());
+        for (int tries = 0; tries < count; tries++) {
+            m_index = (m_index + delta + count) % count;
+            Crossing probe;
+            if (app.store().findCrossing(m_siblings[static_cast<size_t>(m_index)], probe)) {
+                m_id = m_siblings[static_cast<size_t>(m_index)];
+                load(app);
+                return;
+            }
+        }
     }
 
     void update(App& app, const Input& input, float dt) override
@@ -49,7 +87,7 @@ public:
         m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
 
         if (m_missing || input.back()) {
-            app.popOverlay();
+            close(app);
             return;
         }
 
@@ -61,7 +99,7 @@ public:
                 return;
             }
             if (tap.is(Zone_Secondary)) {
-                app.popOverlay();
+                close(app);
                 return;
             }
             if (tap.is(Zone_Block)) {
@@ -84,7 +122,7 @@ public:
             if (m_action == 2)
                 askBlock(app);
             else if (m_action == 1)
-                app.popOverlay();
+                close(app);
             else
                 trade(app);
             return;
@@ -92,6 +130,15 @@ public:
 
         // Y is the face button everywhere it appears - the Mii maker's save and
         // load is on Y, so keeping somebody else's face is too.
+        if (input.pressed(HidNpadButton_R) || input.pressed(HidNpadButton_ZR)) {
+            step(app, 1);
+            return;
+        }
+        if (input.pressed(HidNpadButton_L) || input.pressed(HidNpadButton_ZL)) {
+            step(app, -1);
+            return;
+        }
+
         if (input.pressed(HidNpadButton_Y)) {
             promptSaveMii(app, m_crossing.pass.face(), m_crossing.pass.handle);
             return;
@@ -111,6 +158,8 @@ public:
 
         app.hint("A", m_action == 2 ? "block" : (m_action == 1 ? "keep" : "trade back"));
         app.hint("B", "back");
+        if (m_siblings.size() > 1)
+            app.hint("L/R", "next pass");
         app.hint("X", "block");
         app.hint("Y", "save face");
 
@@ -162,7 +211,7 @@ private:
             app.toast(format("Sent something back to %s", m_crossing.pass.handle.c_str()),
                 "It travels with your pass the next time you cross.");
         } else {
-            app.popOverlay();
+            close(app);
         }
     }
 
@@ -381,6 +430,10 @@ private:
 
 
     std::string m_id;
+    // The list this view was opened from, in the order it was on screen, and
+    // where we are in it. Empty when there is nothing to step through.
+    std::vector<std::string> m_siblings;
+    int m_index = -1;
     Crossing m_crossing;
     bool m_missing = false;
     int m_action = 0;
@@ -389,9 +442,10 @@ private:
 
 } // namespace
 
-std::unique_ptr<Scene> makeEncounterScene(const std::string& crossingId)
+std::unique_ptr<Scene> makeEncounterScene(const std::string& crossingId,
+    std::vector<std::string> siblings)
 {
-    return std::unique_ptr<Scene>(new EncounterScene(crossingId));
+    return std::unique_ptr<Scene>(new EncounterScene(crossingId, std::move(siblings)));
 }
 
 } // namespace nxp
