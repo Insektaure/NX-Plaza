@@ -161,7 +161,12 @@ bool Store::flush()
 void Store::saveProfileLocked()
 {
     json_t* s = json_object();
-    json_object_set_new(s, "server_url", json_string(m_settings.serverUrl.c_str()));
+    // Only a build that can change the address has any reason to remember one.
+    // A released build would write the compiled-in constant and then ignore it
+    // on the next load, leaving a key on the card that looks like a setting and
+    // is not one.
+    if (kServerIsEditable)
+        json_object_set_new(s, "server_url", json_string(m_settings.serverUrl.c_str()));
     json_object_set_new(s, "auto_exchange", json_boolean(m_settings.autoExchange));
     json_object_set_new(s, "reach", json_integer(m_settings.reach));
     json_object_set_new(s, "place_sharing", json_integer(m_settings.placeSharing));
