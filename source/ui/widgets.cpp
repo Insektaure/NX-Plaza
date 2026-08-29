@@ -425,8 +425,9 @@ void statCard(Renderer& r, const Rect& box, const std::string& value,
     label.color = theme::fg3;
 
     Rect inner = box.inset(theme::s5);
-    r.text(inner.x, inner.y, value, number);
-    r.text(inner.x, inner.y + valueSize * theme::leadingSnug + 6.0f, caption, label);
+    r.text(inner.x, inner.y, r.ellipsize(value, number, inner.w), number);
+    r.text(inner.x, inner.y + valueSize * theme::leadingSnug + 6.0f,
+        r.ellipsize(caption, label, inner.w), label);
 }
 
 float chipWidth(Renderer& r, const std::string& label, float textSize)

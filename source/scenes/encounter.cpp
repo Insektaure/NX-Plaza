@@ -141,7 +141,7 @@ public:
             y += drawCarrying(r, Rect { body.x, y, body.w, 0.0f }) + theme::s6;
         }
 
-        drawStats(r, Rect { body.x, y, body.w, kStatCardHeight });
+        drawStats(r, Rect { body.x, y, body.w, kStatsHeight });
         drawActions(app, r, Rect { body.x, body.bottom() - kActionHeight, body.w,
                                kActionHeight });
     }
@@ -149,6 +149,8 @@ public:
 private:
     static constexpr float kActionHeight = 76.0f;  // padding 20px + --text-base
     static constexpr float kStatCardHeight = 132.0f;
+    // Two rows: three numbers, then the title with the whole width to itself.
+    static constexpr float kStatsHeight = kStatCardHeight * 2.0f + theme::s4;
     static constexpr float kChipHeight = 56.0f;    // padding 10px 18px
 
     void trade(App& app)
@@ -239,8 +241,8 @@ private:
             meta += part;
         };
         add(m_crossing.place);
-        if (m_crossing.count > 1)
-            add(format("%u%s crossing", m_crossing.count, ordinalSuffix(m_crossing.count)));
+        // How many times is a stat, not a caption: it sits with the other
+        // numbers below rather than in a line about where they were.
         if (!m_crossing.pass.playing.empty())
             add("playing " + m_crossing.pass.playing);
         add(m_crossing.pass.activity);
@@ -312,7 +314,20 @@ private:
     void drawStats(Renderer& r, const Rect& box)
     {
         float gap = theme::s4;
+
+        // Three across, then the title on a row of its own.
         float width = (std::min(box.w, 1000.0f) - gap * 2.0f) / 3.0f;
+
+        // The one number here about the two of you rather than about them.
+        std::string crossed = format("%u", m_crossing.count);
+        const char* crossedCaption = m_crossing.count == 1 ? "time crossed" : "times crossed";
+
+        ui::statCard(r, Rect { box.x, box.y, width, kStatCardHeight },
+            crossed, crossedCaption);
+        ui::statCard(r, Rect { box.x + width + gap, box.y, width, kStatCardHeight },
+            format("%zu", m_crossing.pass.games.size()), "games they carry");
+        ui::statCard(r, Rect { box.x + (width + gap) * 2.0f, box.y, width, kStatCardHeight },
+            ui::groupedNumber(m_crossing.pass.met), "people met");
 
         std::string hours = m_crossing.pass.hours > 0
             ? format("%uh", m_crossing.pass.hours)
@@ -321,11 +336,9 @@ private:
             ? std::string("hours played")
             : format("in %s", m_crossing.pass.playing.c_str());
 
-        ui::statCard(r, Rect { box.x, box.y, width, box.h }, hours, caption);
-        ui::statCard(r, Rect { box.x + width + gap, box.y, width, box.h },
-            format("%zu", m_crossing.pass.games.size()), "games they carry");
-        ui::statCard(r, Rect { box.x + (width + gap) * 2.0f, box.y, width, box.h },
-            ui::groupedNumber(m_crossing.pass.met), "people met");
+        ui::statCard(r, Rect { box.x, box.y + kStatCardHeight + gap,
+                         std::min(box.w, 1000.0f), kStatCardHeight },
+            hours, caption);
     }
 
     // Primary, outline, and a square icon button, gap --space-4.
@@ -366,22 +379,6 @@ private:
 
     }
 
-    static const char* ordinalSuffix(uint32_t value)
-    {
-        uint32_t mod100 = value % 100;
-        if (mod100 >= 11 && mod100 <= 13)
-            return "th";
-        switch (value % 10) {
-        case 1:
-            return "st";
-        case 2:
-            return "nd";
-        case 3:
-            return "rd";
-        default:
-            return "th";
-        }
-    }
 
     std::string m_id;
     Crossing m_crossing;

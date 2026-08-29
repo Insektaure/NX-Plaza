@@ -286,13 +286,24 @@ private:
         TextStyle meta;
         meta.size = theme::textXs;
         meta.color = theme::fg3;
-        std::string detail = crossing.count > 1 ? format("%u crossings", crossing.count)
-                                                : relativeTime(crossing.lastSeen, nowUnix());
-        r.text(Rect { cell.x + theme::s5, top.bottom() + theme::s4
-                       + theme::textMd * theme::leadingSnug + 6.0f,
-                   cell.w - theme::s5 * 2.0f, 32.0f },
-            r.ellipsize(detail, meta, cell.w - theme::s5 * 2.0f), meta, Align::Left,
-            VAlign::Top);
+        // 2 lines :
+        // The time of last crossing
+        // The number of times crossed
+        float textWidth = cell.w - theme::s5 * 2.0f;
+        float metaY = top.bottom() + theme::s4 + theme::textMd * theme::leadingSnug + 6.0f;
+
+        r.text(Rect { cell.x + theme::s5, metaY, textWidth, 32.0f },
+            r.ellipsize(relativeTime(crossing.lastSeen, nowUnix()), meta, textWidth),
+            meta, Align::Left, VAlign::Top);
+
+        // Only once it has happened more than once.
+        // "met 1 times" is not a thing anybody needs told.
+        if (crossing.count > 1) {
+            r.text(Rect { cell.x + theme::s5, metaY + theme::textXs * theme::leadingNormal,
+                       textWidth, 32.0f },
+                r.ellipsize(format("met %u times", crossing.count), meta, textWidth),
+                meta, Align::Left, VAlign::Top);
+        }
 
         ui::focusRing(r, cell, theme::r3, focus);
     }
