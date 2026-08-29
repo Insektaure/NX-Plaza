@@ -9,6 +9,57 @@ console quietly swaps a small **pass** with other consoles that share your
 network or your corner of the internet, and you come back later to a stack of
 them.
 
+## Screenshots
+
+**The plaza.** What you come back to. The headline counts the crossings since
+you last looked and names the places they happened in; the row underneath is
+everything still unopened, newest first, each one badged **NEW** until you have
+read it.
+
+![The plaza, with six unopened passes waiting](screenshots/001.jpg)
+
+**A pass, opened.** The greeting they typed, what they are carrying, and the
+numbers that build up as you keep running into each other. **L** and **R** walk
+the rest of the stack without going back out to the list.
+
+![An opened pass showing a greeting, carried items and crossing stats](screenshots/002.jpg)
+
+**The radar.** Who else has the app awake right now, in the reach you chose.
+Trades happen on their own while this sits open.
+
+![The radar screen scanning for other consoles](screenshots/003.jpg)
+
+**The collection.** Everyone you have met, each card carrying when you last
+crossed and, once it is more than one, how many times.
+
+![The collection grid of everyone met so far](screenshots/004.jpg)
+
+**Your pass.** The left half is exactly what lands on someone else's console:
+nothing on this screen leaves without you having typed or picked it.
+
+![Your own pass, with the card preview and the fields that fill it](screenshots/005.jpg)
+
+**The Mii maker.** Every part the wire format can carry, with the portrait
+redrawing as you go. The strip underneath shows the sizes other screens will
+render you at.
+
+![The Mii maker with face parts and a live portrait](screenshots/006.jpg)
+
+**Faces on the SD card.** Saving and loading Miis as files, so a face you liked
+on someone else's pass can become one of yours.
+
+![The save and load overlay listing faces stored on the SD card](screenshots/011.jpg)
+
+**Settings.** Six sections, each one page, no page longer than a screen. Four
+of them:
+
+| | |
+| --- | --- |
+| ![Privacy settings](screenshots/007.jpg) | ![Exchange settings](screenshots/008.jpg) |
+| *Privacy - how much of a place you attach, and whether a title rides along at all.* | *Exchange - how far a crossing reaches, and how many you will take in a day.* |
+| ![Notification settings](screenshots/009.jpg) | ![Appearance settings](screenshots/010.jpg) |
+| *Notifications - a card in the corner, or nothing.* | *Appearance - light, dark, or whatever the console is set to.* |
+
 ## What a pass is
 
 About 450 bytes of JSON. A chosen name, a greeting of at most 60 characters, a
