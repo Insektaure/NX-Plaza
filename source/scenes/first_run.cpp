@@ -215,7 +215,8 @@ private:
     // fingerprint of the console id where the artboard has a QR placeholder.
     void drawPairing(Renderer& r, const Rect& box)
     {
-        Rect panel { box.x, box.y + 40.0f, box.w, box.h - 120.0f };
+        // Starts below the wordmark rather than beside it.
+        Rect panel { box.x, box.y + 96.0f, box.w, box.h - 120.0f };
         r.roundRect(panel, theme::r5, theme::bg1);
 
         TextStyle eyebrow;
