@@ -36,7 +36,12 @@ namespace {
     constexpr size_t kOffCount = kOffLastSeen + 8;
     constexpr size_t kOffBlobOffset = kOffCount + 4;
     constexpr size_t kOffBlobLength = kOffBlobOffset + 4;
-    constexpr size_t kRecordUsed = kOffBlobLength + 4;
+    // Both are fixed width, so they belong here rather than in the blob: the
+    // hours in a title change every time that pass is received again, and a
+    // record field can be rewritten in place without the blob having to grow.
+    constexpr size_t kOffHours = kOffBlobLength + 4;
+    constexpr size_t kOffMet = kOffHours + 4;
+    constexpr size_t kRecordUsed = kOffMet + 4;
 
     constexpr uint16_t kRecordSize = 128;
     static_assert(kRecordUsed <= kRecordSize, "the record does not fit");
@@ -289,6 +294,8 @@ std::vector<Crossing> CrossingFile::load()
         uint32_t count = get32(q);
         uint32_t blobOffset = get32(q);
         uint32_t blobLength = get32(q);
+        uint32_t hours = get32(q);
+        uint32_t met = get32(q);
 
         if ((flags & kLive) == 0) {
             m_wasteBytes += blobLength;
@@ -306,6 +313,8 @@ std::vector<Crossing> CrossingFile::load()
         c.pass.mii = miiHex;
         c.pass.portrait = portrait;
         c.pass.theme = theme;
+        c.pass.hours = hours;
+        c.pass.met = met;
         c.firstSeen = firstSeen;
         c.lastSeen = lastSeen;
         c.count = count;
@@ -377,6 +386,8 @@ namespace {
         put32(p, c.count);
         put32(p, blobOffset);
         put32(p, blobLength);
+        put32(p, c.pass.hours);
+        put32(p, c.pass.met);
     }
 
     bool writeHeader(const std::string& path, uint32_t records)
