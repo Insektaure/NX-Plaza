@@ -38,7 +38,7 @@ OUT_SHADERS :=  shaders
 
 APP_TITLE   :=  NX Plaza - Online StreetPass
 APP_AUTHOR  :=  Insektaure
-APP_VERSION :=  0.1.0
+APP_VERSION :=  0.1.1
 
 # The plaza this build talks to.
 #
