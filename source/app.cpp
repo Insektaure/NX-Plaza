@@ -1,5 +1,7 @@
 #include "app.h"
 
+#include "net/update.h"
+
 #include "core/mii_parts.h"
 #include "core/identity.h"
 #include "core/log.h"
@@ -80,6 +82,7 @@ bool App::init()
 void App::exit()
 {
     m_sync.stop();
+    Update::get().shutdown();
     store().flush();
 
     m_overlays.clear();
@@ -100,6 +103,51 @@ Rect App::contentArea() const
 {
     return Rect { theme::railWidth, 0.0f, Renderer::DesignWidth - theme::railWidth,
         Renderer::DesignHeight - kHintBarHeight };
+}
+
+void App::pollUpdate()
+{
+    // Held back until the plaza has answered once, rather than fired at launch.
+    // Two cold TLS handshakes at once made the console slower to go green and
+    // the update check time out; and a console that cannot reach the plaza has
+    // no network to check for updates over either, so there is nothing to lose
+    // by waiting for proof that there is one.
+    if (!m_updateChecked && store().settings().checkUpdates
+        && m_sync.status().lastSuccess != 0) {
+        m_updateChecked = true;
+        Update::get().beginCheck(false);
+    }
+
+    Update& updater = Update::get();
+    UpdateState state = updater.state();
+    if (static_cast<int>(state) == m_lastUpdateState)
+        return;
+    m_lastUpdateState = static_cast<int>(state);
+
+    switch (state) {
+    case UpdateState::Available:
+        // Worth saying unprompted: the user cannot act on a release they were
+        // never told about. Settings is where it actually happens.
+        toast("Version " + updater.version() + " is out",
+            "Settings -> Data -> Check for updates to install it.");
+        break;
+    case UpdateState::Installed:
+        toast("Update installed",
+            "Restart from Settings -> Data to run version " + updater.version() + ".");
+        break;
+    case UpdateState::UpToDate:
+        // Only when the user asked. A silent launch check that found nothing
+        // has nothing to report.
+        if (updater.announce())
+            toast("Up to date", "nx-plaza " APP_VERSION " is the latest release.");
+        break;
+    case UpdateState::Failed:
+        if (updater.announce())
+            toast("Could not check for updates", updater.message());
+        break;
+    default:
+        break;
+    }
 }
 
 Scene* App::activeScene()
@@ -448,6 +496,8 @@ void App::update(float dt)
     m_tabHighlight += (target - m_tabHighlight) * std::min(1.0f, dt * 16.0f);
 
     // Two writes a second at most, so a burst of arrivals is one SD card hit.
+    pollUpdate();
+
     static float saveTimer = 0.0f;
     saveTimer += dt;
     if (saveTimer > 2.0f) {

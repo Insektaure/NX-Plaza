@@ -31,6 +31,8 @@ struct Settings {
     // not be writing every twenty seconds for the life of a session, and the
     // log names the server, the handles it sees and this console's own id.
     bool logToFile = false;
+    // Ask GitHub for the latest release once per launch. On by default.
+    bool checkUpdates = true;
     int dailyLimit = 12;            // crossings accepted per day
     bool firstRunDone = false;
 

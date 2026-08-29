@@ -72,6 +72,11 @@ struct Services {
 
 int main(int argc, char* argv[])
 {
+    // argv[0] is the NRO the loader ran, and the only thing the updater is ever
+    // allowed to write over. Taken before anything else can fail.
+    if (argc > 0 && argv && argv[0])
+        nxp::setExecutablePath(argv[0]);
+
     Services services;
     if (!services.init()) {
         services.exit();

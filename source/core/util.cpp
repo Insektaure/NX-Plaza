@@ -50,6 +50,24 @@ bool readWholeFile(const std::string& path, std::string& out)
     return true;
 }
 
+namespace {
+    std::string g_exePath;
+}
+
+void setExecutablePath(const char* path)
+{
+    if (!path || !*path)
+        return;
+    // Only ever a path to an NRO on the SD card. Anything else - a title id, an
+    // empty argv from an unusual loader - is not something to overwrite.
+    std::string candidate = path;
+    if (candidate.size() > 4
+        && strcasecmp(candidate.c_str() + candidate.size() - 4, ".nro") == 0)
+        g_exePath = candidate;
+}
+
+const std::string& executablePath() { return g_exePath; }
+
 bool writeWholeFileAtomic(const std::string& path, const std::string& contents)
 {
     // Write to a sibling temp file and rename, so a crash or a yanked SD card

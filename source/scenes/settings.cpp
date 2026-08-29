@@ -1,4 +1,5 @@
 #include "app.h"
+#include "net/update.h"
 #include "core/identity.h"
 #include "core/log.h"
 #include "core/place.h"
@@ -115,6 +116,7 @@ private:
         Sec_Appearance,
         Sec_Console,
         Sec_Data,
+        Sec_About,
         Sec_Count
     };
 
@@ -144,6 +146,9 @@ private:
                 "Where your passes go, and how another console recognises this one." },
             { "Data", ui::Icon::Trash, "Data",
                 "Everything the app keeps lives on the SD card, and all of it can go." },
+            { "About", ui::Icon::Info, "About",
+                format("What this build of %s is, who made it, and where it came from.",
+                    kAppName) },
         };
         return kSections[std::min(std::max(index, 0), static_cast<int>(Sec_Count) - 1)];
     }
@@ -171,6 +176,8 @@ private:
         Id_About,
         Id_Source,
         Id_ConsoleId,
+        Id_CheckUpdates,
+        Id_AutoCheckUpdates,
     };
 
     enum class Kind { Toggle, Segmented, Value, Action, Danger };
@@ -372,9 +379,55 @@ private:
             value(Id_NewIdentity, "Start over as someone new",
                 "New id, new pass; everything you handed out goes unlinkable", "",
                 Kind::Danger);
-            // What this is, who made it, where it lives, and - on a row of its
-            // own, having nothing to do with the three above it - the id to
-            // quote when something has gone wrong.
+            break;
+
+        case Sec_About:
+            {
+                // build() runs every frame, so this row doubles as the progress
+                // display: there is no separate dialog to keep in step.
+                Update& updater = Update::get();
+                std::string hint;
+                std::string shown;
+                switch (updater.state()) {
+                case UpdateState::Checking:
+                    hint = "Asking GitHub for the latest release";
+                    shown = "...";
+                    break;
+                case UpdateState::Available:
+                    hint = "Press A to download and install it";
+                    shown = updater.version();
+                    break;
+                case UpdateState::Downloading:
+                    hint = updater.message();
+                    shown = format("%.0f%%", updater.progress() * 100.0f);
+                    break;
+                case UpdateState::Installed:
+                    hint = "Press A to restart into it";
+                    shown = updater.version();
+                    break;
+                case UpdateState::Failed:
+                    hint = updater.message();
+                    shown = "-";
+                    break;
+                case UpdateState::UpToDate:
+                    hint = "You are on the latest release";
+                    shown = "up to date";
+                    break;
+                default:
+                    hint = "Looks at the releases on GitHub";
+                    shown = "";
+                    break;
+                }
+                value(Id_CheckUpdates, "Check for updates", hint, shown, Kind::Action);
+            }
+            toggle(Id_AutoCheckUpdates, "Check on every launch",
+                "One request when the app opens; it never installs on its own",
+                settings.checkUpdates);
+
+            // What this is, who made it, and where it lives. The id below them
+            // is on a row of its own because it identifies the console rather
+            // than the build: it is the thing to quote when reporting a fault,
+            // and nothing to do with the rows above it.
             value(Id_About, "NX Plaza - Online StreetPass | " APP_VERSION, "Developed by Insektaure", "",
                 Kind::Value);
             value(Id_Source, "Find us on GitHub !", "https://github.com/Insektaure/NX-Plaza", "", Kind::Value);
@@ -461,6 +514,38 @@ private:
         case Id_Notify:
             settings.notify = !settings.notify;
             break;
+        case Id_AutoCheckUpdates:
+            settings.checkUpdates = !settings.checkUpdates;
+            break;
+        case Id_CheckUpdates: {
+            Update& updater = Update::get();
+            switch (updater.state()) {
+            case UpdateState::Available:
+                app.askConfirm("Install version " + updater.version() + "?",
+                    "The new version is downloaded, checked, and only then written over "
+                    "this one. The copy you are running now is kept until the new one has "
+                    "been verified.",
+                    "Install", [] { Update::get().beginInstall(); });
+                break;
+            case UpdateState::Installed:
+                app.askConfirm("Restart into version " + updater.version() + "?",
+                    "The app closes and opens again on the new version. Your passes and "
+                    "your collection are untouched.",
+                    "Restart", [&app] {
+                        Update::restartIntoUpdate();
+                        app.requestExit();
+                    });
+                break;
+            case UpdateState::Checking:
+            case UpdateState::Downloading:
+                // Already working. Pressing A again should not start a second one.
+                break;
+            default:
+                updater.beginCheck(true);
+                break;
+            }
+            return;
+        }
         case Id_LogToFile:
             settings.logToFile = !settings.logToFile;
             // Immediately, rather than on the next launch: someone turning this

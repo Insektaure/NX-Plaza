@@ -81,6 +81,15 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
             color);
         break;
     }
+    case Icon::Info: {
+        // A ringed lower-case i: the dot, a gap, then the stem.
+        float radius = s * 0.32f;
+        r.strokeRect(Rect { cx - radius, cy - radius, radius * 2.0f, radius * 2.0f }, radius,
+            weight, color);
+        r.circle(cx, cy - s * 0.15f, weight * 0.75f, color);
+        r.rect(Rect { cx - weight * 0.5f, cy - s * 0.04f, weight, s * 0.20f }, color);
+        break;
+    }
     case Icon::Trash: {
         r.rect(Rect { cx - s * 0.26f, cy - s * 0.22f - weight, s * 0.52f, weight }, color);
         r.rect(Rect { cx - s * 0.08f, cy - s * 0.30f, s * 0.16f, weight }, color);

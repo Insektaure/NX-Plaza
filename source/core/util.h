@@ -47,6 +47,12 @@ bool readWholeFile(const std::string& path, std::string& out);
 bool writeWholeFileAtomic(const std::string& path, const std::string& contents);
 bool fileExists(const std::string& path);
 
+// The NRO this process was launched from, as the loader gave it to us in
+// argv[0]. Empty when we were started some other way, which is a good reason
+// for the updater to refuse to overwrite anything.
+void setExecutablePath(const char* path);
+const std::string& executablePath();
+
 // --------------------------------------------------------------------- time
 
 // Wall clock, unix seconds.

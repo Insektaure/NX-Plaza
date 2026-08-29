@@ -47,6 +47,9 @@ APP_VERSION :=  0.1.0
 # Settings, which is how you point a console at a plaza on your own machine.
 PLAZA_SERVER := https://api.nxplaza.net
 
+# Where the updater looks for releases.
+PLAZA_REPO := Insektaure/NX-Plaza
+
 #---------------------------------------------------------------------------------
 # options for code generation
 #---------------------------------------------------------------------------------
@@ -61,7 +64,8 @@ PORT_LIBS   :=  $(shell $(PKGCONF) freetype2 jansson libcurl --libs)
 # the compiler as two arguments and failed with "missing terminating character".
 DEFINES :=  -DAPP_VERSION='"$(APP_VERSION)"' \
             -DAPP_TITLE='"$(APP_TITLE)"' \
-            -DPLAZA_SERVER='"$(PLAZA_SERVER)"' 
+            -DPLAZA_SERVER='"$(PLAZA_SERVER)"' \
+            -DPLAZA_REPO='"$(PLAZA_REPO)"'
 
 CFLAGS  :=  -g -Wall -Wextra -Wno-unused-parameter -Wno-missing-field-initializers -O2 -ffunction-sections \
             $(ARCH) $(DEFINES)

@@ -76,6 +76,7 @@ void Store::load()
             else
                 m_settings.serverUrl = kPlazaServer;
             m_settings.autoExchange = js::getBool(s, "auto_exchange", true);
+            m_settings.checkUpdates = js::getBool(s, "check_updates", true);
             m_settings.reach = static_cast<Reach>(
                 std::min<int64_t>(std::max<int64_t>(js::getInt(s, "reach", Reach_World), 0),
                     Reach_Count - 1));
@@ -175,6 +176,7 @@ void Store::saveProfileLocked()
     json_object_set_new(s, "share_playing", json_boolean(m_settings.sharePlaying));
     json_object_set_new(s, "notify", json_boolean(m_settings.notify));
     json_object_set_new(s, "logToFile", json_boolean(m_settings.logToFile));
+    json_object_set_new(s, "check_updates", json_boolean(m_settings.checkUpdates));
     json_object_set_new(s, "daily_limit", json_integer(m_settings.dailyLimit));
     json_object_set_new(s, "first_run_done", json_boolean(m_settings.firstRunDone));
     json_object_set_new(s, "theme", json_integer(m_settings.themeMode));

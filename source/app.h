@@ -144,6 +144,7 @@ public:
 private:
     void onOperationMode(AppletOperationMode mode);
     void update(float dt);
+    void pollUpdate();
     void draw();
 
     void drawNavRail(Renderer& r);
@@ -211,6 +212,11 @@ private:
         int index = 1; // 0 = confirm, 1 = cancel (cancel is the safe default)
     } m_dialog;
 
+    // What the updater said last frame, so a result is announced once rather
+    // than on every frame it stays in that state.
+    // The launch check runs once, after the plaza has answered.
+    bool m_updateChecked = false;
+    int m_lastUpdateState = -1;
     bool m_shouldExit = false;
     bool m_ready = false;
 };
