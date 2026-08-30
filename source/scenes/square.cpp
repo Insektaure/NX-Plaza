@@ -142,7 +142,6 @@ namespace {
             Rect area = app.contentArea();
 
             app.hint("A", m_figures.empty() ? "-" : "look at them");
-            app.hint("L/R", "switch tab");
             if (!m_figures.empty())
                 app.hint("X", "shuffle");
 
