@@ -10,6 +10,7 @@
 #include <minizip/unzip.h>
 
 #include <atomic>
+#include <cerrno>
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -190,38 +191,162 @@ namespace {
         return ok;
     }
 
-    bool copyFile(const std::string& from, const std::string& to)
+    // fopen(path, "wb") is O_CREAT|O_TRUNC, and asking this filesystem to
+    // truncate-on-open the NRO it is currently running comes back EIO. Creating
+    // the file (harmless when it exists), opening what is there for writing,
+    // and setting the length explicitly never asks for that truncation, and is
+    // how the homebrew that does this successfully does it.
+    bool overwriteFile(const std::string& from, const std::string& to, std::string* whyOut)
     {
+        auto fail = [&](const char* step, Result rc) {
+            std::string why = rc != 0 ? format("%s (0x%x)", step, rc)
+                                      : format("%s: %s", step, strerror(errno));
+            LOG("update: replacing %s failed at %s", to.c_str(), why.c_str());
+            if (whyOut)
+                *whyOut = why;
+            return false;
+        };
+
         FILE* in = fopen(from.c_str(), "rb");
         if (!in)
+            return fail("opening the new version", 0);
+
+        fseek(in, 0, SEEK_END);
+        long total = ftell(in);
+        rewind(in);
+        if (total <= 0) {
+            fclose(in);
+            return fail("the new version is empty", 0);
+        }
+
+        FsFileSystem* sd = fsdevGetDeviceFileSystem("sdmc:");
+        if (!sd) {
+            fclose(in);
+            return fail("finding the SD card", 0);
+        }
+
+        // The native API takes a path from the root of the filesystem, so the
+        // device prefix that argv[0] carries has to come off.
+        std::string path = to;
+        size_t colon = path.find(':');
+        if (colon != std::string::npos)
+            path.erase(0, colon + 1);
+
+        // Fails when it already exists, which is the usual case here and not a
+        // problem: a genuine failure surfaces when it is opened below.
+        fsFsCreateFile(sd, path.c_str(), total, 0);
+
+        FsFile file {};
+        Result rc = fsFsOpenFile(sd, path.c_str(), FsOpenMode_Write, &file);
+        if (R_FAILED(rc)) {
+            fclose(in);
+            return fail("opening it for writing", rc);
+        }
+
+        // Explicitly, rather than by truncating on open. Shrinks as well as
+        // grows, so a smaller build does not leave the tail of a larger one.
+        rc = fsFileSetSize(&file, total);
+        if (R_FAILED(rc)) {
+            fsFileClose(&file);
+            fclose(in);
+            return fail("setting its length", rc);
+        }
+
+        std::vector<char> buffer(64 * 1024);
+        s64 offset = 0;
+        bool ok = true;
+        const char* step = "writing";
+        while (offset < total) {
+            size_t got = fread(buffer.data(), 1, buffer.size(), in);
+            if (got == 0) {
+                ok = feof(in) == 0 ? false : (offset == total);
+                step = "reading the new version";
+                break;
+            }
+            rc = fsFileWrite(&file, offset, buffer.data(), got, FsWriteOption_None);
+            if (R_FAILED(rc)) {
+                ok = false;
+                break;
+            }
+            offset += s64(got);
+        }
+
+        fsFileClose(&file);
+        fclose(in);
+
+        // Without this the write can still be sitting in the filesystem's own
+        // buffers, and this particular file has to survive the app relaunching.
+        if (ok) {
+            Result commit = fsFsCommit(sd);
+            if (R_FAILED(commit))
+                return fail("committing it to the card", commit);
+        }
+
+        if (!ok)
+            return fail(step, rc);
+        return true;
+    }
+
+    bool copyFile(const std::string& from, const std::string& to, std::string* whyOut = nullptr)
+    {
+        auto fail = [&](const char* step) {
+            std::string why = format("%s: %s", step, strerror(errno));
+            LOG("update: copy %s -> %s failed at %s", from.c_str(), to.c_str(), why.c_str());
+            if (whyOut)
+                *whyOut = why;
             return false;
+        };
+
+        FILE* in = fopen(from.c_str(), "rb");
+        if (!in)
+            return fail("opening the new version");
+
+        // Only ever writes the backup, which is ours and is never open
+        // elsewhere. Anything that has to land on the running NRO goes through
+        // overwriteFile() instead, which does not truncate on open.
+        remove(to.c_str());
+
         FILE* out = fopen(to.c_str(), "wb");
         if (!out) {
             fclose(in);
-            return false;
+            return fail("creating the file to write over");
         }
 
         std::vector<char> buffer(64 * 1024);
         bool ok = true;
+        const char* step = "copying";
         while (ok) {
             size_t got = fread(buffer.data(), 1, buffer.size(), in);
             if (got == 0) {
-                ok = feof(in) != 0;
+                if (feof(in))
+                    break;
+                ok = false;
+                step = "reading the new version";
                 break;
             }
-            if (fwrite(buffer.data(), 1, got, out) != got)
+            if (fwrite(buffer.data(), 1, got, out) != got) {
                 ok = false;
+                step = "writing";
+                break;
+            }
         }
 
-        if (fflush(out) != 0)
+        // A card that filled up reports it here or at the close, not earlier.
+        if (ok && fflush(out) != 0) {
             ok = false;
-        if (fclose(out) != 0)
+            step = "flushing";
+        }
+        if (fclose(out) != 0 && ok) {
             ok = false;
+            step = "closing";
+        }
         fclose(in);
 
-        if (!ok)
+        if (!ok) {
             remove(to.c_str());
-        return ok;
+            return fail(step);
+        }
+        return true;
     }
 }
 
@@ -579,7 +704,20 @@ void Update::installNow()
         return;
     }
 
-    // 4. Keep a copy of what works before overwriting it.
+    // 4. Let go of our own RomFS before touching the file it lives in.
+    //
+    // This is what 0xE02 / FsError_TargetLocked was: romfsInit() mounts the
+    // RomFS out of this very NRO and holds it open for the whole session, so
+    // the app was locking the file against itself. Nothing reads it after
+    // startup - the Mii parts and both shaders are loaded once and live in
+    // memory and on the GPU from then on - so releasing it costs nothing, and
+    // the guard puts it back on the way out however this ends.
+    struct RomfsRelease {
+        RomfsRelease() { romfsExit(); }
+        ~RomfsRelease() { romfsInit(); }
+    } releaseRomfs;
+
+    // 5. Keep a copy of what works before overwriting it.
     setState(UpdateState::Downloading, "Installing");
     if (!copyFile(exe, backup)) {
         remove(staged.c_str());
@@ -589,20 +727,23 @@ void Update::installNow()
 
     auto restore = [&](const char* why) {
         LOG("update: %s; restoring the backup", why);
-        if (!copyFile(backup, exe))
+        std::string restoreWhy;
+        if (!overwriteFile(backup, exe, &restoreWhy))
             LOG("update: the backup could not be restored - it is still at %s", backup.c_str());
         else
             remove(backup.c_str());
         remove(staged.c_str());
     };
 
-    if (!copyFile(staged, exe)) {
+    std::string why;
+    if (!overwriteFile(staged, exe, &why)) {
         restore("the new version could not be written");
-        setState(UpdateState::Failed, "The update could not be written over the current one.");
+        setState(UpdateState::Failed,
+            "The update could not be written over the current one - " + why);
         return;
     }
 
-    // 5. Read the installed file back off the card. A write that was truncated
+    // 6. Read the installed file back off the card. A write that was truncated
     // or corrupted is still recoverable at this point, and not one step later.
     std::string installed = nroDisplayVersion(exe);
     if (compareVersions(installed, wanted) != 0) {
