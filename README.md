@@ -34,6 +34,13 @@ crossed and, once it is more than one, how many times.
 
 ![The collection grid of everyone met so far](screenshots/004.jpg)
 
+**The Square.** The same people, standing about in one place. Twenty of them at
+a time, drawn from the collection and always including your own Mii, so the
+square is never empty even on a console that has met nobody. They wander, they
+occasionally say what their pass says, and **A** opens whoever the cursor is on.
+
+![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg)
+
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
 
@@ -171,9 +178,9 @@ are always spelled out for the view you are on.
 | --- | --- |
 | L / R | previous / next tab |
 | D-pad or stick | move the cursor |
-| A | open, edit, toggle - in Settings, the only way into a section |
+| A | open, edit, toggle - in the square, look at whoever the cursor is on; in Settings, the only way into a section |
 | B | back |
-| X | plaza: look for passes now · collection: change sort · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
+| X | plaza: look for passes now · collection: change sort · the square: shuffle the crowd · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
 | Y | plaza: mark everything read · encounter and radar: save that face · Mii maker: save / load faces |
 | B | back - in Settings, out of a section's rows to the section list |
 | + | quit |
@@ -185,6 +192,7 @@ Handheld adds touch. It is additive: every button above still does what it did.
 | drag | scroll the plaza, the collection or the settings list |
 | flick | scroll with momentum; touch again to stop it |
 | tap a card, row or setting | select it and open, edit, or toggle it |
+| tap someone in the square | look at their pass |
 | tap one option of a segmented control | choose exactly that option |
 | tap an icon in the rail | switch tab |
 | tap outside a sheet or dialog | close it |
