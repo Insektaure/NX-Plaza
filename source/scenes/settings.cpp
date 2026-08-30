@@ -44,11 +44,13 @@ public:
     {
         m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
 
-        if (m_placeAge <= 0.0f) {
-            m_place = currentPlace();
-            m_placeAge = 2.0f;
-        }
-        m_placeAge -= dt;
+        // Deliberately not currentPlace(): that is two nifm calls, and this
+        // runs on the drawing thread. While the console is still negotiating
+        // its network those calls block, and the sync worker is making the
+        // same ones from its own thread, so the two queue up on one session -
+        // which is how opening Settings during startup froze the whole app for
+        // most of a second. The worker looks the network up every check-in
+        // anyway, so this reads what it already found.
 
         build(app);
 
@@ -356,10 +358,10 @@ private:
                                   : "where this build trades passes",
                 settings.serverUrl.empty() ? "-" : settings.serverUrl);
             value(Id_PlaceToken, "Wi-Fi match token",
-                m_place.token.empty()
+                status.placeToken.empty()
                     ? std::string("no Wi-Fi name to match on - wired, or not connected")
-                    : format("consoles on \"%s\" share this", m_place.networkName.c_str()),
-                m_place.token.empty() ? std::string("(none)") : m_place.token);
+                    : format("consoles on \"%s\" share this", status.networkName.c_str()),
+                status.placeToken.empty() ? std::string("(none)") : status.placeToken);
             value(Id_TestConnection, "Check in now", status.message,
                 identity().shortCode(), Kind::Action);
             value(Id_Unblock, "Blocked consoles", "A to clear the whole list",
@@ -799,8 +801,6 @@ private:
     bool m_inSidebar = true; // the section list has the cursor on arrival
     float m_pulse = 0.0f;
 
-    PlaceInfo m_place;
-    float m_placeAge = 0.0f;
 
     ui::ScrollView m_scroll;
     Rect m_rowsArea;

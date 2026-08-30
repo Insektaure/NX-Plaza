@@ -435,11 +435,10 @@ void beginPlayHistoryLoad()
         return;
     }
 
-    // No thread available. Read it here instead: slower than it should be, but
-    // a console that cannot spawn a thread should still get its list. Nothing
-    // is locked across this - loadNow takes the lock itself, at the end.
-    LOG("play history: no loader thread (0x%x); reading inline", rc);
-    loadNow();
+    // No thread available, so this console does without a play history.
+    // Marked ready with nothing in it, so the screens settle into that empty
+    // state rather than waiting for a list that is never coming.
+    LOG("play history: no loader thread (0x%x); this session has no play history", rc);
 
     std::lock_guard<std::mutex> lock(g_mutex);
     g_ready = true;

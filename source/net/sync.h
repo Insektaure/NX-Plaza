@@ -34,6 +34,9 @@ public:
         State state = State::Offline;
         std::string message;      // one line, shown on the Nearby screen
         std::string networkName;  // local display only, never sent
+        // The match token, published here so no screen has to ask the system
+        // for it. The worker looks the network up anyway, once per check-in.
+        std::string placeToken;
         bool placeKnown = false;  // we have a place token to match on
         uint64_t lastSuccess = 0; // unix seconds
         uint64_t lastAttempt = 0;

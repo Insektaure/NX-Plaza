@@ -276,6 +276,7 @@ bool Sync::doCheckin()
         m_status.pending = pending;
         m_status.placeKnown = !place.token.empty();
         m_status.networkName = place.networkName;
+        m_status.placeToken = place.token;
         m_status.lastSuccess = nowUnix();
     }
 
@@ -404,6 +405,7 @@ void Sync::run()
             setState(State::Offline, "No internet connection.");
             std::lock_guard<std::mutex> lock(m_mutex);
             m_status.networkName = place.networkName;
+            m_status.placeToken = place.token;
             m_status.placeKnown = false;
         } else {
             std::vector<std::string> blocks;
