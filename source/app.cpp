@@ -129,11 +129,11 @@ void App::pollUpdate()
         // Worth saying unprompted: the user cannot act on a release they were
         // never told about. Settings is where it actually happens.
         toast("Version " + updater.version() + " is out",
-            "Settings -> Data -> Check for updates to install it.");
+            "Settings -> About -> Check for updates to install it.");
         break;
     case UpdateState::Installed:
         toast("Update installed",
-            "Restart from Settings -> Data to run version " + updater.version() + ".");
+            "Restart from Settings -> \"About\" to run version " + updater.version() + ".");
         break;
     case UpdateState::UpToDate:
         // Only when the user asked. A silent launch check that found nothing
