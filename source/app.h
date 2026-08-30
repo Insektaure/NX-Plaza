@@ -43,6 +43,7 @@ enum class Tab : int {
     Plaza = 0,
     Nearby,
     Collection,
+    Square,
     Passport,
     Settings,
     Count

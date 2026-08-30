@@ -81,6 +81,20 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
             color);
         break;
     }
+    case Icon::Crowd: {
+        // Three heads and shoulders, the middle one forward. Read as a group at
+        // 36px, which is all a rail icon has to do.
+        auto figure = [&](float dx, float dy, float k) {
+            r.circle(cx + dx, cy + dy - s * 0.16f, s * 0.11f * k, color);
+            r.roundRect(Rect { cx + dx - s * 0.16f * k, cy + dy - s * 0.02f,
+                           s * 0.32f * k, s * 0.20f * k },
+                s * 0.09f * k, color);
+        };
+        figure(-s * 0.26f, -s * 0.02f, 0.85f);
+        figure(s * 0.26f, -s * 0.02f, 0.85f);
+        figure(0.0f, s * 0.06f, 1.0f);
+        break;
+    }
     case Icon::Info: {
         // A ringed lower-case i: the dot, a gap, then the stem.
         float radius = s * 0.32f;

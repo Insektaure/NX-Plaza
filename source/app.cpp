@@ -30,6 +30,7 @@ namespace {
         { ui::Icon::Inbox, "Plaza" },
         { ui::Icon::Radar, "Nearby" },
         { ui::Icon::Grid, "Collection" },
+        { ui::Icon::Crowd, "The Square" },
         { ui::Icon::Person, "Your pass" },
         { ui::Icon::Sliders, "Settings" },
     };
@@ -65,6 +66,7 @@ bool App::init()
     m_tabScenes[static_cast<int>(Tab::Plaza)] = makePlazaScene();
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();
     m_tabScenes[static_cast<int>(Tab::Collection)] = makeCollectionScene();
+    m_tabScenes[static_cast<int>(Tab::Square)] = makeSquareScene();
     m_tabScenes[static_cast<int>(Tab::Passport)] = makePassportScene();
     m_tabScenes[static_cast<int>(Tab::Settings)] = makeSettingsScene();
 

@@ -30,6 +30,11 @@ public:
 std::unique_ptr<Scene> makePlazaScene();
 std::unique_ptr<Scene> makeNearbyScene();
 std::unique_ptr<Scene> makeCollectionScene();
+
+// The Square: your Mii and up to 29 from the collection, milling about on a
+// ground plane. Billboards, not models - there is no 3D pipeline here and the
+// crowd faces the camera anyway.
+std::unique_ptr<Scene> makeSquareScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

@@ -447,6 +447,45 @@ void drawTinyFeatures(Renderer& r, const Rig& rig, const Mii& mii)
 
 // ------------------------------------------------------------------ public
 
+void miiTiny(Renderer& r, const Rect& box, const Mii& mii, float opacity)
+{
+    if (box.h <= 0.0f || opacity <= 0.0f)
+        return;
+
+    Color skin = miiSkin(mii.skinTone).scaleAlpha(opacity);
+    Color hair = miiHair(mii.hairColour).scaleAlpha(opacity);
+    Color shirt = miiShirt(mii).scaleAlpha(opacity);
+
+    // Proportioned off the same head-to-body ratio miiFigure uses, so a Mii
+    // does not change shape as it crosses an LOD threshold.
+    float headH = box.h * 0.62f;
+    float headW = headH * 0.86f;
+    float cx = box.centerX();
+
+    // Shoulders first: the head overlaps them, as it does at full detail.
+    float bodyTop = box.y + headH * 0.86f;
+    r.roundRect(Rect { cx - headW * 0.62f, bodyTop, headW * 1.24f, box.bottom() - bodyTop },
+        headW * 0.30f, shirt);
+
+    // The hair sits behind and slightly above, which is what gives the
+    // silhouette its shape at this size.
+    r.roundRect(Rect { cx - headW * 0.54f, box.y - headH * 0.04f, headW * 1.08f,
+                   headH * 0.78f },
+        headW * 0.42f, hair);
+
+    r.roundRect(Rect { cx - headW * 0.5f, box.y + headH * 0.10f, headW, headH * 0.90f },
+        headW * 0.40f, skin);
+
+    // Two dots for eyes, and only while they would still be more than a pixel.
+    float eyeR = headH * 0.055f;
+    if (eyeR > 0.6f) {
+        Color eye = miiEye(mii.eyeColour).scaleAlpha(opacity);
+        float eyeY = box.y + headH * 0.52f;
+        r.circle(cx - headW * 0.20f, eyeY, eyeR, eye);
+        r.circle(cx + headW * 0.20f, eyeY, eyeR, eye);
+    }
+}
+
 Color miiSkin(uint8_t tone) { return kSkin[tone % MiiPartCounts::skinTone]; }
 Color miiHair(uint8_t colour) { return kHair[colour % MiiPartCounts::hairColour]; }
 Color miiEye(uint8_t colour) { return kEye[colour % MiiPartCounts::eyeColour]; }
