@@ -33,6 +33,8 @@ Color miiSkin(uint8_t tone);
 Color miiHair(uint8_t colour);
 Color miiEye(uint8_t colour);
 Color miiMouth(uint8_t colour);
+Color miiGlasses(uint8_t colour);
+Color miiFavourite(uint8_t colour);
 Color miiShirt(const Mii& mii);
 
 } // namespace nxp::ui

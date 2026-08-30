@@ -389,8 +389,8 @@ private:
             VAlign::Middle);
 
         // A swatch where the part is a colour, the option number otherwise.
-        if (p.value == &Mii::skinTone || p.value == &Mii::hairColour
-            || p.value == &Mii::eyeColour || p.value == &Mii::mouthColour) {
+        // Every colour field belongs here.
+        if (swatchPalette(p) != nullptr) {
             drawSwatches(r, inner, index, p);
             return;
         }
@@ -411,25 +411,53 @@ private:
             VAlign::Middle);
     }
 
+    // The palette a row's swatches come from, or null when the row is not a
+    // colour at all. One place decides, so the drawing and the choice between
+    // swatches and a number cannot disagree.
+    using Palette = Color (*)(uint8_t);
+    static Palette swatchPalette(const Part& p)
+    {
+        if (p.value == &Mii::skinTone)
+            return ui::miiSkin;
+        if (p.value == &Mii::hairColour)
+            return ui::miiHair;
+        // Eyebrows and facial hair are indices into the hair table, which is
+        // why they share its swatches rather than having one of their own.
+        if (p.value == &Mii::browColour || p.value == &Mii::facialHairColour)
+            return ui::miiHair;
+        if (p.value == &Mii::eyeColour)
+            return ui::miiEye;
+        if (p.value == &Mii::mouthColour)
+            return ui::miiMouth;
+        if (p.value == &Mii::glassesColour)
+            return ui::miiGlasses;
+        if (p.value == &Mii::favouriteColour)
+            return ui::miiFavourite;
+        return nullptr;
+    }
+
     void drawSwatches(Renderer& r, const Rect& inner, int index, const Part& p)
     {
-        float size = 40.0f;
-        float gap = 10.0f;
+        Palette palette = swatchPalette(p);
+        if (!palette)
+            return;
+
         int count = p.count;
+        float gap = 10.0f;
+
+        // Sized to fit rather than fixed. A favourite colour has twelve
+        // options where a skin tone has six, and at a fixed 40px the long rows
+        // ran back underneath their own label.
+        float room = inner.w * 0.5f - theme::s6;
+        float size = std::min(40.0f,
+            (room - static_cast<float>(count - 1) * gap) / static_cast<float>(count));
+
         float total = static_cast<float>(count) * size + static_cast<float>(count - 1) * gap;
         float x = inner.right() - total;
         uint8_t current = m_mii.*(p.value);
 
         for (int i = 0; i < count; i++) {
-            Color colour = theme::bg4;
-            if (p.value == &Mii::skinTone)
-                colour = ui::miiSkin(static_cast<uint8_t>(i));
-            else if (p.value == &Mii::hairColour)
-                colour = ui::miiHair(static_cast<uint8_t>(i));
-            else if (p.value == &Mii::eyeColour)
-                colour = ui::miiEye(static_cast<uint8_t>(i));
-            else
-                colour = ui::miiMouth(static_cast<uint8_t>(i));
+            Color colour = palette(static_cast<uint8_t>(i));
 
             Rect swatch { x, inner.centerY() - size * 0.5f, size, size };
             r.roundRect(swatch, theme::r1, colour);

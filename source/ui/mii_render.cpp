@@ -447,6 +447,16 @@ void drawTinyFeatures(Renderer& r, const Rig& rig, const Mii& mii)
 
 // ------------------------------------------------------------------ public
 
+Color miiGlasses(uint8_t colour)
+{
+    return kGlasses[colour % MiiPartCounts::glassesColour];
+}
+
+Color miiFavourite(uint8_t colour)
+{
+    return kFavourite[colour % MiiPartCounts::favouriteColour];
+}
+
 Color miiSkin(uint8_t tone) { return kSkin[tone % MiiPartCounts::skinTone]; }
 Color miiHair(uint8_t colour) { return kHair[colour % MiiPartCounts::hairColour]; }
 Color miiEye(uint8_t colour) { return kEye[colour % MiiPartCounts::eyeColour]; }
