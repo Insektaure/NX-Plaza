@@ -41,10 +41,7 @@ namespace {
     // depth, so this is 837 of the stage's 904 half-width.
     constexpr float kSpread = 1.25f;
 
-    // Projected heights that switch the level of detail. A figure is drawn at
-    // full detail only while it is big enough for the detail to be visible.
-    constexpr float kNearDetail = 140.0f;
-    constexpr float kMidDetail = 70.0f;
+    // Everybody is drawn in full, at every depth.
 
     constexpr float kSpeed = 0.55f;       // world units a second, unhurried
     // Closer than a figure is wide, so the crowd overlaps the way a crowd
@@ -61,6 +58,8 @@ namespace {
     // is no line limit: a greeting is sixty characters at most, so the bubble
     // grows to hold all of it rather than ellipsising.
     constexpr float kBubbleMaxWidth = 520.0f;
+    // Below this a speaker is too small for a bubble to point at usefully.
+    constexpr float kBubbleMinFigure = 70.0f;
 
     // The corner the eyebrow and its line of copy occupy. The crowd is kept out
     // of it: text over a moving crowd is unreadable, and a crowd that walks
@@ -511,14 +510,15 @@ namespace {
             if (p.box.h < 8.0f || p.box.bottom() < area.y || p.box.y > area.bottom())
                 return;
 
-            // Further away is hazier, which is most of what sells the depth.
-            float fade = 1.0f - std::min(1.0f, (f.z - kNearZ) / (kFarZ - kNearZ)) * 0.45f;
+            // Distance is told by size and by the haze on the floor.
+            float depth = std::min(1.0f, (f.z - kNearZ) / (kFarZ - kNearZ));
 
             // The contact shadow does more for the grounding than anything else
-            // on this screen, and costs one quad.
+            // on this screen, and costs one quad. It does soften with distance,
+            // because a shadow genuinely is fainter under the haze.
             float shadow = p.box.w * 0.42f;
             r.ellipse(p.box.centerX(), p.box.bottom(), shadow, shadow * 0.26f,
-                theme::fg1.scaleAlpha(0.13f * fade));
+                theme::fg1.scaleAlpha(0.13f * (1.0f - depth * 0.4f)));
 
             bool focused = index == m_focus;
             if (focused) {
@@ -529,13 +529,9 @@ namespace {
 
             app.touchZone(p.box, Zone_Figure, static_cast<int>(index));
 
-            // The whole point of the tab: full detail only where it can be seen.
-            if (p.box.h >= kNearDetail)
-                ui::miiFigure(r, p.box, f.mii, fade);
-            else if (p.box.h >= kMidDetail)
-                ui::miiHead(r, p.box, f.mii, fade);
-            else
-                ui::miiTiny(r, p.box, f.mii, fade);
+            // The same figure at every depth, just smaller. Opaque, so nobody
+            // is a ghost at the back of the square.
+            ui::miiFigure(r, p.box, f.mii);
         }
 
         void pickBubble(float dt)
@@ -570,7 +566,7 @@ namespace {
 
             const Figure& f = m_figures[size_t(m_bubble)];
             Projected p = project(f, area);
-            if (p.box.h < kMidDetail)
+            if (p.box.h < kBubbleMinFigure)
                 return; // too far away to tell who is speaking
 
             TextStyle text;

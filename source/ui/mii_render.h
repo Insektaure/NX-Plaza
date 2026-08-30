@@ -28,15 +28,6 @@ void miiStage(Renderer& r, const Rect& stage, const Mii& mii, uint32_t cardTheme
     const StageFigure& shape = StageFigure {}, float radiusTop = 0.0f,
     float radiusBottom = 0.0f);
 
-// A Mii too small to be worth drawing properly: a head, a suggestion of hair,
-// and a shirt, in that person's own colours. Ten quads instead of four hundred.
-//
-// Exists for the Square, where thirty figures at full detail would spend the
-// whole frame's quad budget on people who are forty pixels tall. Nobody is
-// recognisable at this size anyway - what carries is the silhouette and the
-// colour, and both survive.
-void miiTiny(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f);
-
 // The part palettes, also used by the editor's swatches.
 Color miiSkin(uint8_t tone);
 Color miiHair(uint8_t colour);
