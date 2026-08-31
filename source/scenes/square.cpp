@@ -115,17 +115,6 @@ namespace {
             wander(app.contentArea(), dt);
             pickBubble(dt);
 
-            // Tapping somebody looks at them directly, without moving the
-            // cursor there first. The zones were declared by last frame's draw,
-            // which is the only place the projected boxes are known.
-            TouchTarget tap;
-            if (app.takeTap(tap) && tap.is(Zone_Figure)
-                && size_t(tap.index) < m_figures.size()) {
-                m_focus = size_t(tap.index);
-                open(app);
-                return;
-            }
-
             if (input.navLeft)
                 stepFocus(-1);
             if (input.navRight)
@@ -523,7 +512,11 @@ namespace {
             if (focused)
                 drawFocusRim(r, p.box, f.mii);
 
-            app.touchZone(p.box, Zone_Figure, static_cast<int>(index));
+            // Deliberately no touch zone. A figure is a small moving target on a
+            // crowded floor, and the boxes a tap is tested against are last
+            // frame's - so a tap that looked like it landed on somebody
+            // regularly opened whoever had wandered into that spot instead. The
+            // cursor and A are the way in here.
 
             // The same figure at every depth, just smaller. Opaque, so nobody
             // is a ghost at the back of the square.
@@ -700,9 +693,14 @@ namespace {
             app.openEncounter(f.crossingId, std::move(siblings));
         }
 
-        enum : int { Zone_Figure = 1 };
+            // Deliberately no touch zone. A figure is a small moving target on a
+            // crowded floor, and the boxes a tap is tested against are last
+            // frame's - so a tap that looked like it landed on somebody
+            // regularly opened whoever had wandered into that spot instead. The
+            // cursor and A are the way in here.
 
-        std::vector<Figure> m_figures;
+            // The same figure at every depth, just smaller. Opaque, so nobody
+            // is a ghost at the back of the square.        std::vector<Figure> m_figures;
         std::vector<size_t> m_order;
         uint64_t m_generation = 0;
         size_t m_focus = 0;

@@ -192,7 +192,6 @@ Handheld adds touch. It is additive: every button above still does what it did.
 | drag | scroll the plaza, the collection or the settings list |
 | flick | scroll with momentum; touch again to stop it |
 | tap a card, row or setting | select it and open, edit, or toggle it |
-| tap someone in the square | look at their pass |
 | tap one option of a segmented control | choose exactly that option |
 | tap an icon in the rail | switch tab |
 | tap outside a sheet or dialog | close it |
