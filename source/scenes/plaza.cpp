@@ -7,6 +7,7 @@
 #include "ui/widgets.h"
 
 #include <algorithm>
+#include <iterator>
 #include <cmath>
 
 namespace nxp {
@@ -290,7 +291,12 @@ private:
             cursor += widthOf(slot) + gap;
         }
 
-        for (int d = 0; d < count; d++) {
+        // Every depth position, not `count` of them. kDepth lists the slots
+        // back to front, so it opens with the two furthest - and those are the
+        // slots the guard below drops when there are fewer than four passes.
+        // Walking only `count` entries therefore drew nothing at all for one or
+        // two crossings, and two figures out of three.
+        for (size_t d = 0; d < std::size(kDepth); d++) {
             int slot = kDepth[d];
             if (slot >= count)
                 continue;
