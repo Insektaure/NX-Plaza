@@ -413,11 +413,17 @@ void drawPart(Renderer& r, const Rig& rig, MiiParts::Category cat, int index,
 // sizes drop what has stopped reading and stand in for the rest.
 enum class Detail { Tiny, Small, Full };
 
+// Below this a face is a marker, not a portrait: the radar's forty-pixel dots,
+// and the back of the crowd in the square.
+constexpr float kTinyBelow = 52.0f;
+
+constexpr float kFullFrom = 76.0f;
+
 Detail detailFor(float headWidth)
 {
-    if (headWidth < 52.0f)
+    if (headWidth < kTinyBelow)
         return Detail::Tiny;
-    if (headWidth < 104.0f)
+    if (headWidth < kFullFrom)
         return Detail::Small;
     return Detail::Full;
 }
@@ -542,12 +548,11 @@ void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity)
         }
 
         drawFeature(r, rig, C::Eyes, mii.eyeStyle);
-        if (detail == Detail::Full)
-            drawFeature(r, rig, C::Nose, mii.noseStyle);
+        drawFeature(r, rig, C::Nose, mii.noseStyle);
         drawFeature(r, rig, C::Mouth, mii.mouthStyle);
     }
 
-    if (detail == Detail::Full) {
+    if (detail != Detail::Tiny) {
         // Independent, so both can be worn. The beard goes on first: a
         // moustache sits over it, not under it.
         // Facial hair has its own colour, so the hair slots are swapped for the
