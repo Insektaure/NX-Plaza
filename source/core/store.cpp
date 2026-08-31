@@ -141,6 +141,11 @@ void Store::load()
     std::stable_sort(m_crossings.begin(), m_crossings.end(),
         [](const Crossing& a, const Crossing& b) { return a.lastSeen > b.lastSeen; });
 
+    // The extras file, after the collection and entirely separately. A failure
+    // here is logged and dropped: extras are extras, and a console with an
+    // unreadable one still has every card it collected.
+    m_extras.load();
+
     LOG("store: %zu crossings, handle '%s'", m_crossings.size(), m_pass.handle.c_str());
 }
 
@@ -154,6 +159,13 @@ bool Store::flush()
     }
     if (m_crossingsDirty) {
         saveCrossingsLocked();
+        wrote = true;
+    }
+    // Its own file, its own write. Deliberately not folded into the collection's
+    // success: the collection is what matters, and an extras file that would
+    // not write must never look like a collection that would not write.
+    if (m_extras.dirty()) {
+        m_extras.save();
         wrote = true;
     }
     return wrote;
@@ -231,6 +243,48 @@ void Store::saveCrossingsLocked()
     m_crossingsDirty = !ok;
 }
 
+// Drops extras for people no longer in the collection. Called from every path
+// that shrinks it: otherwise the file grows forever, holding notes about
+// consoles that were pruned at the cap years ago.
+CrossingExtras Store::extrasFor(const std::string& id) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (const CrossingExtras* found = m_extras.find(id))
+        return *found;
+    return CrossingExtras {};
+}
+
+void Store::setExtrasFor(const std::string& id, const CrossingExtras& extras)
+{
+    // Checked here rather than at the write: a row keyed by something that is
+    // not a crossing id cannot be saved, and finding that out at flush time
+    // means the caller's write looked fine and the data is simply gone.
+    if (!CrossingExtraFile::validId(id)) {
+        LOG("extras: '%s' is not a crossing id", id.c_str());
+        return;
+    }
+
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (extras.empty()) {
+        m_extras.forget(id);
+        return;
+    }
+    m_extras.edit(id) = extras;
+}
+
+void Store::dropExtraOrphansLocked()
+{
+    if (m_extras.rows() == 0)
+        return;
+    std::vector<std::string> live;
+    live.reserve(m_crossings.size());
+    for (const Crossing& c : m_crossings)
+        live.push_back(c.id);
+    size_t dropped = m_extras.dropOrphans(live);
+    if (dropped > 0)
+        LOG("extras: dropped %zu rows with no crossing left", dropped);
+}
+
 void Store::pruneLocked()
 {
     if (m_crossings.size() <= kMaxCrossings)
@@ -250,6 +304,7 @@ void Store::pruneLocked()
     dropFromBack(true);
     dropFromBack(false);
     m_crossingsNeedRewrite = true;
+    dropExtraOrphansLocked();
 }
 
 Settings Store::settings() const
@@ -427,6 +482,7 @@ void Store::block(const std::string& id)
     m_crossingsDirty = true;
     m_crossingsGeneration++;
     m_crossingsNeedRewrite = true;
+    dropExtraOrphansLocked();
 }
 
 bool Store::isBlocked(const std::string& id) const
@@ -444,6 +500,9 @@ void Store::deleteAllCrossings()
     m_crossingsGeneration++;
     m_crossingsNeedRewrite = true;
     saveCrossingsLocked();
+    dropExtraOrphansLocked();
+    if (m_extras.dirty())
+        m_extras.save();
 }
 
 Stats Store::stats() const

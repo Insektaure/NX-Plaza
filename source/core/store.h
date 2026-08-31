@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/crossing_extras.h"
 #include "core/crossing_file.h"
 #include "core/model.h"
 #include "core/util.h"
@@ -121,9 +122,28 @@ public:
     // daily-limit cap.
     int acceptedToday() const;
 
+    // Extra per-crossing data, in its own file. Features add tags here rather
+    // than growing crossings.idx or crossings.dat, neither of which can change
+    // shape without costing a live user their collection.
+    //
+    // By value, like everything else the store hands out. This began as a
+    // reference to the file itself, which was a race waiting for its first
+    // caller: flush() runs on the sync worker and walks the same map a scene
+    // would have been editing from the drawing thread.
+    //
+    // An empty set removes the row rather than storing an empty one.
+    //
+    // setExtrasFor REPLACES the row, it does not merge into it. Always read,
+    // change, write back - never build a fresh CrossingExtras and store it.
+    // The copy that extrasFor() hands out carries the tags this build does not
+    // know, and those are exactly what a fresh one would throw away.
+    CrossingExtras extrasFor(const std::string& id) const;
+    void setExtrasFor(const std::string& id, const CrossingExtras& extras);
+
 private:
     Store() = default;
 
+    void dropExtraOrphansLocked();
     void saveProfileLocked();
     void saveCrossingsLocked();
     void pruneLocked();
@@ -141,6 +161,7 @@ private:
     // the files have to be rebuilt rather than patched.
     bool m_crossingsNeedRewrite = false;
     CrossingFile m_crossingFile;
+    CrossingExtraFile m_extras;
     bool m_loaded = false;
 };
 
