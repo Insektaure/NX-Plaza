@@ -126,19 +126,19 @@ public:
     // than growing crossings.idx or crossings.dat, neither of which can change
     // shape without costing a live user their collection.
     //
-    // By value, like everything else the store hands out. This began as a
-    // reference to the file itself, which was a race waiting for its first
-    // caller: flush() runs on the sync worker and walks the same map a scene
-    // would have been editing from the drawing thread.
-    //
-    // An empty set removes the row rather than storing an empty one.
-    //
-    // setExtrasFor REPLACES the row, it does not merge into it. Always read,
-    // change, write back - never build a fresh CrossingExtras and store it.
-    // The copy that extrasFor() hands out carries the tags this build does not
-    // know, and those are exactly what a fresh one would throw away.
+    // Reading is a copy, like everything else the store hands out: the file's
+    // own flush runs on the sync worker, and a reference into it would be a
+    // race waiting for its first caller.
     CrossingExtras extrasFor(const std::string& id) const;
-    void setExtrasFor(const std::string& id, const CrossingExtras& extras);
+
+    // Writing is one field at a time, which is what makes a change a short
+    // append rather than a rewrite of the whole file. It also means there is no
+    // way to overwrite a row wholesale, and so no way to drop the tags this
+    // build does not understand.
+    void extraSetU32(const std::string& id, uint16_t tag, uint32_t value);
+    void extraSetU64(const std::string& id, uint16_t tag, uint64_t value);
+    void extraSetText(const std::string& id, uint16_t tag, const std::string& value);
+    void extraClear(const std::string& id, uint16_t tag);
 
     // Favourites. A favourite is kept when the collection prunes at its cap,
     // which is the point of it: the people worth keeping are the ones you said

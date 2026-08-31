@@ -164,8 +164,8 @@ bool Store::flush()
     // Its own file, its own write. Deliberately not folded into the collection's
     // success: the collection is what matters, and an extras file that would
     // not write must never look like a collection that would not write.
-    if (m_extras.dirty()) {
-        m_extras.save();
+    if (m_extras.dirty() || m_extras.needsCompaction()) {
+        m_extras.flush();
         wrote = true;
     }
     return wrote;
@@ -254,22 +254,28 @@ CrossingExtras Store::extrasFor(const std::string& id) const
     return CrossingExtras {};
 }
 
-void Store::setExtrasFor(const std::string& id, const CrossingExtras& extras)
+void Store::extraSetU32(const std::string& id, uint16_t tag, uint32_t value)
 {
-    // Checked here rather than at the write: a row keyed by something that is
-    // not a crossing id cannot be saved, and finding that out at flush time
-    // means the caller's write looked fine and the data is simply gone.
-    if (!CrossingExtraFile::validId(id)) {
-        LOG("extras: '%s' is not a crossing id", id.c_str());
-        return;
-    }
-
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    if (extras.empty()) {
-        m_extras.forget(id);
-        return;
-    }
-    m_extras.edit(id) = extras;
+    m_extras.setU32(id, tag, value);
+}
+
+void Store::extraSetU64(const std::string& id, uint16_t tag, uint64_t value)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_extras.setU64(id, tag, value);
+}
+
+void Store::extraSetText(const std::string& id, uint16_t tag, const std::string& value)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_extras.setText(id, tag, value);
+}
+
+void Store::extraClear(const std::string& id, uint16_t tag)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    m_extras.clearField(id, tag);
 }
 
 bool Store::isFavouriteLocked(const std::string& id) const
@@ -293,14 +299,12 @@ void Store::setFavourite(const std::string& id, bool on)
     if (isFavouriteLocked(id) == on)
         return;
 
-    // Read, change, write back. Never a fresh CrossingExtras: the copy carries
-    // tags this build may not know, and a fresh one would drop them.
-    CrossingExtras row = extrasFor(id);
+    // One field, appended. Nothing else in the row is touched, so a tag this
+    // build has never heard of cannot be lost here.
     if (on)
-        row.setU64(extras::Favourite, nowUnix());
+        m_extras.setU64(id, extras::Favourite, nowUnix());
     else
-        row.clear(extras::Favourite);
-    setExtrasFor(id, row);
+        m_extras.clearField(id, extras::Favourite);
 
     // Deliberately no generation bump. The generation means "the list of
     // crossings changed", and this does not change it : the star is read live
@@ -563,7 +567,7 @@ void Store::deleteAllCrossings()
     saveCrossingsLocked();
     dropExtraOrphansLocked();
     if (m_extras.dirty())
-        m_extras.save();
+        m_extras.flush();
 }
 
 Stats Store::stats() const
