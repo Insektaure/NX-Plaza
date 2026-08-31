@@ -11,12 +11,20 @@ namespace nxp::ui {
 // `miiParts()` must have loaded before any of this draws anything; a face on an
 // unloaded atlas draws nothing rather than drawing wrong.
 
-// Just the head, fitted inside `box`.
-void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f);
+// Just the head, fitted inside `box`. `flat`, when given, replaces every
+// colour the face would use, which is how a silhouette is drawn.
+void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f,
+    const Color* flat = nullptr);
 
 // Head and shoulders, standing on the bottom edge of `box`.
 void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f,
-    bool spotlight = false);
+    bool spotlight = false, const Color* flat = nullptr);
+
+// The same figure, every part in one colour.
+//
+// Drawn a little larger behind a figure it gives a rim that follows the Mii's
+// own outline - hair, shoulders and all - rather than a rectangle around it.
+void miiSilhouette(Renderer& r, const Rect& box, const Mii& mii, Color colour);
 
 // A Mii on a card theme's tinted stage: the inbox tiles, the encounter
 // portrait, the passport card.

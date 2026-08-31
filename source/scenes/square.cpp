@@ -520,17 +520,44 @@ namespace {
                 theme::fg1.scaleAlpha(0.13f * (1.0f - depth * 0.4f)));
 
             bool focused = index == m_focus;
-            if (focused) {
-                Rect ring = Rect { p.box.x - 8.0f, p.box.y - 8.0f, p.box.w + 16.0f,
-                    p.box.h + 16.0f };
-                ui::focusRing(r, ring, theme::r3, 0.6f + 0.4f * m_pulse);
-            }
+            if (focused)
+                drawFocusRim(r, p.box, f.mii);
 
             app.touchZone(p.box, Zone_Figure, static_cast<int>(index));
 
             // The same figure at every depth, just smaller. Opaque, so nobody
             // is a ghost at the back of the square.
             ui::miiFigure(r, p.box, f.mii);
+        }
+
+        // The rim that says who the cursor is on: the person's own outline, in
+        // the accent colour, pulsing.
+        void drawFocusRim(Renderer& r, const Rect& box, const Mii& mii)
+        {
+            float rim = std::max(3.0f, box.w * 0.05f);
+
+            // Opaque, and the pulse is in the colour rather than the alpha.
+            // Five copies overlap, and semi-transparent ones stack: at 0.55
+            // alpha a single copy on the flank reads 0.55 while three at a
+            // corner read 0.91, so the rim came out patchy round the curves.
+            // Opaque copies stack to exactly themselves.
+            Color ink = theme::accent.mix(theme::accentSoft, m_pulse * 0.6f);
+            ink.a = 1.0f;
+
+            // No downward copy: below the feet is where the contact shadow is,
+            // and a rim there reads as the figure floating.
+            const float dx[3] = { -rim, rim, 0.0f };
+            const float dy[3] = { 0.0f, 0.0f, -rim };
+            for (int i = 0; i < 3; i++)
+                ui::miiSilhouette(r, box.offset(dx[i], dy[i]), mii, ink);
+
+            // The diagonals fill the corners the four cardinals leave notched,
+            // at a shorter reach so the rim stays an even thickness round a
+            // curve rather than bulging at forty-five degrees.
+            float d = rim * 0.7f;
+            const float ex[2] = { -d, d };
+            for (int i = 0; i < 2; i++)
+                ui::miiSilhouette(r, box.offset(ex[i], -d), mii, ink);
         }
 
         void pickBubble(float dt)

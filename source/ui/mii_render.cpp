@@ -473,7 +473,7 @@ Color miiShirt(const Mii& mii)
     return kFavourite[mii.favouriteColour % MiiPartCounts::favouriteColour];
 }
 
-void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity)
+void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity, const Color* flat)
 {
     const MiiParts& parts = miiParts();
     if (!parts.ready() || opacity <= 0.0f)
@@ -510,7 +510,18 @@ void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity)
     }
     resolveColours(rig, mii, opacity);
 
+    // One colour for everything, so the parts still draw in their own shapes
+    // and their own order but come out as a single mass.
+    if (flat) {
+        for (int i = 0; i < MiiParts::SlotCount; i++)
+            rig.slot[i] = *flat;
+    }
+
     Detail detail = detailFor(width);
+
+    // A silhouette needs the outline and nothing else.
+    if (flat)
+        detail = Detail::Tiny;
     using C = MiiParts::Category;
 
     bool flip = mii.hairFlipped();
@@ -593,7 +604,8 @@ void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity)
     }
 }
 
-void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity, bool spotlight)
+void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity, bool spotlight,
+    const Color* flat)
 {
     if (spotlight) {
         Rect pool { box.centerX() - box.w * 0.75f, box.bottom() - 14.0f, box.w * 1.5f, 26.0f };
@@ -615,14 +627,14 @@ void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity, bool
     float shoulderWidth = box.w * (0.78f + wide * 0.30f);
     float shoulderHeight = box.h * 0.34f;
 
-    Color skin = kSkin[mii.skinTone % MiiPartCounts::skinTone].withAlpha(opacity);
-    Color shirt = miiShirt(mii).withAlpha(opacity);
+    Color skin = flat ? *flat : kSkin[mii.skinTone % MiiPartCounts::skinTone].withAlpha(opacity);
+    Color shirt = flat ? *flat : miiShirt(mii).withAlpha(opacity);
 
     // A neck first, so the head has something to stand on.
     float neck = headWidth * 0.28f;
     r.roundRect(Rect { box.centerX() - neck * 0.5f, box.y + headHeight - box.h * 0.05f, neck,
                     box.h * 0.16f },
-        neck * 0.22f, shade(skin, 0.16f).withAlpha(opacity));
+        neck * 0.22f, flat ? *flat : shade(skin, 0.16f).withAlpha(opacity));
 
     Rect shoulders { box.centerX() - shoulderWidth * 0.5f, box.bottom() - shoulderHeight,
         shoulderWidth, shoulderHeight };
@@ -630,10 +642,15 @@ void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity, bool
 
     // A collar, cut out of the shirt the way a crew neck is.
     r.ellipse(box.centerX(), shoulders.y + box.h * 0.005f, neck * 0.80f, box.h * 0.035f,
-        shade(shirt, 0.22f).withAlpha(opacity));
+        flat ? *flat : shade(shirt, 0.22f).withAlpha(opacity));
 
     miiHead(r, Rect { box.centerX() - headWidth * 0.5f, box.y, headWidth, headHeight }, mii,
-        opacity);
+        opacity, flat);
+}
+
+void miiSilhouette(Renderer& r, const Rect& box, const Mii& mii, Color colour)
+{
+    miiFigure(r, box, mii, colour.a, false, &colour);
 }
 
 void miiStage(Renderer& r, const Rect& stage, const Mii& mii, uint32_t cardTheme,
