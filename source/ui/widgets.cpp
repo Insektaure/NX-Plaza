@@ -81,6 +81,45 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
             color);
         break;
     }
+    case Icon::Star: {
+        // Ten vertices at alternating radii, stroked edge by edge.
+        //
+        // Stroked rather than filled, which is what every other icon here is.
+        // The first attempt drew triangles from the middle by passing the same
+        // point for corners 0 and 3 of a band; band takes those two as the ends
+        // of the stroke's *width*, so the length came out zero and it returned
+        // without drawing. Nothing appeared at all.
+        constexpr float kTau = 6.2831853f;
+        float outer = s * 0.40f;
+        float inner = outer * 0.46f;
+
+        float px[10], py[10];
+        for (int i = 0; i < 10; i++) {
+            float a = kTau * float(i) / 10.0f - kTau * 0.25f;
+            float rad = (i % 2) == 0 ? outer : inner;
+            px[i] = cx + std::cos(a) * rad;
+            py[i] = cy + std::sin(a) * rad;
+        }
+
+        for (int i = 0; i < 10; i++) {
+            int j = (i + 1) % 10;
+            float dx = px[j] - px[i];
+            float dy = py[j] - py[i];
+            float len = std::sqrt(dx * dx + dy * dy);
+            if (len < 1e-4f)
+                continue;
+            // Perpendicular, half a stroke wide. Corners 0 and 3 are the two
+            // sides at one end, which is the order band wants.
+            float nx = -dy / len * weight * 0.5f;
+            float ny = dx / len * weight * 0.5f;
+            const float corners[8] = { px[i] + nx, py[i] + ny, px[j] + nx, py[j] + ny,
+                px[j] - nx, py[j] - ny, px[i] - nx, py[i] - ny };
+            r.band(corners, color);
+            // The ends are butt-cut, so a disc covers the notch at each point.
+            r.circle(px[i], py[i], weight * 0.5f, color);
+        }
+        break;
+    }
     case Icon::Crowd: {
         // Three heads and shoulders, the middle one forward. Read as a group at
         // 36px, which is all a rail icon has to do.

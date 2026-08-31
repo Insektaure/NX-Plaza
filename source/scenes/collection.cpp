@@ -77,6 +77,16 @@ public:
             if (input.accept())
                 app.openEncounter(m_crossings[static_cast<size_t>(m_selected)].id, orderedIds());
 
+            if (input.pressed(HidNpadButton_Y) && m_selected >= 0
+                && m_selected < static_cast<int>(m_crossings.size())) {
+                const Crossing& c = m_crossings[static_cast<size_t>(m_selected)];
+                bool on = !app.store().isFavourite(c.id);
+                app.store().setFavourite(c.id, on);
+                app.toast(on ? "Starred " + c.pass.handle : "Unstarred " + c.pass.handle,
+                    on ? "Kept when the collection fills up."
+                       : "No longer kept when the collection fills up.");
+            }
+
             if (input.pressed(HidNpadButton_X)) {
                 m_sortByName = !m_sortByName;
                 // Re-sorted on the next sync, which also keeps the cursor on
@@ -118,6 +128,11 @@ public:
 
         app.hint("A", "open");
         app.hint("X", m_sortByName ? "sort by recent" : "sort by name");
+        if (!m_crossings.empty()) {
+            bool starred = m_selected >= 0 && m_selected < static_cast<int>(m_crossings.size())
+                && app.store().isFavourite(m_crossings[static_cast<size_t>(m_selected)].id);
+            app.hint("Y", starred ? "unstar" : "star");
+        }
 
         float titleBlock = 40.0f + title.size * theme::leadingSnug + theme::s5;
 
@@ -196,11 +211,11 @@ public:
                 liftedFocus = focus;
                 continue;
             }
-            drawCell(r, cell, m_crossings[i], 0.0f);
+            drawCell(app, r, cell, m_crossings[i], 0.0f);
         }
 
         if (liftedIndex >= 0)
-            drawCell(r, liftedCell, m_crossings[static_cast<size_t>(liftedIndex)],
+            drawCell(app, r, liftedCell, m_crossings[static_cast<size_t>(liftedIndex)],
                 liftedFocus);
 
         r.popClip();
@@ -313,7 +328,8 @@ private:
             });
     }
 
-    void drawCell(Renderer& r, const Rect& box, const Crossing& crossing, float focus)
+    void drawCell(App& app, Renderer& r, const Rect& box, const Crossing& crossing,
+        float focus)
     {
         // The same lift a plaza tile does: the whole cell grows and everything
         // on it grows with it. Letting ui::card grow the surface on its own left
@@ -337,6 +353,17 @@ private:
 
         if (!crossing.opened)
             r.circle(cell.right() - 22.0f, cell.y + 22.0f, 9.0f, theme::teal);
+
+        // Top left, opposite the unread dot, so a card can carry both. On its
+        // own disc: the stage behind it is a card theme of the pass's choosing
+        // and an amber star on amber would vanish.
+        if (app.store().isFavourite(crossing.id)) {
+            float cx = cell.x + 26.0f;
+            float cy = cell.y + 26.0f;
+            r.circle(cx, cy, 17.0f, theme::bg0.scaleAlpha(0.72f));
+            ui::icon(r, Rect { cx - 13.0f, cy - 13.0f, 26.0f, 26.0f }, ui::Icon::Star,
+                theme::accent, 2.0f);
+        }
 
         TextStyle name;
         name.size = theme::textMd;

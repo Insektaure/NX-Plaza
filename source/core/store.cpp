@@ -272,6 +272,55 @@ void Store::setExtrasFor(const std::string& id, const CrossingExtras& extras)
     m_extras.edit(id) = extras;
 }
 
+bool Store::isFavouriteLocked(const std::string& id) const
+{
+    const CrossingExtras* row = m_extras.find(id);
+    return row != nullptr && row->has(extras::Favourite);
+}
+
+bool Store::isFavourite(const std::string& id) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return isFavouriteLocked(id);
+}
+
+void Store::setFavourite(const std::string& id, bool on)
+{
+    if (!CrossingExtraFile::validId(id))
+        return;
+
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (isFavouriteLocked(id) == on)
+        return;
+
+    // Read, change, write back. Never a fresh CrossingExtras: the copy carries
+    // tags this build may not know, and a fresh one would drop them.
+    CrossingExtras row = extrasFor(id);
+    if (on)
+        row.setU64(extras::Favourite, nowUnix());
+    else
+        row.clear(extras::Favourite);
+    setExtrasFor(id, row);
+
+    // Deliberately no generation bump. The generation means "the list of
+    // crossings changed", and this does not change it : the star is read live
+    // per card by isFavourite(). Bumping it made the collection and the plaza
+    // re-copy the whole list for nothing, and made The Square reshuffle its
+    // entire cast the next time it was opened - starring somebody is not a
+    // reason for twenty other people to move.
+}
+
+size_t Store::favouriteCount() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    size_t n = 0;
+    for (const Crossing& c : m_crossings) {
+        if (isFavouriteLocked(c.id))
+            n++;
+    }
+    return n;
+}
+
 void Store::dropExtraOrphansLocked()
 {
     if (m_extras.rows() == 0)
@@ -292,17 +341,29 @@ void Store::pruneLocked()
 
     // The list is sorted newest first, so walking backwards visits the oldest
     // passes. Drop ones the user has already read before touching unread news.
-    auto dropFromBack = [&](bool openedOnly) {
+    auto dropFromBack = [&](bool openedOnly, bool sparingFavourites) {
         size_t i = m_crossings.size();
         while (i > 0 && m_crossings.size() > kMaxCrossings) {
             --i;
+            if (sparingFavourites && isFavouriteLocked(m_crossings[i].id))
+                continue;
             if (!openedOnly || m_crossings[i].opened)
                 m_crossings.erase(m_crossings.begin() + static_cast<ptrdiff_t>(i));
         }
     };
 
-    dropFromBack(true);
-    dropFromBack(false);
+    // Read ones first, then unread, both sparing anything starred.
+    dropFromBack(true, true);
+    dropFromBack(false, true);
+
+    // The cap is absolute, and the protection is best effort: a collection
+    // entirely of favourites still has to come down to size, or it grows until
+    // the console runs out of card. Starred people are simply last to go.
+    if (m_crossings.size() > kMaxCrossings) {
+        LOG("store: %zu crossings over the cap are all favourites; dropping the oldest",
+            m_crossings.size() - kMaxCrossings);
+        dropFromBack(false, false);
+    }
     m_crossingsNeedRewrite = true;
     dropExtraOrphansLocked();
 }

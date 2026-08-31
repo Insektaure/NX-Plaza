@@ -140,10 +140,19 @@ public:
     CrossingExtras extrasFor(const std::string& id) const;
     void setExtrasFor(const std::string& id, const CrossingExtras& extras);
 
+    // Favourites. A favourite is kept when the collection prunes at its cap,
+    // which is the point of it: the people worth keeping are the ones you said
+    // were worth keeping.
+    bool isFavourite(const std::string& id) const;
+    void setFavourite(const std::string& id, bool on);
+    size_t favouriteCount() const;
+
 private:
     Store() = default;
 
     void dropExtraOrphansLocked();
+    // Without copying the row, for the prune loop.
+    bool isFavouriteLocked(const std::string& id) const;
     void saveProfileLocked();
     void saveCrossingsLocked();
     void pruneLocked();
