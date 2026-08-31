@@ -85,10 +85,18 @@ public:
                 app.toast(on ? "Starred " + c.pass.handle : "Unstarred " + c.pass.handle,
                     on ? "Kept when the collection fills up."
                        : "No longer kept when the collection fills up.");
+
+                // Only this screen knows its order depends on the star.
+                // The store deliberately does not bump the generation for a
+                // favourite - that would make the plaza re-copy the collection
+                // and The Square reshuffle its whole cast - so the re-sort is
+                // asked for here, by the one view that cares.
+                if (m_sort == Sort_Starred)
+                    m_sortDirty = true;
             }
 
             if (input.pressed(HidNpadButton_X)) {
-                m_sortByName = !m_sortByName;
+                m_sort = (m_sort + 1) % Sort_Count;
                 // Re-sorted on the next sync, which also keeps the cursor on
                 // the card it was on rather than on the slot.
                 m_sortDirty = true;
@@ -122,12 +130,11 @@ public:
         meta.size = theme::textSm;
         meta.color = theme::fg3;
         r.text(Rect { content.x, content.y + 40.0f, content.w, title.size * theme::leadingSnug },
-            format("%s - %u crossings in total", m_sortByName ? "by name" : "most recent first",
-                stats.totalCrossings),
+            format("%s - %u crossings in total", sortLabel(), stats.totalCrossings),
             meta, Align::Right, VAlign::Bottom);
 
         app.hint("A", "open");
-        app.hint("X", m_sortByName ? "sort by recent" : "sort by name");
+        app.hint("X", nextSortHint());
         if (!m_crossings.empty()) {
             bool starred = m_selected >= 0 && m_selected < static_cast<int>(m_crossings.size())
                 && app.store().isFavourite(m_crossings[static_cast<size_t>(m_selected)].id);
@@ -284,7 +291,7 @@ private:
             m_crossings = app.store().crossings();
             m_generation = generation;
         }
-        sort();
+        sort(app);
         m_sortDirty = false;
 
         int count = static_cast<int>(m_crossings.size());
@@ -318,14 +325,58 @@ private:
         }
     }
 
-    void sort()
+    const char* sortLabel() const
     {
-        if (!m_sortByName)
+        switch (m_sort) {
+        case Sort_Name: return "by name";
+        case Sort_Starred: return "starred first";
+        default: return "most recent first";
+        }
+    }
+
+    const char* nextSortHint() const
+    {
+        switch (m_sort) {
+        case Sort_Recent: return "sort by name";
+        case Sort_Name: return "sort by starred";
+        default: return "sort by recent";
+        }
+    }
+
+    void sort(App& app)
+    {
+        if (m_sort == Sort_Name) {
+            std::stable_sort(m_crossings.begin(), m_crossings.end(),
+                [](const Crossing& a, const Crossing& b) {
+                    return a.pass.handle < b.pass.handle;
+                });
             return;
-        std::stable_sort(m_crossings.begin(), m_crossings.end(),
-            [](const Crossing& a, const Crossing& b) {
-                return a.pass.handle < b.pass.handle;
-            });
+        }
+        if (m_sort != Sort_Starred)
+            return; // Recent is the order the store keeps
+
+        // One lookup per card, not one per comparison. A comparator that asked
+        // the store would take its lock 60000 for 5000 cards,
+        // and this runs on the drawing thread.
+        size_t n = m_crossings.size();
+        std::vector<uint8_t> starred(n, 0);
+        for (size_t i = 0; i < n; i++)
+            starred[i] = app.store().isFavourite(m_crossings[i].id) ? 1 : 0;
+
+        // Indices, because sorting the cards would leave the flags behind.
+        // Stable, so within each group the store's newest-first order survives:
+        // "starred first" and not "starred, then shuffled".
+        std::vector<size_t> order(n);
+        for (size_t i = 0; i < n; i++)
+            order[i] = i;
+        std::stable_sort(order.begin(), order.end(),
+            [&starred](size_t a, size_t b) { return starred[a] > starred[b]; });
+
+        std::vector<Crossing> sorted;
+        sorted.reserve(n);
+        for (size_t i : order)
+            sorted.push_back(std::move(m_crossings[i]));
+        m_crossings = std::move(sorted);
     }
 
     void drawCell(App& app, Renderer& r, const Rect& box, const Crossing& crossing,
@@ -402,7 +453,10 @@ private:
     std::vector<Crossing> m_crossings;
     int m_selected = 0;
     float m_pulse = 0.0f;
-    bool m_sortByName = false;
+    // Three orders now, so a flag will not do. Recent is what the store hands
+    // back, so it costs nothing; the other two reorder the copy.
+    enum Sort : int { Sort_Recent = 0, Sort_Name, Sort_Starred, Sort_Count };
+    int m_sort = Sort_Recent;
 
     ui::ScrollView m_scroll;
     Rect m_gridRect;
