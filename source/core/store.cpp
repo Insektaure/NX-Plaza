@@ -65,6 +65,11 @@ void Store::load()
     // ---- profile.json: settings + our own pass
     json_t* profile = js::readFile(dataPath(kProfileFile));
     if (profile) {
+        // Not a setting: a remembered figure from the server. Missing on any
+        // profile written before this, which reads as zero and is corrected by
+        // the first check-in.
+        m_passesSent = static_cast<uint32_t>(js::getInt(profile, "passes_sent", 0));
+
         json_t* s = js::getObj(profile, "settings");
         if (s) {
             // A released build ignores whatever is on the card. There is one
@@ -196,6 +201,7 @@ void Store::saveProfileLocked()
 
     json_t* root = json_object();
     json_object_set_new(root, "version", json_integer(1));
+    json_object_set_new(root, "passes_sent", json_integer(m_passesSent));
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
 
@@ -605,6 +611,24 @@ Stats Store::stats() const
     }
     s.places = static_cast<uint32_t>(places.size());
     return s;
+}
+
+uint32_t Store::passesSent() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_passesSent;
+}
+
+void Store::rememberPassesSent(uint32_t count)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    // Only when it moves. The sync worker offers this on every check-in, and
+    // dirtying the profile twenty seconds apart forever would mean an SD write
+    // twenty seconds apart forever for a number that had not changed.
+    if (count == m_passesSent)
+        return;
+    m_passesSent = count;
+    m_profileDirty = true;
 }
 
 int Store::acceptedToday() const

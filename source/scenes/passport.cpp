@@ -100,7 +100,6 @@ public:
 
     void update(App& app, const Input& input, float dt) override
     {
-        m_status = app.sync().status();
         m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
         resolvePlaying(app);
 
@@ -552,8 +551,22 @@ private:
         float statY = y + theme::s3;
         float statWidth = (box.w - theme::s4) * 0.5f;
 
+        // How many times this console's pass has gone to somebody, whether we
+        // pushed it or they pulled it.
+        //
+        // Read from the store rather than from Sync::Status. The status is
+        // memory only: zero until a check-in answers, and zero for the whole
+        // session with no network - so the tile would tell somebody who has
+        // traded for weeks that their pass had never been sent. The store
+        // remembers the last figure the server gave, and the sync worker
+        // updates it whenever a reply carries one.
+        //
+        // The label used to read "people have your pass", which this number
+        // never measured: it counts hand-offs and never comes down, so crossing
+        // one friend ten times read as ten people. How many people you have met
+        // is the collection's business, and the collection screen says it.
         ui::statCard(r, Rect { box.x, statY, statWidth, 140.0f },
-            ui::groupedNumber(m_status.handedOut), "times your pass was sent",
+            ui::groupedNumber(app.store().passesSent()), "times your pass was sent",
             theme::text2xl);
         ui::statCard(r, Rect { box.x + statWidth + theme::s4, statY, statWidth, 140.0f },
             identity().shortCode(), "your pairing code", theme::text2xl);
@@ -613,7 +626,6 @@ private:
     }
 
     Pass m_pass;
-    Sync::Status m_status;
     int m_selected = 0;
     // Which of the recently-played titles is chosen. Held here because the
     // stored name is clamped and so cannot be matched back to the list.

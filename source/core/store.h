@@ -118,6 +118,18 @@ public:
 
     Stats stats() const;
 
+    // How many times this console's pass has gone to somebody, as the server
+    // last reported it.
+    //
+    // Kept here rather than read straight off Sync::Status because that is
+    // memory only: it is zero until the first check-in answers, and stays zero
+    // with no network. The pass screen would then tell somebody who has traded
+    // for weeks that their pass has never been sent. Remembered in profile.json
+    // so the last known figure survives a launch, with the server still the
+    // authority whenever it answers.
+    uint32_t passesSent() const;
+    void rememberPassesSent(uint32_t count);
+
     // How many crossings we have accepted since local midnight, for the
     // daily-limit cap.
     int acceptedToday() const;
@@ -171,6 +183,7 @@ private:
     bool m_crossingsNeedRewrite = false;
     CrossingFile m_crossingFile;
     CrossingExtraFile m_extras;
+    uint32_t m_passesSent = 0;
     bool m_loaded = false;
 };
 

@@ -204,8 +204,20 @@ bool Sync::doHello()
 
     json_t* reply = js::parse(response.body);
     if (reply) {
-        std::lock_guard<std::mutex> lock(m_mutex);
-        m_status.handedOut = static_cast<uint32_t>(js::getInt(reply, "met"));
+        uint32_t handedOut = static_cast<uint32_t>(js::getInt(reply, "met"));
+        {
+            std::lock_guard<std::mutex> lock(m_mutex);
+            m_status.handedOut = handedOut;
+        }
+        // Remembered on the card too, so the pass screen has a figure before
+        // the first check-in of the next session and while offline. Outside our
+        // own lock: the store takes its own, and holding two is how an ordering
+        // bug gets written.
+        //
+        // Zero is not written. A reply that omits the field parses as zero, and
+        // storing that would erase a figure the card already holds.
+        if (handedOut > 0)
+            Store::get().rememberPassesSent(handedOut);
         json_decref(reply);
     }
 
@@ -359,6 +371,11 @@ bool Sync::doExchange()
         for (const std::string& id : arrivals)
             m_arrivals.push_back(id);
     }
+
+    // Outside the lock, as above. Zero is not written: a reply that omits the
+    // field would otherwise erase a figure the card already holds.
+    if (met > 0)
+        Store::get().rememberPassesSent(met);
 
     if (!arrivals.empty())
         LOG("sync: %zu passes arrived", arrivals.size());
