@@ -5,7 +5,6 @@
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
-#include "ui/mii_render.h"
 #include "ui/scroll.h"
 #include "ui/theme.h"
 #include "ui/widgets.h"
@@ -550,13 +549,12 @@ private:
             y += kRowHeight + theme::s3;
         }
 
-        Stats stats = app.store().stats();
         float statY = y + theme::s3;
         float statWidth = (box.w - theme::s4) * 0.5f;
-        uint32_t handedOut = std::max(m_status.handedOut, stats.uniquePeople);
 
         ui::statCard(r, Rect { box.x, statY, statWidth, 140.0f },
-            ui::groupedNumber(handedOut), "people have your pass", theme::text2xl);
+            ui::groupedNumber(m_status.handedOut), "times your pass was sent",
+            theme::text2xl);
         ui::statCard(r, Rect { box.x + statWidth + theme::s4, statY, statWidth, 140.0f },
             identity().shortCode(), "your pairing code", theme::text2xl);
 
