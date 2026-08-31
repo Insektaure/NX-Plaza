@@ -693,14 +693,7 @@ namespace {
             app.openEncounter(f.crossingId, std::move(siblings));
         }
 
-            // Deliberately no touch zone. A figure is a small moving target on a
-            // crowded floor, and the boxes a tap is tested against are last
-            // frame's - so a tap that looked like it landed on somebody
-            // regularly opened whoever had wandered into that spot instead. The
-            // cursor and A are the way in here.
-
-            // The same figure at every depth, just smaller. Opaque, so nobody
-            // is a ghost at the back of the square.        std::vector<Figure> m_figures;
+        std::vector<Figure> m_figures;
         std::vector<size_t> m_order;
         uint64_t m_generation = 0;
         size_t m_focus = 0;
