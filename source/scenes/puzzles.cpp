@@ -57,7 +57,10 @@ namespace {
         {
             const std::vector<PieceSet>& sets = pieceSets();
 
-            app.hint("A", sets.empty() ? "-" : "fill this one next");
+            bool focusDone = !sets.empty() && m_focus >= 0 && size_t(m_focus) < sets.size()
+                && m_inventory.complete(m_focus);
+            app.hint("A", sets.empty() ? "-" : (focusDone ? "already finished"
+                                                          : "fill this one next"));
 
             Rect area = app.contentArea();
             Rect content { area.x + theme::edge, area.y + theme::s8,
@@ -119,6 +122,15 @@ namespace {
             const std::vector<PieceSet>& sets = pieceSets();
             if (m_focus < 0 || size_t(m_focus) >= sets.size())
                 return;
+            // Picking a finished one cannot do what the toast would promise:
+            // the store moves off a full puzzle on the next crossing anyway, so
+            // saying "crossings go into this one" would be false before the day
+            // is out. Say what will actually happen instead.
+            if (m_inventory.complete(m_focus)) {
+                app.toast(std::string(sets[size_t(m_focus)].name) + " is finished",
+                    "Pieces go into the first puzzle that is not.");
+                return;
+            }
             app.store().setActivePieceSet(m_focus);
             m_inventory = app.store().pieces();
             app.toast(std::string("Filling ") + sets[size_t(m_focus)].name,

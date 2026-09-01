@@ -221,6 +221,7 @@ sdmc:/switch/nx-plaza/
   profile.json     your pass and every setting
   crossings.idx    the passes you have collected, one 128-byte record each
   crossings.dat    their text: greetings, what they carry, where you crossed
+  crossings.ext    extras kept per crossing: starred, the piece they brought
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
