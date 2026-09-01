@@ -237,9 +237,10 @@ namespace {
             sub.size = theme::textBase;
             sub.color = theme::fg3;
             sub.leading = theme::leadingNormal;
-            r.textWrapped(Rect { content.x, y, std::min(content.w, 900.0f), 70.0f },
+
+            r.text(content.x, y,
                 "Every console you cross brings one piece. Pick which puzzle they go into.",
-                sub, 2);
+                sub);
             y += sub.size * theme::leadingNormal + theme::s6;
 
             for (size_t i = 0; i < sets.size(); i++) {
