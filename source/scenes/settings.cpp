@@ -45,6 +45,20 @@ public:
     {
         m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
 
+        // A hint too long for its row scrolls, but only the one under the
+        // cursor. The clock restarts whenever the cursor lands somewhere
+        // new, so a hint always begins at its first word.
+        // The section is part of the identity: row 2 of Privacy and row 2 of
+        // Data are different rows, and a hint that carried on mid-sentence from
+        // the last section would read as a glitch.
+        int here = m_inSidebar ? -1 : (m_section * 1000 + m_focus);
+        if (here != m_marqueeRow) {
+            m_marqueeRow = here;
+            m_marquee = 0.0f;
+        } else {
+            m_marquee += dt;
+        }
+
         // Deliberately not currentPlace(): that is two nifm calls, and this
         // runs on the drawing thread. While the console is still negotiating
         // its network those calls block, and the sync worker is making the
@@ -793,6 +807,55 @@ private:
 
     }
 
+    // A row's hint, scrolled sideways when it does not fit and the cursor is
+    // on it, ellipsized when it is not.
+    //
+    // Ellipsis on an unfocused row is the right default.
+    // The focused row is the one being read, and it is the only one whose whole
+    // sentence matters.
+    void drawHint(Renderer& r, const Rect& box, const std::string& text,
+        const TextStyle& style, bool focused)
+    {
+        // Measured only for the row that could scroll. ellipsize() already
+        // walks the string, and doing both for every row on screen would be
+        // two passes over text nobody is reading.
+        if (!focused) {
+            r.text(box.x, box.y, r.ellipsize(text, style, box.w), style);
+            return;
+        }
+        float width = r.measure(text, style);
+        if (width <= box.w) {
+            r.text(box.x, box.y, text, style);
+            return;
+        }
+
+        // Out and back rather than wrapping round: a marquee that jumps to the
+        // start is read as a glitch, and the return trip costs nothing because
+        // the eye is already following the text.
+        const float speed = 90.0f;   // design pixels a second
+        const float rest = 1.4f;     // held still at each end, to be read
+        float over = width - box.w;
+        float travel = over / speed;
+        float cycle = (rest + travel) * 2.0f;
+        float t = std::fmod(m_marquee, cycle);
+
+        float shift;
+        if (t < rest)
+            shift = 0.0f;
+        else if (t < rest + travel)
+            shift = (t - rest) * speed;
+        else if (t < rest + travel + rest)
+            shift = over;
+        else
+            shift = over - (t - rest - travel - rest) * speed;
+
+        // Clipped to the room the hint has, so it slides under the value on the
+        // right rather than across it.
+        r.pushClipHorizontal(box);
+        r.text(box.x - shift, box.y, text, style);
+        r.popClip();
+    }
+
     void drawRow(App& app, Renderer& r, const Rect& box, const Row& row, int index)
     {
         app.touchZone(box, Zone_Row, row.id);
@@ -818,8 +881,10 @@ private:
             TextStyle hint;
             hint.size = theme::textSm;
             hint.color = theme::fg3;
-            r.text(inner.x, inner.y + label.size * theme::leadingSnug + 6.0f,
-                r.ellipsize(row.hint, hint, inner.w * 0.6f), hint);
+            float hintY = inner.y + label.size * theme::leadingSnug + 6.0f;
+            float room = inner.w * 0.6f;
+            drawHint(r, Rect { inner.x, hintY, room, r.lineHeight(hint) }, row.hint, hint,
+                focused);
         }
 
         switch (row.kind) {
@@ -867,6 +932,8 @@ private:
     std::vector<Row> m_rows;
     int m_section = Sec_Privacy;
     int m_focus = 0;
+    float m_marquee = 0.0f;   // seconds the cursor has sat on its row
+    int m_marqueeRow = -2;    // -1 is the sidebar; -2 is "nothing yet"
     bool m_inSidebar = true; // the section list has the cursor on arrival
     float m_pulse = 0.0f;
 
