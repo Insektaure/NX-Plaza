@@ -3,7 +3,6 @@
 #include "core/log.h"
 #include "core/util.h"
 
-#include <cstdio>
 #include <ctime>
 #include <sys/stat.h>
 #include <unistd.h>
@@ -31,9 +30,12 @@ namespace {
 
     std::string twoDigits(int v)
     {
-        char b[8];
-        snprintf(b, sizeof(b), "%02d", v);
-        return b;
+        if (v < 0)
+            v = 0;
+        if (v > 99)
+            v = 99;
+        const char out[3] = { char('0' + v / 10), char('0' + v % 10), '\0' };
+        return std::string(out);
     }
 }
 
