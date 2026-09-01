@@ -445,6 +445,12 @@ namespace {
             wantPicture(m_open);
             bool art = pictures().resident(spec.image);
 
+            // Nothing missing and a picture to show: stop drawing a board.
+            if (art && m_inventory.complete(m_open)) {
+                drawWhole(app, r, box);
+                return;
+            }
+
             float tileW = (box.w - float(kPerRow - 1) * kTileGap) / float(kPerRow);
             float tileH = (box.h - float(kRows - 1) * kTileGap) / float(kRows);
 
@@ -486,6 +492,44 @@ namespace {
                 if (i == m_piece)
                     ui::focusRing(r, tile.inset(-theme::s2, -theme::s2), theme::r2,
                         0.6f + 0.4f * m_pulse);
+            }
+        }
+
+        // A finished puzzle, as the one picture it is.
+        void drawWhole(App& app, Renderer& r, const Rect& box)
+        {
+            // The box was measured with the gaps in it, so it is a hair wider
+            // than 16:9. Fit the picture inside it rather than stretch to it.
+            float w = box.w;
+            float h = w * (kCropH * float(kRows)) / (kCropW * float(kPerRow));
+            if (h > box.h) {
+                h = box.h;
+                w = h * (kCropW * float(kPerRow)) / (kCropH * float(kRows));
+            }
+            Rect whole { box.x + (box.w - w) * 0.5f, box.y + (box.h - h) * 0.5f, w, h };
+
+            const float uv[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+            r.picture(whole, uv, theme::r3);
+
+            // The cursor still has to work: the panel underneath names whoever
+            // brought the piece being pointed at, and with no tile edges left
+            // there is nothing else saying which one that is.
+            const PieceSet& spec = pieceSets()[size_t(m_open)];
+            float tileW = whole.w / float(kPerRow);
+            float tileH = whole.h / float(kRows);
+            for (int i = 0; i < int(spec.count); i++) {
+                Rect tile { whole.x + float(i % kPerRow) * tileW,
+                    whole.y + float(i / kPerRow) * tileH, tileW, tileH };
+                app.touchZone(tile, Zone_Tile, m_open * 64 + i);
+                if (i != m_piece)
+                    continue;
+
+                // A dark hairline under the ring. Accent on its own is legible
+                // over the app's own surfaces and not over a painting, which
+                // can be any colour behind any part of it.
+                r.strokeRect(tile.inset(1.0f, 1.0f), theme::r2, theme::stroke,
+                    Color { 0.0f, 0.0f, 0.0f, 0.5f });
+                ui::focusRing(r, tile, theme::r2, 0.6f + 0.4f * m_pulse);
             }
         }
 
