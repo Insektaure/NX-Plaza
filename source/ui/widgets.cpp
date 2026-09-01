@@ -81,6 +81,19 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
             color);
         break;
     }
+    case Icon::Puzzle: {
+        // A jigsaw piece: a rounded square with a tab on the right and a
+        // socket bitten out of the top. The socket is drawn in the background
+        // colour rather than subtracted, which is what the primitives here can
+        // do - an icon is always over a flat surface, so it reads the same.
+        float half = s * 0.30f;
+        float knob = half * 0.42f;
+        r.strokeRect(Rect { cx - half, cy - half, half * 2.0f, half * 2.0f }, s * 0.08f,
+            weight, color);
+        r.circle(cx + half, cy - half * 0.15f, knob, color);
+        r.circle(cx - half * 0.15f, cy - half, knob, color);
+        break;
+    }
     case Icon::Star: {
         // Ten vertices at alternating radii, stroked edge by edge.
         //

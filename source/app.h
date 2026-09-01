@@ -44,6 +44,7 @@ enum class Tab : int {
     Nearby,
     Collection,
     Square,
+    Puzzles,
     Passport,
     Settings,
     Count

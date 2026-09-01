@@ -86,6 +86,8 @@ Either one exits with a message naming the mismatch rather than writing.
 """
 
 import argparse
+import datetime
+import json
 import os
 import random
 import re
@@ -177,6 +179,127 @@ def _assert_layout() -> None:
     trimmed = [f for f in order if f in expected]
     if trimmed and trimmed != expected:
         sys.exit(f"packRecord writes {trimmed}, this expects {expected}")
+
+
+# -------------------------------------------------------------------- pieces
+#
+# A crossing grants a collectible, and the console works out which one rather
+# than being told: fnv1a("myId|theirId|day|set") % count, in
+# source/core/pieces.cpp. A seeded collection never goes through that code -
+# the records are written straight to the card - so the puzzles would sit empty
+# on a console holding two hundred crossings. Redone here so a seeded card comes
+# with the progress those crossings would have earned.
+#
+# The set table and the hash are read from the source where they can be, and
+# mirrored where they cannot, for the same reason the record layout is: a copy
+# that quietly disagrees is worse than no copy.
+
+PIECES_SOURCE = os.path.join(HERE, "..", "source", "core", "pieces.cpp")
+
+
+def piece_sets() -> list:
+    """(name, count) per puzzle, read out of pieces.cpp."""
+    try:
+        with open(PIECES_SOURCE, "r", encoding="utf-8") as handle:
+            text = handle.read()
+    except OSError:
+        print("note: could not read pieces.cpp; not granting any pieces", file=sys.stderr)
+        return []
+    body = re.search(r"kSets = \{(.*?)\};", text, re.S)
+    if not body:
+        return []
+    return [(n, int(c)) for n, c in re.findall(r'\{ "([^"]+)", (\d+) \}', body.group(1))]
+
+
+def fnv1a(text: str) -> int:
+    """The 32-bit FNV-1a in source/core/util.cpp."""
+    h = 2166136261
+    for b in text.encode("utf-8"):
+        h ^= b
+        h = (h * 16777619) & 0xFFFFFFFF
+    return h
+
+
+def local_day_index(when: int) -> int:
+    """Whole local days since the epoch, as pieces.cpp counts them."""
+    day = datetime.datetime.fromtimestamp(when).replace(hour=0, minute=0, second=0,
+                                                        microsecond=0)
+    return int(day.timestamp()) // 86400
+
+
+def piece_for(my_id: str, their_id: str, when: int, index: int, count: int) -> int:
+    if count <= 0:
+        return 0
+    return fnv1a(f"{my_id}|{their_id}|{local_day_index(when)}|{index}") % count
+
+
+def grant_pieces(out_dir: str, crossings: list) -> str:
+    """Fills in the pieces these crossings would have earned.
+
+    Needs identity.json for the console's own id and profile.json to write
+    into; without either it does nothing and says so, because a seeded card in
+    a scratch directory has neither.
+    """
+    sets = piece_sets()
+    if not sets:
+        return ""
+
+    identity_path = os.path.join(out_dir, "identity.json")
+    profile_path = os.path.join(out_dir, "profile.json")
+    if not os.path.exists(identity_path) or not os.path.exists(profile_path):
+        return ("no identity.json or profile.json here, so no pieces were granted "
+                "(seed straight onto the card to get them)")
+
+    with open(identity_path, "r", encoding="utf-8") as handle:
+        my_id = json.load(handle).get("id", "")
+    if len(my_id) != 32:
+        return "identity.json has no usable id, so no pieces were granted"
+
+    with open(profile_path, "r", encoding="utf-8") as handle:
+        profile = json.load(handle)
+
+    block = profile.get("pieces") or {}
+    active = int(block.get("active", 0))
+    if active < 0 or active >= len(sets):
+        active = 0
+
+    # Only the active puzzle, which is what the console does: a crossing fills
+    # whichever one is being collected at the time.
+    owned = [0] * len(sets)
+    for i, mask in enumerate(block.get("owned", [])[:len(sets)]):
+        try:
+            owned[i] = int(mask, 16)
+        except (TypeError, ValueError):
+            owned[i] = 0
+
+    before = bin(owned[active]).count("1")
+    meetings = 0
+    for crossing in crossings:
+        # One per meeting, not one per person. A console grants a piece every
+        # time it crosses somebody, so a card met five times over a fortnight
+        # is worth up to five pieces - and two meetings on the same day are
+        # worth one, because the day is part of what decides the piece. Using
+        # only lastSeen made a seeded card lag well behind a real one.
+        for when in crossing.get("meetings") or [crossing["lastSeen"]]:
+            piece = piece_for(my_id, crossing["id"], when, active, sets[active][1])
+            owned[active] |= 1 << piece
+            meetings += 1
+
+    # Bits past the end of a puzzle cannot be held.
+    for i, (_, count) in enumerate(sets):
+        owned[i] &= (1 << count) - 1
+
+    profile["pieces"] = {
+        "active": active,
+        "owned": ["%08x" % m for m in owned],
+    }
+    with open(profile_path, "w", encoding="utf-8") as handle:
+        json.dump(profile, handle, indent=2)
+
+    after = bin(owned[active]).count("1")
+    name, count = sets[active]
+    return (f"{name}: {after} of {count} pieces ({after - before} new) "
+            f"from {meetings} meetings")
 
 
 # ------------------------------------------------------------------- packing
@@ -345,6 +468,17 @@ def make_crossings(count: int, days: int, unread: float, limits: dict,
         times = rng.randrange(2, 6) if rng.random() < 0.3 else 1
         first = last - rng.randrange(1, 30) * 86400 if times > 1 else last
 
+        # When each of those meetings happened. The file only keeps the first
+        # and the last and a count, but a console granted a piece on every one
+        # of them, so the pieces cannot be worked out from the record alone.
+        # Held on the dict and never written; pack_record and pack_blob take
+        # the fields they want by name.
+        if times == 1:
+            meetings = [last]
+        else:
+            middle = [rng.randrange(first, last) for _ in range(times - 2)]
+            meetings = sorted([first] + middle + [last])
+
         crossing = {
             "id": console["id"],
             "pass": pass_,
@@ -352,6 +486,7 @@ def make_crossings(count: int, days: int, unread: float, limits: dict,
             "firstSeen": first,
             "lastSeen": last,
             "count": times,
+            "meetings": meetings,
             "opened": rng.random() > unread,
             "tradedBack": rng.random() < 0.25,
         }
@@ -434,6 +569,7 @@ def main() -> int:
         sys.exit("generated data exceeds what Pass::sanitize() allows; nothing written")
 
     idx, dat, idx_bytes, dat_bytes = write_files(crossings, args.out)
+    pieces = grant_pieces(args.out, crossings)
 
     unopened = sum(1 for c in crossings if not c["opened"])
     multi = sum(1 for c in crossings if c["count"] > 1)
@@ -441,6 +577,8 @@ def main() -> int:
     print(f"{len(crossings)} crossings: {unopened} unopened, {multi} crossed more than once, "
           f"{traded} already traded back")
     print("  coverage: " + ", ".join(f"{name} {n}" for name, n in sorted(tally.items())))
+    if pieces:
+        print("  pieces:   " + pieces)
     print(f"  {idx}  {idx_bytes + HEADER_SIZE:,} bytes")
     print(f"  {dat}  {dat_bytes:,} bytes")
     print("Copy both next to identity.json in sdmc:/switch/nx-plaza/")

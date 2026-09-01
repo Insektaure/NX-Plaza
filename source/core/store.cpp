@@ -3,6 +3,7 @@
 #include "core/identity.h"
 #include "core/json.h"
 #include "core/log.h"
+#include "core/pieces.h"
 #include "core/place.h"
 #include "core/util.h"
 
@@ -70,6 +71,11 @@ void Store::load()
         // the first check-in.
         m_passesSent = static_cast<uint32_t>(js::getInt(profile, "passes_sent", 0));
 
+        if (json_t* p = js::getObj(profile, "pieces")) {
+            m_pieces.fromHex(js::getStrArray(p, "owned", 64),
+                static_cast<int>(js::getInt(p, "active", 0)));
+        }
+
         json_t* s = js::getObj(profile, "settings");
         if (s) {
             // A released build ignores whatever is on the card. There is one
@@ -105,6 +111,10 @@ void Store::load()
 
         json_decref(profile);
     }
+
+    // Runs whether or not the key was there: a first launch, or a build that
+    // added a set, both need `owned` sized to the current list.
+    m_pieces.normalise();
 
     if (m_settings.dailyLimit < 1 || m_settings.dailyLimit > 99)
         m_settings.dailyLimit = 12;
@@ -202,6 +212,11 @@ void Store::saveProfileLocked()
     json_t* root = json_object();
     json_object_set_new(root, "version", json_integer(1));
     json_object_set_new(root, "passes_sent", json_integer(m_passesSent));
+
+    json_t* pieces = json_object();
+    json_object_set_new(pieces, "active", json_integer(m_pieces.active));
+    json_object_set_new(pieces, "owned", js::strArray(m_pieces.toHex()));
+    json_object_set_new(root, "pieces", pieces);
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
 
@@ -479,6 +494,11 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
 
         std::stable_sort(m_crossings.begin(), m_crossings.end(),
             [](const Crossing& a, const Crossing& b) { return a.lastSeen > b.lastSeen; });
+
+        // A repeat still counts. Crossing the same person again on another day
+        // is another piece; twice in one afternoon is the same piece, because
+        // the day is part of what decides it.
+        grantPieceFor(id, when);
         return false;
     }
 
@@ -496,6 +516,11 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
     pruneLocked();
     m_crossingsDirty = true;
     m_crossingsGeneration++;
+
+    // After the prune, which is where the extras sweep runs: granting first
+    // would add a row and then walk a sweep that has no reason to keep it in
+    // mind. The collection is in its final shape by here.
+    grantPieceFor(id, when);
     return true;
 }
 
@@ -611,6 +636,45 @@ Stats Store::stats() const
     }
     s.places = static_cast<uint32_t>(places.size());
     return s;
+}
+
+PieceInventory Store::pieces() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_pieces;
+}
+
+void Store::setActivePieceSet(int set)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (set < 0 || size_t(set) >= pieceSets().size() || set == m_pieces.active)
+        return;
+    m_pieces.active = set;
+    m_profileDirty = true;
+}
+
+bool Store::grantPieceFor(const std::string& crossingId, uint64_t when)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (crossingId.empty() || pieceSets().empty())
+        return false;
+
+    int set = m_pieces.active;
+    uint8_t piece = pieceFor(identity().id, crossingId, when, set);
+    bool isNew = m_pieces.take(set, piece);
+
+    // Recorded either way, with the flag saying which it was. A duplicate is
+    // still what this person brought; it is simply not worth announcing.
+    m_extras.setU32(crossingId, extras::LastPiece,
+        (isNew ? extras::PieceWasNew : 0u) | (uint32_t(set) << 16) | uint32_t(piece));
+
+    if (!isNew)
+        return false;
+
+    m_profileDirty = true;
+    LOG("pieces: %s brought piece %u of %s", crossingId.substr(0, 8).c_str(),
+        unsigned(piece), pieceSets()[size_t(set)].name);
+    return true;
 }
 
 uint32_t Store::passesSent() const

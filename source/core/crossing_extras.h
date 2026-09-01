@@ -38,6 +38,23 @@ namespace extras {
     // u64: the unix time the crossing was starred. Its presence is the flag;
     // the time is there so a screen can sort by when.
     constexpr uint16_t Favourite = 1;
+
+    // u32: the last collectible this crossing yielded, packed as
+    //
+    //   bit 31      set when it was one the owner did not already hold
+    //   bits 16-30  which set
+    //   bits 0-15   which piece
+    //
+    // The flag is there because "you have this piece" and "this crossing just
+    // gave you this piece" are different questions, and only the grant knows
+    // the answer to the second. Without it a duplicate reads exactly like a
+    // find, and the arrival toast congratulates you twelve times a day for
+    // pieces you already had.
+    //
+    // The sidecar keeps state, not history - compaction discards anything a
+    // later entry superseded - so this is the last one, not a log of them.
+    constexpr uint16_t LastPiece = 2;
+    constexpr uint32_t PieceWasNew = 1u << 31;
 }
 
 // One crossing's fields, as read back. Returned by value; the file is written

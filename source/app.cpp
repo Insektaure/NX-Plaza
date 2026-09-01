@@ -5,6 +5,7 @@
 #include "core/mii_parts.h"
 #include "core/identity.h"
 #include "core/log.h"
+#include "core/pieces.h"
 #include "core/util.h"
 #include "ui/mii_render.h"
 #include "ui/theme.h"
@@ -31,6 +32,7 @@ namespace {
         { ui::Icon::Radar, "Nearby" },
         { ui::Icon::Grid, "Collection" },
         { ui::Icon::Crowd, "The Square" },
+        { ui::Icon::Puzzle, "Puzzles" },
         { ui::Icon::Person, "Your pass" },
         { ui::Icon::Sliders, "Settings" },
     };
@@ -67,6 +69,7 @@ bool App::init()
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();
     m_tabScenes[static_cast<int>(Tab::Collection)] = makeCollectionScene();
     m_tabScenes[static_cast<int>(Tab::Square)] = makeSquareScene();
+    m_tabScenes[static_cast<int>(Tab::Puzzles)] = makePuzzlesScene();
     m_tabScenes[static_cast<int>(Tab::Passport)] = makePassportScene();
     m_tabScenes[static_cast<int>(Tab::Settings)] = makeSettingsScene();
 
@@ -384,7 +387,33 @@ void App::pumpArrivals()
     std::string body;
     if (!first.place.empty())
         body = first.place;
-    if (!first.pass.carrying.empty()) {
+
+    // What the crossing was worth, when it was worth something.
+    //
+    // Said here rather than on the encounter card: this is the moment the piece
+    // arrives, and the card's column is already tight enough that a sixth thing
+    // in it pushed the stats into the buttons the last time something was added.
+    // A duplicate says nothing at all - twelve "you already had that" a day is
+    // noise, not news.
+    const std::vector<PieceSet>& sets = pieceSets();
+    int found = 0;
+    int foundSet = -1;
+    for (const std::string& id : arrivals) {
+        uint32_t packed = 0;
+        if (!store().extrasFor(id).getU32(extras::LastPiece, packed))
+            continue;
+        if ((packed & extras::PieceWasNew) == 0)
+            continue; // a duplicate is not news
+        foundSet = int((packed >> 16) & 0x7FFF);
+        found++;
+    }
+    if (found > 0 && foundSet >= 0 && size_t(foundSet) < sets.size()) {
+        if (!body.empty())
+            body += " - ";
+        body += found == 1
+            ? format("a piece of %s", sets[size_t(foundSet)].name)
+            : format("%d pieces of %s", found, sets[size_t(foundSet)].name);
+    } else if (!first.pass.carrying.empty()) {
         if (!body.empty())
             body += " - ";
         body += format("one of them is carrying %s", first.pass.carrying.front().c_str());

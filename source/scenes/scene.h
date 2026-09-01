@@ -35,6 +35,9 @@ std::unique_ptr<Scene> makeCollectionScene();
 // ground plane. Billboards, not models - there is no 3D pipeline here and the
 // crowd faces the camera anyway.
 std::unique_ptr<Scene> makeSquareScene();
+
+// The puzzles, and which one the crossings currently fill.
+std::unique_ptr<Scene> makePuzzlesScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

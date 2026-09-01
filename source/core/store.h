@@ -3,6 +3,7 @@
 #include "core/crossing_extras.h"
 #include "core/crossing_file.h"
 #include "core/model.h"
+#include "core/pieces.h"
 #include "core/util.h"
 
 #include <mutex>
@@ -130,6 +131,17 @@ public:
     uint32_t passesSent() const;
     void rememberPassesSent(uint32_t count);
 
+    // Collectible pieces. The inventory is per-user state, so it lives in
+    // profile.json with everything else the owner accumulated; which crossing
+    // gave what is per-crossing and lives in the extras sidecar.
+    PieceInventory pieces() const;
+    void setActivePieceSet(int set);
+
+    // Grants the piece this crossing is worth, into the active set. Returns
+    // true only when it was one the owner did not already hold, so a caller can
+    // tell "you got something" from "you got another one of those".
+    bool grantPieceFor(const std::string& crossingId, uint64_t when);
+
     // How many crossings we have accepted since local midnight, for the
     // daily-limit cap.
     int acceptedToday() const;
@@ -183,6 +195,7 @@ private:
     bool m_crossingsNeedRewrite = false;
     CrossingFile m_crossingFile;
     CrossingExtraFile m_extras;
+    PieceInventory m_pieces;
     uint32_t m_passesSent = 0;
     bool m_loaded = false;
 };
