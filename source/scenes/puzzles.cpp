@@ -107,6 +107,10 @@ namespace {
 
             if (input.accept())
                 open(m_row);
+            // Choosing what to fill without opening it: the list is where you
+            // compare the three, so it is where the choice wants to be made.
+            if (input.pressed(HidNpadButton_Y))
+                fill(app, m_row);
         }
 
         void updateDetail(App& app, const Input& input, const std::vector<PieceSet>& sets)
@@ -158,6 +162,19 @@ namespace {
             m_piece = 0;
         }
 
+        // What pressing the fill button would do, worded as the three things
+        // fill() actually does.
+        const char* fillHintFor(int set) const
+        {
+            if (set < 0 || size_t(set) >= pieceSets().size())
+                return "-";
+            if (m_inventory.complete(set))
+                return "already finished";
+            if (set == m_inventory.active)
+                return "already filling";
+            return "fill this one next";
+        }
+
         // Makes a puzzle the one crossings go into.
         void fill(App& app, int set)
         {
@@ -190,6 +207,7 @@ namespace {
             const std::vector<PieceSet>& sets)
         {
             app.hint("A", sets.empty() ? "-" : "open");
+            app.hint("Y", sets.empty() ? "-" : fillHintFor(m_row));
 
             float y = content.y;
             ui::eyebrow(r, Rect { content.x, y, content.w, 34.0f }, "puzzles");
@@ -306,8 +324,7 @@ namespace {
             bool active = m_open == m_inventory.active;
             int held = m_inventory.countHeld(m_open);
 
-            app.hint("A", complete ? "already finished"
-                                   : (active ? "already filling" : "fill this one next"));
+            app.hint("A", fillHintFor(m_open));
             app.hint("B", "back");
 
             float y = content.y;
