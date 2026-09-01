@@ -180,6 +180,7 @@ private:
         Id_Source,
         Id_ConsoleId,
         Id_Backup,
+        Id_GetArt,
         Id_CheckUpdates,
         Id_AutoCheckUpdates,
     };
@@ -381,6 +382,28 @@ private:
             value(Id_Backup, "Copy everything to a backup folder",
                 "Your identity, your pass and your collection, into backup/ on this card",
                 "", Kind::Action);
+            {
+                // Doubles as its own progress display, the same way the update
+                // row in About does: build() runs every frame, so there is no
+                // second place for the state to get out of step.
+                Update& updater = Update::get();
+                bool mine = updater.fetchingArt();
+                bool working = mine && updater.state() == UpdateState::Downloading;
+                bool done = mine && updater.state() == UpdateState::Installed;
+                bool failed = mine && updater.state() == UpdateState::Failed;
+
+                std::string hint = "If the puzzles show numbered squares, get the "
+                                   "pictures here and restart";
+                std::string shown;
+                if (working) {
+                    hint = updater.message();
+                    shown = format("%.0f%%", updater.progress() * 100.0f);
+                } else if (done || failed) {
+                    hint = updater.message();
+                    shown = done ? "done" : "failed";
+                }
+                value(Id_GetArt, "Download puzzle art", hint, shown, Kind::Action);
+            }
             value(Id_DeleteAll, "Delete every pass you have collected",
                 "This cannot be undone", "", Kind::Danger);
             value(Id_NewIdentity, "Start over as someone new",
@@ -405,14 +428,22 @@ private:
                     shown = updater.version();
                     break;
                 case UpdateState::Downloading:
+                    // The artwork borrows this state and this worker; it has
+                    // its own row in Data and should not narrate here.
+                    if (updater.fetchingArt())
+                        break;
                     hint = updater.message();
                     shown = format("%.0f%%", updater.progress() * 100.0f);
                     break;
                 case UpdateState::Installed:
+                    if (updater.fetchingArt())
+                        break;
                     hint = "Press A to restart into it";
                     shown = updater.version();
                     break;
                 case UpdateState::Failed:
+                    if (updater.fetchingArt())
+                        break; // the artwork's own row reports this
                     hint = updater.message();
                     shown = "-";
                     break;
@@ -535,6 +566,8 @@ private:
                     "Install", [] { Update::get().beginInstall(); });
                 break;
             case UpdateState::Installed:
+                if (updater.fetchingArt())
+                    return; // artwork, not a build: nothing to restart into
                 app.askConfirm("Restart into version " + updater.version() + "?",
                     "The app closes and opens again on the new version. Your passes and "
                     "your collection are untouched.",
@@ -553,6 +586,21 @@ private:
             }
             return;
         }
+        case Id_GetArt:
+            // Not gated on the artwork actually being missing: a pack can be
+            // present and still be older than the puzzles this build has, and
+            // the owner is better placed to know it looks wrong than we are.
+            if (!Update::get().beginArtDownload()) {
+                app.toast("Busy with another download",
+                    "Wait for the update in About to finish, then try again.");
+                return;
+            }
+            // What has happened, not what will: it can still fail, and this
+            // row reports either way. The restart is asked for when there is
+            // something to restart for.
+            app.toast("Downloading puzzle art", "This row shows how it is going.");
+            return;
+
         case Id_Backup: {
             std::string where;
             std::string why;

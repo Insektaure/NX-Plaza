@@ -53,7 +53,7 @@ bool App::init()
     // Before the renderer, which publishes the picture slot's descriptor as it
     // starts up and never writes it again. Not a hard failure: a build without
     // the artwork shows numbered tiles and everything else works.
-    pictures().load("romfs:/puzzles/pictures.bin", m_gpu);
+    pictures().load(dataPath(PictureStore::relativePath()), m_gpu);
 
     if (!m_renderer.init(m_gpu, m_font))
         return false;
@@ -145,6 +145,13 @@ void App::pollUpdate()
             "Settings -> About -> Check for updates to install it.");
         break;
     case UpdateState::Installed:
+        // The artwork fetch borrows this state and installs no build. Its own
+        // row says what happened; announcing a version that was never
+        // downloaded, and offering to restart into it, would be a lie.
+        if (updater.fetchingArt()) {
+            toast("Puzzle art downloaded", "Restart the app to see the pictures.");
+            break;
+        }
         toast("Update installed",
             "Restart from Settings -> \"About\" to run version " + updater.version() + ".");
         break;
@@ -155,7 +162,11 @@ void App::pollUpdate()
             toast("Up to date", "nx-plaza " APP_VERSION " is the latest release.");
         break;
     case UpdateState::Failed:
-        if (updater.announce())
+        // Always said when it was the artwork, announce or not: that job only
+        // ever runs because somebody pressed the row asking for it.
+        if (updater.fetchingArt())
+            toast("Could not download puzzle art", updater.message());
+        else if (updater.announce())
             toast("Could not check for updates", updater.message());
         break;
     default:

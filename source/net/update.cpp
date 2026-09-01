@@ -3,6 +3,7 @@
 #include "core/json.h"
 #include "core/log.h"
 #include "core/util.h"
+#include "gfx/picture.h"
 #include "net/http.h"
 
 #include <switch.h>
@@ -15,6 +16,7 @@
 #include <cstdio>
 #include <cstring>
 #include <mutex>
+#include <sys/stat.h>
 #include <vector>
 
 // Set by the Makefile, beside PLAZA_SERVER. The fallback is here so the file
@@ -34,6 +36,7 @@ namespace {
     const char* kDownloadFile = "update.part";     // whatever the release published
     const char* kStagedFile = "update.nro.part";  // the NRO, once we have one
     const char* kBackupFile = "update.nro.backup";
+    const char* kStagedPack = "update.pictures.part"; // the artwork, once we have it
 
     // A release NRO is a few megabytes. This is a guard against a redirect to
     // something enormous, not a real limit.
@@ -41,7 +44,11 @@ namespace {
 
     std::mutex g_mutex;
     std::atomic<bool> g_busy { false };
-    std::atomic<bool> g_installing { false };
+
+    // What the worker is for this time. Was a bool while there were only two
+    // jobs; fetching the artwork on its own is a third.
+    enum class Job { Check, Install, Art };
+    std::atomic<Job> g_job { Job::Check };
 
     UpdateState g_state = UpdateState::Idle;
     std::string g_version;
@@ -112,7 +119,25 @@ namespace {
     // inside the archive is used to decide *whether* to extract an entry and
     // never as somewhere to write. An archive cannot talk us into scattering
     // files across the SD card, however its entries are named.
-    bool extractNro(const std::string& from, const std::string& to)
+    // Whether a zip entry is the member being looked for. Taken as a predicate
+    // rather than a name because the NRO is matched on its extension - releases
+    // do not agree on what to call it - while the artwork is matched on an
+    // exact name.
+    using WantEntry = bool (*)(const std::string& name);
+
+    bool wantNro(const std::string& name) { return endsWithNoCase(name, ".nro"); }
+
+    bool wantPictures(const std::string& name)
+    {
+        // Any directory the release happened to zip it inside; what matters is
+        // the file, not where the person packing it put it.
+        size_t slash = name.find_last_of("/\\");
+        std::string leaf = slash == std::string::npos ? name : name.substr(slash + 1);
+        return endsWithNoCase(leaf, "pictures.bin");
+    }
+
+    bool extractMember(const std::string& from, const std::string& to, WantEntry want,
+        const char* what)
     {
         unzFile zip = unzOpen(from.c_str());
         if (!zip) {
@@ -130,14 +155,14 @@ namespace {
                 break;
 
             std::string entry(name);
-            if (endsWithNoCase(entry, ".nro") && info.uncompressed_size <= kMaxAssetBytes)
+            if (want(entry) && info.uncompressed_size <= kMaxAssetBytes)
                 found = true;
             else
                 step = unzGoToNextFile(zip);
         }
 
         if (!found) {
-            LOG("update: the zip holds no .nro");
+            LOG("update: the zip holds no %s", what);
             unzClose(zip);
             return false;
         }
@@ -284,6 +309,32 @@ namespace {
 
         if (!ok)
             return fail(step, rc);
+        return true;
+    }
+
+    // Makes the folders a path needs, the way `mkdir -p` would. The artwork
+    // lives two directories down and neither is there on a card that has only
+    // ever run older builds.
+    bool ensureParentDir(const std::string& path)
+    {
+        size_t end = path.find_last_of('/');
+        if (end == std::string::npos)
+            return true;
+
+        // Past "sdmc:/", so the drive prefix is never handed to mkdir.
+        size_t at = path.find(":/");
+        at = at == std::string::npos ? 0 : at + 2;
+
+        for (size_t slash = path.find('/', at); slash != std::string::npos && slash <= end;
+            slash = path.find('/', slash + 1)) {
+            std::string dir = path.substr(0, slash);
+            if (dir.empty())
+                continue;
+            if (mkdir(dir.c_str(), 0777) != 0 && errno != EEXIST) {
+                LOG("update: mkdir %s failed (%s)", dir.c_str(), strerror(errno));
+                return false;
+            }
+        }
         return true;
     }
 
@@ -443,6 +494,7 @@ std::string Update::message() const
 float Update::progress() const { return g_progress.load(); }
 bool Update::announce() const { return g_announce.load(); }
 bool Update::wantsRestart() const { return g_restart.load(); }
+bool Update::fetchingArt() const { return g_job.load() == Job::Art; }
 
 void Update::threadEntry(void* arg)
 {
@@ -451,10 +503,17 @@ void Update::threadEntry(void* arg)
 
 void Update::run()
 {
-    if (g_installing.load())
+    switch (g_job.load()) {
+    case Job::Install:
         installNow();
-    else
+        break;
+    case Job::Art:
+        artNow();
+        break;
+    default:
         checkNow();
+        break;
+    }
     g_busy.store(false);
 }
 
@@ -499,7 +558,7 @@ void Update::beginCheck(bool announce)
         return;
 
     g_announce.store(announce);
-    g_installing.store(false);
+    g_job.store(Job::Check);
     setState(UpdateState::Checking, "Checking for updates");
     spawn();
 }
@@ -508,10 +567,22 @@ void Update::beginInstall()
 {
     if (state() != UpdateState::Available || g_busy.load())
         return;
-    g_installing.store(true);
+    g_job.store(Job::Install);
     g_progress.store(0.0f);
     setState(UpdateState::Downloading, "Downloading");
     spawn();
+}
+
+bool Update::beginArtDownload()
+{
+    if (g_busy.load())
+        return false;
+    g_job.store(Job::Art);
+    // Not an update check, so the launch-check plumbing must not narrate it.
+    g_announce.store(false);
+    g_progress.store(0.0f);
+    setState(UpdateState::Downloading, "Downloading puzzle art");
+    return spawn();
 }
 
 void Update::shutdown()
@@ -575,22 +646,25 @@ void Update::checkNow()
             if (name.empty() || link.empty())
                 continue;
 
-            // A bare .nro is best: nothing to unpack, so nothing to go wrong
-            // between the download and the file we check. A zip is taken when
-            // that is what the release publishes. A name that says nx-plaza
-            // beats one that does not, so a release carrying several NROs
-            // still picks ours.
-            // Lower-cased first, so the name match is as case-blind as the
-            // extension match beside it. A release asset called NX-Plaza.nro
-            // should not lose to one called build.nro on a capital letter.
+            // A zip beats a bare .nro, which is the other way round from how
+            // this started. A release is now two files - the build and the
+            // puzzle artwork it expects - and only the archive carries both.
+            // Taking the loose NRO would install a build whose new puzzles have
+            // no pictures, which is a worse outcome than having to unpack.
+            //
+            // A name that says nx-plaza beats one that does not, so a release
+            // carrying several builds still picks ours. Lower-cased first, so
+            // the name match is as case-blind as the extension match beside it:
+            // an asset called NX-Plaza.zip should not lose to one called
+            // build.zip on a capital letter.
             std::string lower = name;
             for (char& c : lower)
                 c = char(tolower(static_cast<unsigned char>(c)));
             bool named = lower.find("nx-plaza") != std::string::npos;
             int score = 0;
-            if (endsWithNoCase(name, ".nro"))
+            if (endsWithNoCase(name, ".zip"))
                 score = named ? 4 : 3;
-            else if (endsWithNoCase(name, ".zip"))
+            else if (endsWithNoCase(name, ".nro"))
                 score = named ? 2 : 1;
 
             if (score > best) {
@@ -674,23 +748,31 @@ void Update::installNow()
         return;
     }
 
-    // 2. A release published as an archive: take the one file we came for and
-    // throw the archive away. Nothing else in it is unpacked.
+    // A release published as an archive holds two things: the build, and the
+    // puzzle artwork that build expects. The archive is thrown away after both
+    // are out of it; nothing else in it is unpacked.
+    const std::string stagedPack = dataPath(kStagedPack);
+    remove(stagedPack.c_str());
+    bool havePack = false;
     if (zipped) {
         setState(UpdateState::Downloading, "Unpacking");
-        bool unpacked = extractNro(download, staged);
+        bool unpacked = extractMember(download, staged, wantNro, "nx-plaza build");
+        // Optional, and its absence means "keep the artwork already on the card"
+        havePack = extractMember(download, stagedPack, wantPictures, "pictures.bin");
         remove(download.c_str());
         if (!unpacked) {
             remove(staged.c_str());
+            remove(stagedPack.c_str());
             setState(UpdateState::Failed, "The downloaded archive held no nx-plaza build.");
             return;
         }
     }
 
-    // 3. Check what arrived before letting it anywhere near the running file.
+    // Check what arrived before letting it anywhere near the running file.
     std::string stagedVersion = nroDisplayVersion(staged);
     if (stagedVersion.empty()) {
         remove(staged.c_str());
+        remove(stagedPack.c_str());
         setState(UpdateState::Failed, "The downloaded file is not a valid nx-plaza build.");
         return;
     }
@@ -698,13 +780,44 @@ void Update::installNow()
         LOG("update: staged build says %s, release said %s", stagedVersion.c_str(),
             wanted.c_str());
         remove(staged.c_str());
+        remove(stagedPack.c_str());
         setState(UpdateState::Failed,
             format("The download is version %s, not %s.", stagedVersion.c_str(),
                 wanted.c_str()));
         return;
     }
 
-    // 4. Let go of our own RomFS before touching the file it lives in.
+    // The artwork, before the build that wants it.
+    //
+    // Two files cannot be replaced atomically on a FAT card, so the order is
+    // chosen to put the failure window on the harmless side. Stopping here
+    // leaves the old build with newer artwork, which holds pictures it never
+    // asks for; stopping after the swap would leave the new build with artwork
+    // that has no picture for its new puzzle. Both survive - a puzzle with no
+    // picture falls back to numbered tiles - but only one of them is invisible.
+    //
+    // No backup of the old pack. The NRO gets one because losing it leaves
+    // nothing to boot; losing this costs numbered tiles until the next update.
+    if (havePack) {
+        int pictures = PictureStore::validate(stagedPack);
+        if (pictures <= 0) {
+            // A truncated download must never replace artwork that works.
+            LOG("update: the archive's pictures.bin did not verify; keeping the old one");
+            remove(stagedPack.c_str());
+        } else {
+            const std::string packPath = dataPath(PictureStore::relativePath());
+            std::string packWhy;
+            if (!ensureParentDir(packPath))
+                LOG("update: could not make the folder for %s", packPath.c_str());
+            else if (!overwriteFile(stagedPack, packPath, &packWhy))
+                LOG("update: the artwork could not be written - %s", packWhy.c_str());
+            else
+                LOG("update: installed %d pictures", pictures);
+            remove(stagedPack.c_str());
+        }
+    }
+
+    // Let go of our own RomFS before touching the file it lives in.
     //
     // This is what 0xE02 / FsError_TargetLocked was: romfsInit() mounts the
     // RomFS out of this very NRO and holds it open for the whole session, so
@@ -717,7 +830,7 @@ void Update::installNow()
         ~RomfsRelease() { romfsInit(); }
     } releaseRomfs;
 
-    // 5. Keep a copy of what works before overwriting it.
+    // Keep a copy of what works before overwriting it.
     setState(UpdateState::Downloading, "Installing");
     if (!copyFile(exe, backup)) {
         remove(staged.c_str());
@@ -743,7 +856,7 @@ void Update::installNow()
         return;
     }
 
-    // 6. Read the installed file back off the card. A write that was truncated
+    // Read the installed file back off the card. A write that was truncated
     // or corrupted is still recoverable at this point, and not one step later.
     std::string installed = nroDisplayVersion(exe);
     if (compareVersions(installed, wanted) != 0) {
@@ -760,6 +873,125 @@ void Update::installNow()
     g_restart.store(true);
     setState(UpdateState::Installed,
         format("Version %s is installed. Restart to run it.", wanted.c_str()));
+}
+
+void Update::artNow()
+{
+    // Deliberately not tied to a version. This exists because a console that
+    // updated from a build whose installer only knew how to unpack an NRO has
+    // the new app and none of the artwork it expects, and no future release
+    // will fix that by itself. What it wants is simply the newest pictures.bin
+    // there is; the pack is looked up by key, so extra pictures in it cost
+    // nothing and missing ones fall back to numbered tiles.
+    HttpResponse response = Http::get(kApi,
+        { "Accept: application/vnd.github+json", "X-GitHub-Api-Version: 2022-11-28" },
+        20000);
+    if (!response.ok()) {
+        std::string why = response.error.empty()
+            ? format("the release server answered %ld", response.status)
+            : response.error;
+        setState(UpdateState::Failed, why);
+        return;
+    }
+
+    json_t* root = js::parse(response.body, nullptr);
+    if (!root) {
+        setState(UpdateState::Failed, "The release list could not be read.");
+        return;
+    }
+
+    // Whatever carries the artwork: the release zip, or a loose pictures.bin
+    // if one was published beside it. The loose file is preferred - there is
+    // nothing to unpack, and it is a fraction of the download.
+    std::string url;
+    bool loose = false;
+    if (json_t* assets = js::getArr(root, "assets")) {
+        size_t index;
+        json_t* asset;
+        json_array_foreach(assets, index, asset)
+        {
+            std::string name = js::getStr(asset, "name");
+            std::string link = js::getStr(asset, "browser_download_url");
+            if (name.empty() || link.empty())
+                continue;
+            if (endsWithNoCase(name, "pictures.bin")) {
+                url = link;
+                loose = true;
+                break;
+            }
+            if (url.empty() && endsWithNoCase(name, ".zip"))
+                url = link;
+        }
+    }
+    json_decref(root);
+
+    if (url.empty()) {
+        setState(UpdateState::Failed, "That release publishes no puzzle art.");
+        return;
+    }
+
+    const std::string download = dataPath(kDownloadFile);
+    const std::string staged = dataPath(kStagedPack);
+    remove(download.c_str());
+    remove(staged.c_str());
+
+    std::string error;
+    bool ok = Http::download(url, loose ? staged : download, &error,
+        [](uint64_t got, uint64_t total) {
+            if (g_cancel.load())
+                return false;
+            if (total > kMaxAssetBytes || got > kMaxAssetBytes)
+                return false;
+            g_progress.store(total > 0 ? float(double(got) / double(total)) : 0.0f);
+            return true;
+        });
+    if (!ok) {
+        remove(download.c_str());
+        remove(staged.c_str());
+        setState(UpdateState::Failed, "The download did not finish: " + error);
+        return;
+    }
+
+    if (!loose) {
+        setState(UpdateState::Downloading, "Unpacking");
+        bool unpacked = extractMember(download, staged, wantPictures, "pictures.bin");
+        remove(download.c_str());
+        if (!unpacked) {
+            remove(staged.c_str());
+            setState(UpdateState::Failed, "That release's archive holds no puzzle art.");
+            return;
+        }
+    }
+
+    int count = PictureStore::validate(staged);
+    if (count <= 0) {
+        remove(staged.c_str());
+        setState(UpdateState::Failed, "The puzzle art that arrived was not readable.");
+        return;
+    }
+
+    const std::string packPath = dataPath(PictureStore::relativePath());
+    std::string why;
+    if (!ensureParentDir(packPath)) {
+        remove(staged.c_str());
+        setState(UpdateState::Failed, "The folder for the puzzle art could not be made.");
+        return;
+    }
+    if (!overwriteFile(staged, packPath, &why)) {
+        remove(staged.c_str());
+        setState(UpdateState::Failed, "The puzzle art could not be written - " + why);
+        return;
+    }
+    remove(staged.c_str());
+
+    // Installed, not live: the picture slot and its descriptor are built while
+    // the app starts and are not rebuilt afterwards, so this shows up on the
+    // next launch. Saying so is better than leaving somebody looking at the
+    // numbered tiles they just downloaded a fix for.
+    LOG("update: fetched %d pictures into %s", count, packPath.c_str());
+    g_progress.store(1.0f);
+    setState(UpdateState::Installed,
+        format("%d puzzle pictures downloaded. Restart to see them.", count));
 }
 
 void Update::restartIntoUpdate()

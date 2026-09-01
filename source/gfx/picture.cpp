@@ -31,6 +31,49 @@ namespace {
 
 PictureStore& pictures() { return g_pictures; }
 
+const char* PictureStore::relativePath() { return "data/assets/pictures.bin"; }
+
+int PictureStore::validate(const std::string& path)
+{
+    FILE* f = fopen(path.c_str(), "rb");
+    if (!f)
+        return -1;
+
+    uint8_t head[kHeaderSize];
+    bool ok = fread(head, 1, sizeof(head), f) == sizeof(head)
+        && memcmp(head, kMagic, sizeof(kMagic)) == 0 && readU16(head + 4) == kVersion;
+    if (!ok) {
+        fclose(f);
+        return -1;
+    }
+
+    fseek(f, 0, SEEK_END);
+    long total = ftell(f);
+    uint32_t count = readU16(head + 6);
+    int usable = 0;
+    for (uint32_t i = 0; i < count; i++) {
+        uint8_t rec[kEntrySize];
+        if (fseek(f, long(kHeaderSize + i * kEntrySize), SEEK_SET) != 0
+            || fread(rec, 1, sizeof(rec), f) != sizeof(rec)) {
+            fclose(f);
+            return -1; // the index itself is short: the file is truncated
+        }
+        uint32_t offset = readU32(rec + kKeyLen + 8);
+        uint32_t size = readU32(rec + kKeyLen + 12);
+        // Every payload has to be inside the file. This is the check that
+        // catches a download that stopped halfway, which otherwise looks
+        // perfectly well formed right up until something reads past the end.
+        if (size == 0 || uint64_t(offset) + size > uint64_t(total)) {
+            fclose(f);
+            return -1;
+        }
+        if (rec[kKeyLen + 4] == kFormatBc1)
+            usable++;
+    }
+    fclose(f);
+    return usable;
+}
+
 bool PictureStore::load(const std::string& path, Gpu& gpu)
 {
     m_path = path;

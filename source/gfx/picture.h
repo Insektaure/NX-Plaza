@@ -22,6 +22,19 @@ namespace nxp {
 // nothing else.
 class PictureStore {
 public:
+    // Where the artwork lives on the card, relative to the data directory.
+    //
+    // Outside romfs on purpose: the pack is delivered beside the NRO by the
+    // updater rather than baked into it, so the two are replaced together and
+    // neither has to carry the other. Named here because the loader and the
+    // installer both need it and must not drift.
+    static const char* relativePath();
+
+    // Reads the header and index of a pack without touching the GPU, so the
+    // installer can refuse a truncated download before it replaces a pack that
+    // works. Returns how many pictures are in it, or -1 when it is not one.
+    static int validate(const std::string& path);
+
     // Reads the index and reserves the slot. A missing file is not a failure:
     // it means this build ships no artwork, and the puzzle screen falls back to
     // numbered tiles.

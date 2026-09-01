@@ -38,6 +38,18 @@ public:
     // unless the state is Available.
     void beginInstall();
 
+    // Fetches just the puzzle artwork from the newest release, whatever
+    // version this build is.
+    //
+    // A console that updated from a build whose installer only understood the
+    // NRO has the new app and none of the artwork, and nothing it does on its
+    // own will fix that. This is the way out: Settings -> Data -> Download
+    // puzzle art. It takes effect on the next launch.
+    //
+    // False when the worker is already busy with a check or an install, so the
+    // caller can say that rather than claim a download it did not start.
+    bool beginArtDownload();
+
     // Joins the worker. Call before the app tears the network down.
     void shutdown();
 
@@ -56,6 +68,11 @@ public:
     // True when the check was started by the user rather than by the app.
     bool announce() const;
 
+    // True when the worker is fetching artwork rather than a build. Both use
+    // the Downloading state, and without this each of the two Settings rows
+    // would show the other's progress.
+    bool fetchingArt() const;
+
     // True once an update is installed and the app should relaunch into it.
     bool wantsRestart() const;
 
@@ -71,6 +88,7 @@ private:
     bool spawn();
     void checkNow();
     void installNow();
+    void artNow();
 };
 
 // Compares dotted versions ("1.2.3", "v0.4"). Positive when `a` is newer than
