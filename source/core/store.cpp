@@ -659,14 +659,50 @@ bool Store::grantPieceFor(const std::string& crossingId, uint64_t when)
     if (crossingId.empty() || pieceSets().empty())
         return false;
 
+    // A finished puzzle takes nothing more, so every crossing after the last
+    // piece was thrown away in silence: the toast said nothing, the board
+    // showed nothing, and the pieces were simply gone. Moving on to the first
+    // unfinished one costs the owner nothing they chose - they had already got
+    // what they picked this puzzle for.
+    //
+    // When they are all finished it stays put. There is nowhere better to go,
+    // and switching for the sake of it would lose the record of which one was
+    // being collected.
+    if (m_pieces.complete(m_pieces.active)) {
+        for (size_t i = 0; i < pieceSets().size(); i++) {
+            if (m_pieces.complete(static_cast<int>(i)))
+                continue;
+            LOG("pieces: %s is finished; filling %s now",
+                pieceSets()[size_t(m_pieces.active)].name, pieceSets()[i].name);
+            m_pieces.active = static_cast<int>(i);
+            m_profileDirty = true;
+            break;
+        }
+    }
+
     int set = m_pieces.active;
     uint8_t piece = pieceFor(identity().id, crossingId, when, set);
     bool isNew = m_pieces.take(set, piece);
 
     // Recorded either way, with the flag saying which it was. A duplicate is
     // still what this person brought; it is simply not worth announcing.
-    m_extras.setU32(crossingId, extras::LastPiece,
-        (isNew ? extras::PieceWasNew : 0u) | (uint32_t(set) << 16) | uint32_t(piece));
+    uint32_t packed
+        = (isNew ? extras::PieceWasNew : 0u) | (uint32_t(set) << 16) | uint32_t(piece);
+
+    // Crossing the same person twice in one day yields the same piece - pieceFor
+    // is seeded on the day - so what we are about to write is very often exactly
+    // what is already there. Writing it regardless appends an entry and
+    // supersedes an identical one, and dead weight is what decides when the
+    // whole log gets rewritten. So skip only a byte-for-byte repeat.
+    //
+    // Nothing else is skipped. A value differing by nothing but the new-piece
+    // flag still has to be recorded, because the arrival toast tests that flag
+    // to decide whether to announce a piece: leaving yesterday's flag standing
+    // would announce one that was not granted.
+    const CrossingExtras* row = m_extras.find(crossingId);
+    uint32_t already = 0;
+    if (row == nullptr || !row->getU32(extras::LastPiece, already) || already != packed)
+        m_extras.setU32(crossingId, extras::LastPiece, packed);
 
     if (!isNew)
         return false;

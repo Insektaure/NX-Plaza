@@ -146,17 +146,28 @@ namespace {
             float headHeight = name.size * theme::leadingNormal;
 
             Rect whole { box.x, box.y, gridWidth, headHeight + theme::s3 + gridHeight };
-            r.text(box.x, box.y, spec.name, name);
+            float nameWidth = r.text(box.x, box.y, spec.name, name);
+
+            // Which puzzle the pieces are going into, as a badge next to its
+            // name rather than a word at the end of the line.
+            //
+            // Once they are all done there is nothing to point at - every row
+            // says "finished", and a badge on a full board would be a lie.
+            if (active && !complete) {
+                TextStyle badgeText;
+                badgeText.size = theme::textXs;
+                badgeText.weight = FontWeight::Medium;   // as pill() draws it
+                float badgeWidth = r.measure("filling", badgeText) + theme::s6;
+                Rect badge { box.x + nameWidth + theme::s4,
+                    box.y + (headHeight - 34.0f) * 0.5f, badgeWidth, 34.0f };
+                ui::pill(r, badge, "filling", theme::bg0, theme::accent, theme::textXs);
+            }
 
             TextStyle count;
             count.size = theme::textSm;
             count.color = complete ? theme::teal : theme::fg3;
             std::string right = complete ? std::string("finished")
                                          : format("%d of %u", held, unsigned(spec.count));
-            // The one being filled says so: otherwise nothing on the screen
-            // tells you where the next piece is going to land.
-            if (active && !complete)
-                right = "filling - " + right;
             r.text(Rect { box.x, box.y, gridWidth, headHeight }, right, count, Align::Right,
                 VAlign::Middle);
 

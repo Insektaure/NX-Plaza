@@ -272,7 +272,10 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
         except (TypeError, ValueError):
             owned[i] = 0
 
-    before = bin(owned[active]).count("1")
+    def full(index: int) -> bool:
+        return bin(owned[index]).count("1") >= sets[index][1]
+
+    before = [bin(m).count("1") for m in owned]
     meetings = 0
     for crossing in crossings:
         # One per meeting, not one per person. A console grants a piece every
@@ -281,6 +284,12 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
         # worth one, because the day is part of what decides the piece. Using
         # only lastSeen made a seeded card lag well behind a real one.
         for when in crossing.get("meetings") or [crossing["lastSeen"]]:
+            # The console moves on when a puzzle is finished rather than
+            # throwing the rest away, so seeding has to as well - otherwise two
+            # hundred crossings fill the first puzzle and vanish.
+            if full(active):
+                nxt = next((i for i in range(len(sets)) if not full(i)), active)
+                active = nxt
             piece = piece_for(my_id, crossing["id"], when, active, sets[active][1])
             owned[active] |= 1 << piece
             meetings += 1
@@ -296,10 +305,16 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
     with open(profile_path, "w", encoding="utf-8") as handle:
         json.dump(profile, handle, indent=2)
 
-    after = bin(owned[active]).count("1")
-    name, count = sets[active]
-    return (f"{name}: {after} of {count} pieces ({after - before} new) "
-            f"from {meetings} meetings")
+    parts = []
+    for i, (name, count) in enumerate(sets):
+        after = bin(owned[i]).count("1")
+        if after == 0:
+            continue
+        gained = after - before[i]
+        parts.append(f"{name} {after}/{count}" + (f" (+{gained})" if gained else ""))
+    if not parts:
+        parts.append("nothing granted")
+    return ", ".join(parts) + f" from {meetings} meetings"
 
 
 # ------------------------------------------------------------------- packing
