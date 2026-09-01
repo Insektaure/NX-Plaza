@@ -74,6 +74,22 @@ void Store::load()
         if (json_t* p = js::getObj(profile, "pieces")) {
             m_pieces.fromHex(js::getStrArray(p, "owned", 64),
                 static_cast<int>(js::getInt(p, "active", 0)));
+
+            // Read after the masks, because normalise() drops any source whose
+            // piece is not held and fromHex is what decides that.
+            if (json_t* from = js::getArr(p, "from")) {
+                size_t i = 0;
+                json_t* e = nullptr;
+                json_array_foreach(from, i, e) {
+                    if (!json_is_object(e))
+                        continue;
+                    m_pieces.noteSource(static_cast<int>(js::getInt(e, "set", -1)),
+                        static_cast<uint8_t>(js::getInt(e, "piece", 255)),
+                        js::getStr(e, "who"),
+                        static_cast<uint64_t>(js::getInt(e, "when", 0)));
+                }
+            }
+            m_pieces.normalise();
         }
 
         json_t* s = js::getObj(profile, "settings");
@@ -216,6 +232,20 @@ void Store::saveProfileLocked()
     json_t* pieces = json_object();
     json_object_set_new(pieces, "active", json_integer(m_pieces.active));
     json_object_set_new(pieces, "owned", js::strArray(m_pieces.toHex()));
+
+    // Who brought each piece. Sparse - one entry per held piece, in no
+    // particular order - so a build that changes the set table drops what no
+    // longer fits instead of shifting everything along by one.
+    json_t* from = json_array();
+    for (const PieceSource& src : m_pieces.sources) {
+        json_t* e = json_object();
+        json_object_set_new(e, "set", json_integer(src.set));
+        json_object_set_new(e, "piece", json_integer(src.piece));
+        json_object_set_new(e, "who", json_string(src.who.c_str()));
+        json_object_set_new(e, "when", json_integer(json_int_t(src.when)));
+        json_array_append_new(from, e);
+    }
+    json_object_set_new(pieces, "from", from);
     json_object_set_new(root, "pieces", pieces);
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
@@ -706,6 +736,18 @@ bool Store::grantPieceFor(const std::string& crossingId, uint64_t when)
 
     if (!isNew)
         return false;
+
+    // Who it came from, taken now rather than looked up later: both callers put
+    // the card into m_crossings and sanitize it before calling, and the handle
+    // has to outlive the card anyway.
+    std::string who;
+    for (const Crossing& c : m_crossings) {
+        if (c.id == crossingId) {
+            who = c.pass.handle;
+            break;
+        }
+    }
+    m_pieces.noteSource(set, piece, who, when);
 
     m_profileDirty = true;
     LOG("pieces: %s brought piece %u of %s", crossingId.substr(0, 8).c_str(),

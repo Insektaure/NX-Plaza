@@ -198,7 +198,12 @@ PIECES_SOURCE = os.path.join(HERE, "..", "source", "core", "pieces.cpp")
 
 
 def piece_sets() -> list:
-    """(name, count) per puzzle, read out of pieces.cpp."""
+    """(name, count) per puzzle, read out of pieces.cpp.
+
+    The table also names each puzzle's artwork, which nothing here needs; the
+    pattern tolerates the extra field rather than pinning the entry shape, so
+    adding another one does not silently stop pieces being granted.
+    """
     try:
         with open(PIECES_SOURCE, "r", encoding="utf-8") as handle:
             text = handle.read()
@@ -208,7 +213,9 @@ def piece_sets() -> list:
     body = re.search(r"kSets = \{(.*?)\};", text, re.S)
     if not body:
         return []
-    return [(n, int(c)) for n, c in re.findall(r'\{ "([^"]+)", (\d+) \}', body.group(1))]
+    entries = re.findall(r'\{\s*"([^"]+)"\s*(?:,\s*"[^"]*"\s*)*,\s*(\d+)\s*\}',
+                         body.group(1))
+    return [(n, int(c)) for n, c in entries]
 
 
 def fnv1a(text: str) -> int:
@@ -275,6 +282,14 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
     def full(index: int) -> bool:
         return bin(owned[index]).count("1") >= sets[index][1]
 
+    # Who brought each piece, as the console records it: keyed on the piece,
+    # holding the handle rather than the id, because the collection prunes and
+    # the name has to outlive the card.
+    sources = {}
+    for entry in block.get("from") or []:
+        if isinstance(entry, dict):
+            sources[(int(entry.get("set", -1)), int(entry.get("piece", -1)))] = entry
+
     before = [bin(m).count("1") for m in owned]
     meetings = 0
     for crossing in crossings:
@@ -291,8 +306,18 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
                 nxt = next((i for i in range(len(sets)) if not full(i)), active)
                 active = nxt
             piece = piece_for(my_id, crossing["id"], when, active, sets[active][1])
+            is_new = not (owned[active] >> piece) & 1
             owned[active] |= 1 << piece
             meetings += 1
+            # Only a piece that was new records a source: a duplicate must not
+            # overwrite the person who actually handed it over.
+            if is_new:
+                sources[(active, piece)] = {
+                    "set": active,
+                    "piece": piece,
+                    "who": (crossing.get("pass") or {}).get("handle", ""),
+                    "when": when,
+                }
 
     # Bits past the end of a puzzle cannot be held.
     for i, (_, count) in enumerate(sets):
@@ -301,6 +326,10 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
     profile["pieces"] = {
         "active": active,
         "owned": ["%08x" % m for m in owned],
+        # Drop anything that does not name a piece actually held, which is what
+        # PieceInventory::normalise does on load.
+        "from": [e for (st, pc), e in sorted(sources.items())
+                 if 0 <= st < len(sets) and (owned[st] >> pc) & 1],
     }
     with open(profile_path, "w", encoding="utf-8") as handle:
         json.dump(profile, handle, indent=2)

@@ -2,6 +2,7 @@
 
 #include "core/util.h"
 
+#include <algorithm>
 #include <cstdio>
 #include <ctime>
 
@@ -18,9 +19,9 @@ namespace {
     //
     // Fifteen also cuts as 5x3, which is the shape a picture wants.
     const std::vector<PieceSet> kSets = {
-        { "Turnip Grove", 15 },
-        { "Lantern Bay", 15 },
-        { "Hollowreach", 15 },
+        { "Forest in the Rain", "forest_in_the_rain", 15 },
+        { "Mountain in the Fog", "mountain_in_the_fog", 15 },
+        { "Mystical Swamp", "mystical_swamp", 15 },
     };
 
     // The day, in whole local days since the epoch. Local rather than UTC so
@@ -107,6 +108,40 @@ bool PieceInventory::complete(int set) const
     return countHeld(set) >= int(kSets[size_t(set)].count);
 }
 
+void PieceInventory::noteSource(int set, uint8_t piece, const std::string& who,
+    uint64_t when)
+{
+    if (set < 0 || size_t(set) >= kSets.size() || piece >= kSets[size_t(set)].count)
+        return;
+
+    // Replace rather than append if something is already here. Nothing should
+    // call this twice for one piece, but an inventory that grew two entries for
+    // the same tile would quietly disagree with itself about who gave it.
+    for (PieceSource& src : sources) {
+        if (src.set == uint8_t(set) && src.piece == piece) {
+            src.who = who;
+            src.when = when;
+            return;
+        }
+    }
+
+    PieceSource src;
+    src.set = uint8_t(set);
+    src.piece = piece;
+    src.who = who;
+    src.when = when;
+    sources.push_back(std::move(src));
+}
+
+const PieceSource* PieceInventory::sourceFor(int set, uint8_t piece) const
+{
+    for (const PieceSource& src : sources) {
+        if (src.set == uint8_t(set) && src.piece == piece)
+            return &src;
+    }
+    return nullptr;
+}
+
 void PieceInventory::normalise()
 {
     owned.resize(kSets.size(), 0u);
@@ -121,6 +156,15 @@ void PieceInventory::normalise()
 
     if (active < 0 || size_t(active) >= kSets.size())
         active = 0;
+
+    // A source is only meaningful next to the piece it belongs to. Anything
+    // naming a set or a piece that no longer exists, or one that is not held,
+    // is dropped here rather than carried forward to confuse a screen.
+    sources.erase(std::remove_if(sources.begin(), sources.end(),
+                      [this](const PieceSource& src) {
+                          return !has(int(src.set), src.piece);
+                      }),
+        sources.end());
 }
 
 std::vector<std::string> PieceInventory::toHex() const
