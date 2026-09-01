@@ -6,6 +6,7 @@
 #include <cstdio>
 #include <ctime>
 #include <sys/stat.h>
+#include <unistd.h>
 
 namespace nxp {
 
