@@ -198,11 +198,10 @@ PIECES_SOURCE = os.path.join(HERE, "..", "source", "core", "pieces.cpp")
 
 
 def piece_sets() -> list:
-    """(name, count) per puzzle, read out of pieces.cpp.
+    """(name, picture, count) per puzzle, read out of pieces.cpp.
 
-    The table also names each puzzle's artwork, which nothing here needs; the
-    pattern tolerates the extra field rather than pinning the entry shape, so
-    adding another one does not silently stop pieces being granted.
+    The picture key is how a granted piece records which puzzle it belongs to,
+    because the position in this table is not stable across builds.
     """
     try:
         with open(PIECES_SOURCE, "r", encoding="utf-8") as handle:
@@ -213,9 +212,9 @@ def piece_sets() -> list:
     body = re.search(r"kSets = \{(.*?)\};", text, re.S)
     if not body:
         return []
-    entries = re.findall(r'\{\s*"([^"]+)"\s*(?:,\s*"[^"]*"\s*)*,\s*(\d+)\s*\}',
+    entries = re.findall(r'\{\s*"([^"]+)"\s*,\s*"([^"]*)"\s*,\s*(\d+)\s*\}',
                          body.group(1))
-    return [(n, int(c)) for n, c in entries]
+    return [(n, p, int(c)) for n, p, c in entries]
 
 
 def fnv1a(text: str) -> int:
@@ -280,15 +279,29 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
             owned[i] = 0
 
     def full(index: int) -> bool:
-        return bin(owned[index]).count("1") >= sets[index][1]
+        return bin(owned[index]).count("1") >= sets[index][2]
 
     # Who brought each piece, as the console records it: keyed on the piece,
     # holding the handle rather than the id, because the collection prunes and
     # the name has to outlive the card.
+    by_picture = {p: i for i, (_, p, _) in enumerate(sets)}
     sources = {}
     for entry in block.get("from") or []:
-        if isinstance(entry, dict):
-            sources[(int(entry.get("set", -1)), int(entry.get("piece", -1)))] = entry
+        if not isinstance(entry, dict):
+            continue
+        # Older cards keyed on the position in the table; migrate them the way
+        # Store::load does, by reading the index once.
+        picture = entry.get("picture") or ""
+        if not picture:
+            index = int(entry.get("set", -1))
+            picture = sets[index][1] if 0 <= index < len(sets) else ""
+        if picture in by_picture:
+            sources[(picture, int(entry.get("piece", -1)))] = {
+                "picture": picture,
+                "piece": int(entry.get("piece", -1)),
+                "who": entry.get("who", ""),
+                "when": int(entry.get("when", 0)),
+            }
 
     before = [bin(m).count("1") for m in owned]
     meetings = 0
@@ -305,22 +318,22 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
             if full(active):
                 nxt = next((i for i in range(len(sets)) if not full(i)), active)
                 active = nxt
-            piece = piece_for(my_id, crossing["id"], when, active, sets[active][1])
+            piece = piece_for(my_id, crossing["id"], when, active, sets[active][2])
             is_new = not (owned[active] >> piece) & 1
             owned[active] |= 1 << piece
             meetings += 1
             # Only a piece that was new records a source: a duplicate must not
             # overwrite the person who actually handed it over.
             if is_new:
-                sources[(active, piece)] = {
-                    "set": active,
+                sources[(sets[active][1], piece)] = {
+                    "picture": sets[active][1],
                     "piece": piece,
                     "who": (crossing.get("pass") or {}).get("handle", ""),
                     "when": when,
                 }
 
     # Bits past the end of a puzzle cannot be held.
-    for i, (_, count) in enumerate(sets):
+    for i, (_, _, count) in enumerate(sets):
         owned[i] &= (1 << count) - 1
 
     profile["pieces"] = {
@@ -328,14 +341,14 @@ def grant_pieces(out_dir: str, crossings: list) -> str:
         "owned": ["%08x" % m for m in owned],
         # Drop anything that does not name a piece actually held, which is what
         # PieceInventory::normalise does on load.
-        "from": [e for (st, pc), e in sorted(sources.items())
-                 if 0 <= st < len(sets) and (owned[st] >> pc) & 1],
+        "from": [e for (pic, pc), e in sorted(sources.items())
+                 if pic in by_picture and (owned[by_picture[pic]] >> pc) & 1],
     }
     with open(profile_path, "w", encoding="utf-8") as handle:
         json.dump(profile, handle, indent=2)
 
     parts = []
-    for i, (name, count) in enumerate(sets):
+    for i, (name, _, count) in enumerate(sets):
         after = bin(owned[i]).count("1")
         if after == 0:
             continue

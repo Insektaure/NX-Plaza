@@ -27,6 +27,10 @@ struct PieceSet {
 // The sets.
 const std::vector<PieceSet>& pieceSets();
 
+// Where a puzzle sits in the table, by its picture key. -1 when this build has
+// no such puzzle, which is what a file written by a newer one looks like.
+int pieceSetIndex(const std::string& picture);
+
 // Which piece a crossing yields, for a given set.
 //
 // Derived, not sent: both consoles work it out for themselves and nothing about
@@ -53,7 +57,8 @@ uint8_t pieceFor(const std::string& myId, const std::string& theirId, uint64_t w
 // one that never knew it. Sixteen characters is the whole of a handle
 // (model.h), so the copy costs nothing worth avoiding.
 struct PieceSource {
-    uint8_t set = 0;
+    // Which puzzle, by its picture key rather than its position in the table.
+    std::string picture;
     uint8_t piece = 0;
     std::string who;   // their handle, as it read that day
     uint64_t when = 0; // unix seconds
@@ -79,6 +84,10 @@ struct PieceInventory {
     // Records who brought a piece. Call only for a piece that was new: a
     // duplicate must not overwrite the person who actually gave it to you.
     void noteSource(int set, uint8_t piece, const std::string& who, uint64_t when);
+    // The same, addressed by picture key: what a saved file holds, and what a
+    // build with a reordered table still reads correctly.
+    void noteSourceFor(const std::string& picture, uint8_t piece, const std::string& who,
+        uint64_t when);
     // Null when the piece is not held, or was collected by a build that did not
     // record this yet.
     const PieceSource* sourceFor(int set, uint8_t piece) const;

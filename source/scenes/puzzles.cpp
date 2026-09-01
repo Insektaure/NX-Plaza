@@ -3,6 +3,7 @@
 #include "core/store.h"
 #include "core/util.h"
 #include "scenes/scene.h"
+#include "ui/scroll.h"
 #include "ui/theme.h"
 #include "ui/widgets.h"
 
@@ -33,11 +34,15 @@ namespace {
             m_inventory = app.store().pieces();
             m_row = m_inventory.active;
             m_open = -1;
+            // Coming back to the tab lands on the puzzle being filled, which is
+            // no use if it is scrolled off. The offset is set on the first draw,
+            // once the row geometry is known.
+            m_scroll.stop();
+            m_recentre = true;
         }
 
         void update(App& app, const Input& input, float dt) override
         {
-            (void)dt;
             m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
             m_inventory = app.store().pieces();
 
@@ -51,7 +56,7 @@ namespace {
                 m_open = -1;
 
             if (m_open < 0)
-                updateList(app, input, count);
+                updateList(app, input, dt, count);
             else
                 updateDetail(app, input, sets);
         }
@@ -90,20 +95,41 @@ namespace {
 
         // ------------------------------------------------------------- input
 
-        void updateList(App& app, const Input& input, int count)
+        void updateList(App& app, const Input& input, float dt, int count)
         {
+            const Touch& touch = input.touch;
+            if (touch.pressed)
+                m_brakedTap = m_scroll.absorbPress();
+            if (touch.down && touch.dragged
+                && m_listArea.contains(touch.startX, touch.startY)) {
+                m_scroll.drag(-touch.dy, dt);
+                m_dragging = true;
+            } else if (m_dragging && !touch.down) {
+                m_scroll.release();
+                m_dragging = false;
+            }
+            m_scroll.update(dt);
+
             TouchTarget tap;
-            if (app.takeTap(tap) && tap.is(Zone_Row) && tap.index >= 0
+            // A tap that only stopped a flick is not a tap on the row that
+            // happens to be under the finger now.
+            if (!m_brakedTap && app.takeTap(tap) && tap.is(Zone_Row) && tap.index >= 0
                 && tap.index < count) {
                 m_row = tap.index;
                 open(tap.index);
                 return;
             }
 
+            int was = m_row;
             if (input.navDown)
                 m_row = (m_row + 1) % count;
             if (input.navUp)
                 m_row = (m_row - 1 + count) % count;
+            if (m_row != was) {
+                m_scroll.stop();
+                m_scroll.centerOn(float(m_row) * (kRowHeight + theme::s3)
+                    + kRowHeight * 0.5f);
+            }
 
             if (input.accept())
                 open(m_row);
@@ -243,10 +269,32 @@ namespace {
                 sub);
             y += sub.size * theme::leadingNormal + theme::s6;
 
+            // Four rows fit under the heading, for a fifth: the rows scroll instead.
+            Rect list { content.x, y, content.w, content.bottom() - y };
+            m_listArea = list;
+            float total = float(sets.size()) * (kRowHeight + theme::s3) - theme::s3;
+            m_scroll.setBounds(list.h, std::max(0.0f, total));
+            if (m_recentre) {
+                m_scroll.centerOn(float(m_row) * (kRowHeight + theme::s3)
+                    + kRowHeight * 0.5f);
+                m_recentre = false;
+            }
+
+            r.pushClipVertical(list.inset(0.0f, -theme::focusRoom));
+            float rowY = list.y - m_scroll.offset();
             for (size_t i = 0; i < sets.size(); i++) {
-                drawRow(app, r, Rect { content.x, y, content.w, kRowHeight },
-                    static_cast<int>(i));
-                y += kRowHeight + theme::s3;
+                Rect row { list.x, rowY, list.w - kScrollGutter, kRowHeight };
+                // Only what is on screen, so an off-screen row does not leave a
+                // touch zone behind where nothing is drawn.
+                if (row.bottom() > list.y && row.y < list.bottom())
+                    drawRow(app, r, row, static_cast<int>(i));
+                rowY += kRowHeight + theme::s3;
+            }
+            r.popClip();
+
+            if (m_scroll.scrollable()) {
+                ui::scrollbar(r, Rect { list.right() - 8.0f, list.y, 8.0f, list.h },
+                    m_scroll.progress(), m_scroll.visibleFraction());
             }
         }
 
@@ -490,7 +538,16 @@ namespace {
             r.textWrapped(Rect { x, y, inner, noteHeight }, tail, note, 4);
         }
 
+        // Room kept clear on the right of a row so the scrollbar never sits on
+        // top of the chevron.
+        static constexpr float kScrollGutter = 24.0f;
+
         PieceInventory m_inventory;
+        ui::ScrollView m_scroll;
+        Rect m_listArea;
+        bool m_dragging = false;
+        bool m_brakedTap = false;
+        bool m_recentre = false;
         int m_row = 0;    // highlighted row in the list
         int m_open = -1;  // the puzzle filling the screen, or -1 for the list
         int m_piece = 0;  // cursor within the open puzzle

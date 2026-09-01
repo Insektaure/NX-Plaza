@@ -44,6 +44,17 @@ namespace {
 
 const std::vector<PieceSet>& pieceSets() { return kSets; }
 
+int pieceSetIndex(const std::string& picture)
+{
+    if (picture.empty())
+        return -1;
+    for (size_t i = 0; i < kSets.size(); i++) {
+        if (picture == kSets[i].image)
+            return static_cast<int>(i);
+    }
+    return -1;
+}
+
 uint8_t pieceFor(const std::string& myId, const std::string& theirId, uint64_t when, int set)
 {
     if (set < 0 || size_t(set) >= kSets.size())
@@ -111,14 +122,23 @@ bool PieceInventory::complete(int set) const
 void PieceInventory::noteSource(int set, uint8_t piece, const std::string& who,
     uint64_t when)
 {
-    if (set < 0 || size_t(set) >= kSets.size() || piece >= kSets[size_t(set)].count)
+    if (set < 0 || size_t(set) >= kSets.size())
+        return;
+    noteSourceFor(kSets[size_t(set)].image, piece, who, when);
+}
+
+void PieceInventory::noteSourceFor(const std::string& picture, uint8_t piece,
+    const std::string& who, uint64_t when)
+{
+    int set = pieceSetIndex(picture);
+    if (set < 0 || piece >= kSets[size_t(set)].count)
         return;
 
     // Replace rather than append if something is already here. Nothing should
     // call this twice for one piece, but an inventory that grew two entries for
     // the same tile would quietly disagree with itself about who gave it.
     for (PieceSource& src : sources) {
-        if (src.set == uint8_t(set) && src.piece == piece) {
+        if (src.picture == picture && src.piece == piece) {
             src.who = who;
             src.when = when;
             return;
@@ -126,7 +146,7 @@ void PieceInventory::noteSource(int set, uint8_t piece, const std::string& who,
     }
 
     PieceSource src;
-    src.set = uint8_t(set);
+    src.picture = picture;
     src.piece = piece;
     src.who = who;
     src.when = when;
@@ -135,8 +155,10 @@ void PieceInventory::noteSource(int set, uint8_t piece, const std::string& who,
 
 const PieceSource* PieceInventory::sourceFor(int set, uint8_t piece) const
 {
+    if (set < 0 || size_t(set) >= kSets.size())
+        return nullptr;
     for (const PieceSource& src : sources) {
-        if (src.set == uint8_t(set) && src.piece == piece)
+        if (src.piece == piece && src.picture == kSets[size_t(set)].image)
             return &src;
     }
     return nullptr;
@@ -158,11 +180,11 @@ void PieceInventory::normalise()
         active = 0;
 
     // A source is only meaningful next to the piece it belongs to. Anything
-    // naming a set or a piece that no longer exists, or one that is not held,
+    // naming a picture this build does not have, or a piece that is not held,
     // is dropped here rather than carried forward to confuse a screen.
     sources.erase(std::remove_if(sources.begin(), sources.end(),
                       [this](const PieceSource& src) {
-                          return !has(int(src.set), src.piece);
+                          return !has(pieceSetIndex(src.picture), src.piece);
                       }),
         sources.end());
 }

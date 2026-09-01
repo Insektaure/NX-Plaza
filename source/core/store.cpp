@@ -83,10 +83,20 @@ void Store::load()
                 json_array_foreach(from, i, e) {
                     if (!json_is_object(e))
                         continue;
-                    m_pieces.noteSource(static_cast<int>(js::getInt(e, "set", -1)),
-                        static_cast<uint8_t>(js::getInt(e, "piece", 255)),
-                        js::getStr(e, "who"),
-                        static_cast<uint64_t>(js::getInt(e, "when", 0)));
+                    uint8_t piece = static_cast<uint8_t>(js::getInt(e, "piece", 255));
+                    std::string who = js::getStr(e, "who");
+                    uint64_t when = static_cast<uint64_t>(js::getInt(e, "when", 0));
+
+                    // Written by index before the key existed. Reading it that
+                    // way once is what migrates it: the next save writes the
+                    // key, and this build's table is still the one it was
+                    // written against.
+                    std::string picture = js::getStr(e, "picture");
+                    if (picture.empty())
+                        m_pieces.noteSource(static_cast<int>(js::getInt(e, "set", -1)),
+                            piece, who, when);
+                    else
+                        m_pieces.noteSourceFor(picture, piece, who, when);
                 }
             }
             m_pieces.normalise();
@@ -239,7 +249,7 @@ void Store::saveProfileLocked()
     json_t* from = json_array();
     for (const PieceSource& src : m_pieces.sources) {
         json_t* e = json_object();
-        json_object_set_new(e, "set", json_integer(src.set));
+        json_object_set_new(e, "picture", json_string(src.picture.c_str()));
         json_object_set_new(e, "piece", json_integer(src.piece));
         json_object_set_new(e, "who", json_string(src.who.c_str()));
         json_object_set_new(e, "when", json_integer(json_int_t(src.when)));
