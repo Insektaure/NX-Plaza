@@ -57,6 +57,14 @@ public:
     void roundRect(const Rect& r, float radius, Color color);
     // Independent top and bottom corner radii.
     void roundRect(const Rect& r, float radiusTop, float radiusBottom, Color color);
+
+    // A rectangle of the puzzle picture currently in the picture slot.
+    //
+    // `uv` is { u0, v0, u1, v1 } in 0..1 of that picture, so a tile passes the
+    // crop it stands for. `tint` multiplies the texels, which is how a piece
+    // can be dimmed without a second draw; white leaves it alone.
+    void picture(const Rect& r, const float uv[4], float radius = 0.0f,
+        Color tint = Color { 1.0f, 1.0f, 1.0f, 1.0f });
     // Vertical gradient; corners rounded by `radius`.
     void gradientRect(const Rect& r, Color top, Color bottom, float radius = 0.0f);
     // Independent top and bottom corner radii, for a gradient that fills a

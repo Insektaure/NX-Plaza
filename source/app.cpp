@@ -1,5 +1,7 @@
 #include "app.h"
 
+#include "gfx/picture.h"
+
 #include "net/update.h"
 
 #include "core/mii_parts.h"
@@ -47,6 +49,12 @@ bool App::init()
         return false;
     if (!m_font.init(m_gpu))
         return false;
+
+    // Before the renderer, which publishes the picture slot's descriptor as it
+    // starts up and never writes it again. Not a hard failure: a build without
+    // the artwork shows numbered tiles and everything else works.
+    pictures().load("romfs:/puzzles/pictures.bin", m_gpu);
+
     if (!m_renderer.init(m_gpu, m_font))
         return false;
 

@@ -1,5 +1,7 @@
 #include "gfx/renderer.h"
 
+#include "gfx/picture.h"
+
 #include "core/log.h"
 #include "core/util.h"
 
@@ -140,8 +142,8 @@ bool Renderer::init(Gpu& gpu, Font& font)
         return false;
     }
 
-    // Publish the glyph atlas and its sampler once; nothing else needs a
-    // descriptor, so both slots point at the atlas and unit 1 is a safe no-op.
+    // Publish the glyph atlas and the picture slot once. Both images live for
+    // the whole process, so neither descriptor ever needs writing again.
     {
         dk::UniqueCmdBuf setup = dk::CmdBufMaker { gpu.device() }.create();
         MemPool::Slice mem = gpu.dataPool().allocate(4096, DK_CMDMEM_ALIGNMENT);
@@ -155,7 +157,13 @@ bool Renderer::init(Gpu& gpu, Font& font)
         dk::SamplerDescriptor samplerDescriptor;
         samplerDescriptor.initialize(sampler);
 
-        DkImageDescriptor images[2] = { font.descriptor(), font.descriptor() };
+        // Slot 1 is the puzzle picture when the artwork loaded, and a second
+        // copy of the atlas when it did not - a harmless thing to sample, and
+        // nothing draws mode 2 in that case anyway. The image behind it is
+        // created once and reused, so this descriptor is written once and never
+        // has to be rewritten when a different picture is uploaded.
+        DkImageDescriptor images[2] = { font.descriptor(),
+            pictures().available() ? pictures().descriptor() : font.descriptor() };
         DkSamplerDescriptor samplers[2] = { samplerDescriptor, samplerDescriptor };
 
         setup.pushData(m_imageDescriptorMem.gpuAddr, images, sizeof(images));
@@ -188,6 +196,7 @@ void Renderer::beginFrame(dk::CmdBuf cmd)
     m_clipStack.clear();
 
     m_font->beginFrame(cmd, m_gpu->frameIndex());
+    pictures().beginFrame(cmd);
 
     FrameUniforms uniforms {};
     uniforms.invViewport[0] = 2.0f / static_cast<float>(m_gpu->width());
@@ -367,6 +376,16 @@ void Renderer::roundRect(const Rect& r, float radius, Color color)
 void Renderer::roundRect(const Rect& r, float radiusTop, float radiusBottom, Color color)
 {
     quadUniform(r, color, radiusTop, radiusBottom, Mode_Fill, 0.0f, kEdgePad);
+}
+
+void Renderer::picture(const Rect& r, const float uv[4], float radius, Color tint)
+{
+    // No padding: the shape's own signed distance field still rounds the
+    // corners and feathers the edge, and growing the geometry would sample the
+    // picture outside the crop this tile owns - which is the neighbouring
+    // piece, and would show as a seam.
+    const Color colors[4] = { tint, tint, tint, tint };
+    quad(toFb(r), colors, radius * m_scale, radius * m_scale, Mode_Image, 0.0f, uv, 0.0f);
 }
 
 void Renderer::gradientRect(const Rect& r, Color top, Color bottom, float radius)
@@ -848,10 +867,13 @@ void Renderer::endFrame()
         memcpy(dst, m_vertices.data(), m_vertices.size() * sizeof(Vertex));
     }
 
-    // Glyph copies for this frame were recorded above; make sure the texture
-    // cache cannot hand a draw the contents of those texels from before.
-    if (m_font->atlasDirty())
+    // Glyph copies and any picture upload for this frame were recorded above,
+    // and the draws go out below; make sure the texture cache cannot hand a
+    // draw the contents of those texels from before.
+    if (m_font->atlasDirty() || pictures().uploaded()) {
         m_cmd.barrier(DkBarrier_None, DkInvalidateFlags_Image);
+        pictures().clearUploaded();
+    }
 
     bool haveScissor = false;
     DkScissor lastScissor {};

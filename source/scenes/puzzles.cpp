@@ -2,6 +2,7 @@
 #include "core/pieces.h"
 #include "core/store.h"
 #include "core/util.h"
+#include "gfx/picture.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
 #include "ui/theme.h"
@@ -186,6 +187,16 @@ namespace {
         {
             m_open = set;
             m_piece = 0;
+        }
+
+        // The picture is uploaded from drawing, not from input: it needs the
+        // frame's command buffer, and asking every frame costs nothing once it
+        // is the resident one.
+        void wantPicture(int set) const
+        {
+            const std::vector<PieceSet>& sets = pieceSets();
+            if (set >= 0 && size_t(set) < sets.size())
+                pictures().request(sets[size_t(set)].image);
         }
 
         // What pressing the fill button would do, worded as the three things
@@ -429,6 +440,11 @@ namespace {
         void drawGrid(App& app, Renderer& r, const Rect& box)
         {
             const PieceSet& spec = pieceSets()[size_t(m_open)];
+            // Asked for every frame; the store only does work when the picture
+            // it holds is not this one.
+            wantPicture(m_open);
+            bool art = pictures().resident(spec.image);
+
             float tileW = (box.w - float(kPerRow - 1) * kTileGap) / float(kPerRow);
             float tileH = (box.h - float(kRows - 1) * kTileGap) / float(kRows);
 
@@ -437,17 +453,29 @@ namespace {
                     box.y + float(i / kPerRow) * (tileH + kTileGap), tileW, tileH };
 
                 if (m_inventory.has(m_open, uint8_t(i))) {
-                    // Numbered and tinted by index until the artwork can be
-                    // drawn: enough to tell two pieces apart, and obviously not
-                    // the finished thing.
-                    r.roundRect(tile, theme::r2, theme::cardTheme(uint32_t(i) % 6).tint);
-                    r.strokeRect(tile, theme::r2, theme::stroke, theme::stroke2);
+                    if (art) {
+                        // The crop this piece stands for. The grid is exactly
+                        // five by three of the picture, so the piece index is
+                        // the whole of the arithmetic.
+                        float u0 = float(i % kPerRow) / float(kPerRow);
+                        float v0 = float(i / kPerRow) / float(kRows);
+                        const float uv[4] = { u0, v0, u0 + 1.0f / float(kPerRow),
+                            v0 + 1.0f / float(kRows) };
+                        r.picture(tile, uv, theme::r2);
+                    } else {
+                        // No artwork in this build: numbered and tinted by
+                        // index. Enough to tell two pieces apart, and obviously
+                        // not the finished thing.
+                        r.roundRect(tile, theme::r2, theme::cardTheme(uint32_t(i) % 6).tint);
+                        r.strokeRect(tile, theme::r2, theme::stroke, theme::stroke2);
 
-                    TextStyle number;
-                    number.size = theme::text2xl;   // the tile is 243px now
-                    number.weight = FontWeight::Bold;
-                    number.color = theme::fg1;
-                    r.text(tile, format("%d", i + 1), number, Align::Center, VAlign::Middle);
+                        TextStyle number;
+                        number.size = theme::text2xl;
+                        number.weight = FontWeight::Bold;
+                        number.color = theme::fg1;
+                        r.text(tile, format("%d", i + 1), number, Align::Center,
+                            VAlign::Middle);
+                    }
                 } else {
                     // A gap, not a blank tile: what is missing should read as
                     // missing rather than as another kind of piece.
