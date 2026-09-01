@@ -74,12 +74,19 @@ namespace {
         // Fifteen cuts as five across, which is the shape a picture wants.
         static constexpr int kPerRow = 5;
         static constexpr int kRows = 3;
-        // The artwork is 1280x720, so a 5x3 cut is not square: a tile is
-        // 256x240 of the picture. The grid keeps that ratio whether or not
-        // there is anything drawn inside it yet.
-        static constexpr float kGridWidth = 960.0f;
-        static constexpr float kGridHeight = kGridWidth * 720.0f / 1280.0f;
+        // The artwork is 1280x720, so a 5x3 cut is not square: one tile is
+        // 256x240 of the picture. The grid is sized from the tile rather than
+        // the other way round - fitting a 16:9 box and then dividing it leaves
+        // the gaps inside the ratio, and every tile ends up a fraction of a
+        // percent wrong for the crop it will one day hold.
+        //
+        // Nothing here is a fixed size: a puzzle wants to be as big as it can be.
+        static constexpr float kCropW = 256.0f;
+        static constexpr float kCropH = 240.0f;
         static constexpr float kTileGap = 8.0f;
+        // The provenance sits beside the grid, not under it. Under it, it took
+        // height the picture wanted and still left the width unused.
+        static constexpr float kAsideWidth = 400.0f;
 
         // ------------------------------------------------------------- input
 
@@ -338,12 +345,19 @@ namespace {
 
             y += back.h + theme::s6;
 
-            float gridX = content.x + (content.w - kGridWidth) * 0.5f;
-            drawGrid(app, r, Rect { gridX, y, kGridWidth, kGridHeight });
-            y += kGridHeight + theme::s6;
+            // As large as both dimensions allow. Whichever runs out first
+            // decides the tile, and the grid follows from it.
+            float roomW = content.w - kAsideWidth - theme::s6;
+            float roomH = content.bottom() - y;
+            float tileW = std::min((roomW - float(kPerRow - 1) * kTileGap) / float(kPerRow),
+                ((roomH - float(kRows - 1) * kTileGap) / float(kRows)) * (kCropW / kCropH));
+            float tileH = tileW * (kCropH / kCropW);
+            float gridW = float(kPerRow) * tileW + float(kPerRow - 1) * kTileGap;
+            float gridH = float(kRows) * tileH + float(kRows - 1) * kTileGap;
 
+            drawGrid(app, r, Rect { content.x, y, gridW, gridH });
             drawProvenance(r,
-                Rect { gridX, y, kGridWidth, std::max(0.0f, content.bottom() - y) });
+                Rect { content.x + gridW + theme::s6, y, kAsideWidth, roomH });
         }
 
         void drawGrid(App& app, Renderer& r, const Rect& box)
@@ -364,7 +378,7 @@ namespace {
                     r.strokeRect(tile, theme::r2, theme::stroke, theme::stroke2);
 
                     TextStyle number;
-                    number.size = theme::textLg;
+                    number.size = theme::text2xl;   // the tile is 243px now
                     number.weight = FontWeight::Bold;
                     number.color = theme::fg1;
                     r.text(tile, format("%d", i + 1), number, Align::Center, VAlign::Middle);
@@ -390,45 +404,22 @@ namespace {
         // through the crossing, so it survives the collection pruning.
         void drawProvenance(Renderer& r, const Rect& box)
         {
-            if (box.h < 80.0f)
-                return;
-
             const PieceSet& spec = pieceSets()[size_t(m_open)];
-            if (m_piece < 0 || m_piece >= int(spec.count))
+            if (m_piece < 0 || m_piece >= int(spec.count) || box.w < 120.0f)
                 return;
             uint8_t piece = uint8_t(m_piece);
 
-            Rect panel { box.x, box.y, box.w, std::min(box.h, 132.0f) };
-            ui::card(r, panel);
-
             bool held = m_inventory.has(m_open, piece);
             const PieceSource* src = m_inventory.sourceFor(m_open, piece);
-
-            Rect inner = panel.inset(theme::s6, theme::s5);
-
-            TextStyle head;
-            head.size = theme::textSm;
-            head.color = theme::fg3;
-            r.text(inner.x, inner.y, format("Piece %d", piece + 1), head);
-
-            TextStyle line;
-            line.size = theme::textXl;
-            line.weight = FontWeight::Bold;
-            line.color = held ? theme::fg1 : theme::fg3;
-            line.tracking = theme::trackingTight;
 
             std::string who;
             if (!held)
                 who = "Not found yet";
             else if (src == nullptr || src->who.empty())
-                who = "Brought by someone";   // collected before this was kept
+                who = "someone";   // collected before this was kept
             else
-                who = std::string("Brought by ") + src->who;
-            r.text(inner.x, inner.y + head.size * theme::leadingNormal, who, line);
+                who = src->who;
 
-            TextStyle when;
-            when.size = theme::textSm;
-            when.color = theme::fg3;
             std::string tail;
             if (!held)
                 tail = "Cross someone while this puzzle is the one being filled.";
@@ -436,8 +427,49 @@ namespace {
                 tail = relativeTime(src->when, nowUnix());
             else
                 tail = "Collected before the app started keeping track.";
-            r.text(Rect { inner.x, inner.y, inner.w, inner.h }, tail, when, Align::Right,
-                VAlign::Bottom);
+
+            TextStyle label;
+            label.size = theme::textSm;
+            label.color = theme::fg3;
+
+            TextStyle name;
+            name.size = theme::textLg;
+            name.weight = FontWeight::Bold;
+            name.color = held ? theme::fg1 : theme::fg3;
+            name.tracking = theme::trackingTight;
+
+            TextStyle note;
+            note.size = theme::textSm;
+            note.color = theme::fg3;
+            note.leading = theme::leadingNormal;
+
+            // Measured before the card is drawn, so the surface is the size of
+            // what goes on it.
+            float inner = box.w - theme::s6 * 2.0f;
+            float lineLabel = r.lineHeight(label);
+            float lineName = r.lineHeight(name);
+            float noteHeight = r.measureWrapped(inner, tail, note, 4);
+            float needed = theme::s5 * 2.0f + lineLabel + (held ? lineLabel : 0.0f)
+                + lineName + theme::s2 + noteHeight;
+
+            Rect panel { box.x, box.y, box.w, std::min(box.h, needed) };
+            ui::card(r, panel);
+
+            float x = panel.x + theme::s6;
+            float y = panel.y + theme::s5;
+
+            r.text(x, y, format("Piece %d", piece + 1), label);
+            y += lineLabel;
+
+            if (held) {
+                r.text(x, y, "Brought by", label);
+                y += lineLabel;
+            }
+
+            r.text(x, y, r.ellipsize(who, name, inner), name);
+            y += lineName + theme::s2;
+
+            r.textWrapped(Rect { x, y, inner, noteHeight }, tail, note, 4);
         }
 
         PieceInventory m_inventory;
