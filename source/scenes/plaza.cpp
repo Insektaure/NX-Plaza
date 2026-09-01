@@ -223,8 +223,15 @@ private:
             headline = "1 person crossed your path";
         else if (stats.today > 0)
             headline = format("%u people crossed your path", stats.today);
-        else
+        else if (stats.unopened == 1)
+            headline = "1 pass waiting for you";
+        else if (stats.unopened > 0)
             headline = format("%u passes waiting for you", stats.unopened);
+        else
+            // Nothing today and nothing unread. The waiting line used to cover
+            // this too and said "0 passes waiting for you", which reads as a
+            // fault rather than as a quiet day.
+            headline = "Nothing new today";
 
         float titleUsed = r.textWrapped(Rect { text.x, titleY, text.w, title.size * 2.2f },
             headline, title, 2);
