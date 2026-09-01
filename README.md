@@ -127,6 +127,12 @@ Copy that file to move your plaza identity to another console; delete it (or use
 *Settings → Start over*) and you are somebody new, with everything you already
 handed out permanently unlinkable from you.
 
+*Settings → Data → Copy everything to a backup folder* puts it, your pass and
+your collection into `backup/<date>/`. They are plain files, so putting one back
+is a matter of copying it over the original - there is no restore button and
+nothing that only this app can read. It is the same card, though, so copy the
+folder to a computer if you want to survive losing the card.
+
 The first-run screen shows a short human form of the id (e.g. `K4M-92X7`) plus
 a 9×9 fingerprint pattern, so two people standing together can confirm they are
 looking at the same console without reading 32 hex characters aloud.
@@ -218,6 +224,7 @@ sdmc:/switch/nx-plaza/
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
+  backup/          copies made by Settings -> Data, one folder per day
   export/          faces you saved, one JSON file each
 ```
 

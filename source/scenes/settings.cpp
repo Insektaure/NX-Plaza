@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/backup.h"
 #include "net/update.h"
 #include "core/identity.h"
 #include "core/log.h"
@@ -178,6 +179,7 @@ private:
         Id_About,
         Id_Source,
         Id_ConsoleId,
+        Id_Backup,
         Id_CheckUpdates,
         Id_AutoCheckUpdates,
     };
@@ -376,6 +378,9 @@ private:
 
         case Sec_Data:
         default:
+            value(Id_Backup, "Copy everything to a backup folder",
+                "Your identity, your pass and your collection, into backup/ on this card",
+                "", Kind::Action);
             value(Id_DeleteAll, "Delete every pass you have collected",
                 "This cannot be undone", "", Kind::Danger);
             value(Id_NewIdentity, "Start over as someone new",
@@ -546,6 +551,22 @@ private:
                 updater.beginCheck(true);
                 break;
             }
+            return;
+        }
+        case Id_Backup: {
+            std::string where;
+            std::string why;
+            if (!createBackup(where, why)) {
+                app.toast("Could not back up", why);
+                return;
+            }
+            // The folder name, not the whole path: the path is long, and the
+            // only part the owner needs is which folder to look in.
+            size_t slash = where.find_last_of('/');
+            std::string folder = slash == std::string::npos ? where : where.substr(slash + 1);
+            app.toast("Backed up to " + folder,
+                "It is on the same card. Copy the backup folder to a computer to be safe "
+                "from losing the card itself.");
             return;
         }
         case Id_LogToFile:
