@@ -30,7 +30,9 @@ Trades happen on their own while this sits open.
 ![The radar screen scanning for other consoles](screenshots/003.jpg)
 
 **The collection.** Everyone you have met, each card carrying when you last
-crossed and, once it is more than one, how many times.
+crossed and, once it is more than one, how many times. **Y** stars a card, and a
+starred card survives the cull when the collection reaches its cap; **X** sorts
+by recent, by name, or starred first.
 
 ![The collection grid of everyone met so far](screenshots/004.jpg)
 
@@ -40,6 +42,11 @@ square is never empty even on a console that has met nobody. They wander, they
 occasionally say what their pass says, and **A** opens whoever the cursor is on.
 
 ![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg)
+
+**Puzzles.** What you take away from crossing people. Three pictures (for now), fifteen
+pieces each, one piece per console you pass. The list says how full each puzzle
+is and which one the pieces are going into; opening one shows the board, and
+every tile you have remembers who brought it and when.
 
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
@@ -172,8 +179,18 @@ make DEBUG=1    # links -ldeko3dd, the deko3d validation layer
 Copy `nx-plaza.nro` to `sdmc:/switch/nx-plaza/nx-plaza.nro` and launch it from
 hbmenu.
 
-Fonts come from the console's own shared font block, so nothing is
-bundled but the two compiled shaders.
+The puzzle artwork is not inside the NRO.
+
+Copy `data/assets/pictures.bin` to
+`sdmc:/switch/nx-plaza/data/assets/pictures.bin` as well, or fetch it on the
+console with *Settings → Data → Download puzzle art*. Without it the puzzles
+draw numbered tiles and nothing else changes.
+
+Each picture is 1280×720, cut five by three, stored as BC1 - 450 KB apiece,
+decoded by the GPU.
+
+Fonts come from the console's own shared font block.
+What ships inside the NRO is the two compiled shaders and the baked Mii part artwork.
 
 ## Controls
 
@@ -186,8 +203,8 @@ are always spelled out for the view you are on.
 | D-pad or stick | move the cursor |
 | A | open, edit, toggle - in the square, look at whoever the cursor is on; in Settings, the only way into a section |
 | B | back |
-| X | plaza: look for passes now · collection: change sort · the square: shuffle the crowd · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
-| Y | plaza: mark everything read · encounter and radar: save that face · Mii maker: save / load faces |
+| X | plaza: look for passes now · collection: change sort (recent, name, starred) · the square: shuffle the crowd · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
+| Y | plaza: mark everything read · collection: star this card · puzzles: fill this one next · encounter and radar: save that face · Mii maker: save / load faces |
 | B | back - in Settings, out of a section's rows to the section list |
 | + | quit |
 
@@ -222,6 +239,7 @@ sdmc:/switch/nx-plaza/
   crossings.idx    the passes you have collected, one 128-byte record each
   crossings.dat    their text: greetings, what they carry, where you crossed
   crossings.ext    extras kept per crossing: starred, the piece they brought
+  data/assets/     the puzzle artwork, delivered with the app by the updater
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
