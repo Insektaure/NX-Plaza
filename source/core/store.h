@@ -174,6 +174,9 @@ public:
 private:
     Store() = default;
 
+    // Records how many titles the sender said they had, when they said.
+    void noteTitleCount(const std::string& crossingId, const Pass& pass);
+
     void dropExtraOrphansLocked();
     // Without copying the row, for the prune loop.
     bool isFavouriteLocked(const std::string& id) const;

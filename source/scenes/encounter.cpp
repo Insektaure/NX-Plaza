@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/crossing_extras.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -53,6 +54,12 @@ public:
         app.store().markOpened(m_id);
         m_crossing.opened = true;
         m_action = 0;
+
+        // Read once here rather than in drawStats: extrasFor() hands back a
+        // copy of the row, and every path onto this screen and between its
+        // siblings comes through load().
+        m_titles = 0;
+        app.store().extrasFor(m_id).getU32(extras::TitleCount, m_titles);
     }
 
     // Leaves, remembering which pass this ended on so the list behind can put
@@ -380,8 +387,10 @@ private:
 
         ui::statCard(r, Rect { box.x, box.y, width, kStatCardHeight },
             crossed, crossedCaption);
+        // A count of what is on their console (how many games).
         ui::statCard(r, Rect { box.x + width + gap, box.y, width, kStatCardHeight },
-            format("%zu", m_crossing.pass.games.size()), "games they carry");
+            m_titles > 0 ? ui::groupedNumber(m_titles) : std::string("-"),
+            m_titles == 1 ? "game installed" : "games installed");
         ui::statCard(r, Rect { box.x + (width + gap) * 2.0f, box.y, width, kStatCardHeight },
             ui::groupedNumber(m_crossing.pass.met), "people met");
 
@@ -443,6 +452,7 @@ private:
     int m_index = -1;
     Crossing m_crossing;
     bool m_missing = false;
+    uint32_t m_titles = 0;   // titles on their console, 0 when they did not say
     int m_action = 0;
     float m_pulse = 0.0f;
 };

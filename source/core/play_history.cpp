@@ -28,6 +28,21 @@ namespace {
     constexpr s32 kMaxRecords = 256;
     constexpr s32 kRecordBatch = 32;
 
+    // How far to keep walking once the play-time queries have stopped.
+    //
+    // The two jobs in this loop do not cost the same. Listing a page of records
+    // is one IPC call whatever is on it; asking what was played is a second,
+    // and naming a title is a third that hands back a 128 KB icon nobody wants.
+    // kMaxRecords bounds the ones that cost something. Counting what is
+    // installed needs only the listing, so it carries on past that bound - a
+    // thousand-title console costs about thirty more cheap calls and gets a
+    // true number instead of a clamped one.
+    //
+    // Still bounded. This talks to a system service, and a loop over somebody
+    // else's return value wants an end even when the arithmetic says it cannot
+    // run away.
+    constexpr s32 kMaxCountRecords = 8192;
+
     // Written by the loader thread, read by the drawing thread. Everything
     // that crosses between them is behind this.
     std::mutex g_mutex;
@@ -44,6 +59,7 @@ namespace {
     int g_statFailures = 0;
     int g_blankNames = 0;
     bool g_truncated = false;
+    size_t g_installed = 0; // titles on the console, played or not
     bool g_listFailed = false;
 
     struct Candidate {
@@ -244,15 +260,16 @@ namespace {
     }
 
     // Installed titles, newest-played first, never-played dropped.
-    std::vector<Candidate> playedTitles()
+    std::vector<Candidate> playedTitles(size_t& installed)
     {
         std::vector<Candidate> out;
+        installed = 0;
 
         std::unique_ptr<NsApplicationRecord[]> records(new NsApplicationRecord[kRecordBatch]);
         std::vector<u64> ids;
         std::vector<PdmLastPlayTime> times;
 
-        for (s32 offset = 0; offset < kMaxRecords; offset += kRecordBatch) {
+        for (s32 offset = 0; offset < kMaxCountRecords; offset += kRecordBatch) {
             s32 count = 0;
             Result rc = nsListApplicationRecord(records.get(), kRecordBatch, offset, &count);
             if (R_FAILED(rc)) {
@@ -262,6 +279,25 @@ namespace {
             }
             if (count <= 0)
                 break;
+            // The records are already here, and this is the only thing wanted
+            // from the ones that were never played.
+            installed += size_t(count);
+
+            // Past the cap the walk is only counting. Everything below costs
+            // real time, and a title this far down the list would not be
+            // offered as recently played anyway.
+            //
+            // Reaching here is also what "truncated" means, now that reaching
+            // it is possible: records exist that were counted and not asked
+            // about. The old test fired on the last batch inside the cap, which
+            // said "truncated" to a console holding exactly 256 titles and
+            // missing nothing.
+            if (offset >= kMaxRecords) {
+                g_truncated = true;
+                if (count < kRecordBatch)
+                    break;
+                continue;
+            }
 
             ids.clear();
             for (s32 i = 0; i < count; i++) {
@@ -293,12 +329,6 @@ namespace {
 
             if (count < kRecordBatch)
                 break;
-
-            // More installed than the cap allows for. Worth saying: it is the
-            // one condition under which a game the owner played this morning
-            // can be missing from the list.
-            if (offset + kRecordBatch >= kMaxRecords)
-                g_truncated = true;
         }
 
         std::sort(out.begin(), out.end(), [](const Candidate& a, const Candidate& b) {
@@ -331,7 +361,14 @@ void loadNow()
         return;
     }
 
-    std::vector<Candidate> played = playedTitles();
+    size_t installed = 0;
+    std::vector<Candidate> played = playedTitles(installed);
+    {
+        // Published as soon as it is known, before the naming pass that takes
+        // the seconds: nothing that wants the count wants the names.
+        std::lock_guard<std::mutex> lock(g_mutex);
+        g_installed = installed;
+    }
 
     if (played.empty()) {
         pdmqryExit();
@@ -395,7 +432,9 @@ void loadNow()
         static_cast<unsigned long long>(monotonicMs() - startedMs),
         g_statQueries, g_statFailures, g_controlReads, g_cacheHits, g_blankNames,
         static_cast<int>(g_controlReads * sizeof(NsApplicationControlData) / 1024),
-        g_truncated ? " [more than 64 titles installed; the rest were not looked at]" : "");
+        g_truncated ? " [more titles installed than the cap; the rest were not"
+                      " looked at]" : "");
+    LOG("play history: %zu titles installed", installed);
 
     std::lock_guard<std::mutex> lock(g_mutex);
     g_titles = std::move(found);
@@ -454,6 +493,12 @@ std::vector<PlayedTitle> recentlyPlayed()
 {
     std::lock_guard<std::mutex> lock(g_mutex);
     return g_titles;
+}
+
+size_t installedTitles()
+{
+    std::lock_guard<std::mutex> lock(g_mutex);
+    return g_installed;
 }
 
 void endPlayHistory()

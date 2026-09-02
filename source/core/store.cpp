@@ -4,6 +4,7 @@
 #include "core/json.h"
 #include "core/log.h"
 #include "core/pieces.h"
+#include "core/play_history.h"
 #include "core/place.h"
 #include "core/util.h"
 
@@ -469,6 +470,14 @@ Pass Store::outgoingPass() const
     // Hours go with the title. On their own they say how much of your life a
     // game has had, which is more than the title does, and hiding the title
     // while still sending "412h" would be a strange kind of private.
+    // How many titles are on this console goes with them, under the same
+    // switch. It is a smaller thing to say than which game and for how long,
+    // but it is the same kind of thing - what is on this console rather than
+    // what its owner typed - and somebody who turned that off did not mean
+    // "except for the total".
+    out.titles = m_settings.sharePlaying
+        ? static_cast<uint32_t>(installedTitles())
+        : 0u;
     if (!m_settings.sharePlaying) {
         out.playing = std::string();
         out.hours = 0;
@@ -539,6 +548,7 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
         // is another piece; twice in one afternoon is the same piece, because
         // the day is part of what decides it.
         grantPieceFor(id, when);
+        noteTitleCount(id, pass);
         return false;
     }
 
@@ -561,6 +571,7 @@ bool Store::recordCrossing(const std::string& id, const Pass& pass,
     // would add a row and then walk a sweep that has no reason to keep it in
     // mind. The collection is in its final shape by here.
     grantPieceFor(id, when);
+    noteTitleCount(id, pass);
     return true;
 }
 
@@ -691,6 +702,37 @@ void Store::setActivePieceSet(int set)
         return;
     m_pieces.active = set;
     m_profileDirty = true;
+}
+
+void Store::noteTitleCount(const std::string& crossingId, const Pass& pass)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    // Nothing said means nothing written: every pass from before this existed
+    // says nothing, and so does every pass whose owner shares no title. Writing
+    // a zero would make "they did not say" indistinguishable from "an empty
+    // console", and would put a row in the sidecar for every crossing that has
+    // nothing to record.
+    if (pass.titles == 0) {
+        // Except when we had a number before and they have since turned
+        // sharing off: leaving the old one standing would be showing a figure
+        // its owner withdrew.
+        const CrossingExtras* row = m_extras.find(crossingId);
+        uint32_t had = 0;
+        if (row != nullptr && row->getU32(extras::TitleCount, had))
+            m_extras.clearField(crossingId, extras::TitleCount);
+        return;
+    }
+
+    // Skipped when unchanged, for the same reason the piece write is: an
+    // identical value appended is a dead entry, and dead entries are what
+    // decide when the whole log gets rewritten.
+    const CrossingExtras* row = m_extras.find(crossingId);
+    uint32_t already = 0;
+    if (row != nullptr && row->getU32(extras::TitleCount, already) && already == pass.titles)
+        return;
+
+    m_extras.setU32(crossingId, extras::TitleCount, pass.titles);
 }
 
 bool Store::grantPieceFor(const std::string& crossingId, uint64_t when)

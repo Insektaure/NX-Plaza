@@ -342,7 +342,9 @@ private:
             value(Id_City, "City label", "used when sharing is set to City",
                 settings.cityLabel.empty() ? "-" : settings.cityLabel);
             toggle(Id_SharePlaying, "Show what I am playing",
-                "Hidden titles stay hidden, always", settings.sharePlaying);
+                "The title, your hours in it, and how many games you have. Hidden "
+                "titles stay hidden, always",
+                settings.sharePlaying);
             break;
 
         case Sec_Exchange:

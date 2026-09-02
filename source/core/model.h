@@ -43,6 +43,10 @@ struct Pass {
     std::vector<std::string> carrying; // up to 4 small tradeable things
     std::vector<std::string> games;    // up to 8 titles, for "games you share"
 
+    // How many titles are on the sender's console. Zero means "not said",
+    // and what any pass says whose owner has turned off sharing what they are playing.
+    uint32_t titles = 0;
+
     // The face, as 78 hex characters. Empty until the console makes one, which
     // is why `portrait` stays: it seeds a plausible face for a pass that has
     // never been through the editor, so nobody is ever a blank.

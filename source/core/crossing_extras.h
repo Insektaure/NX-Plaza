@@ -55,6 +55,14 @@ namespace extras {
     // later entry superseded - so this is the last one, not a log of them.
     constexpr uint16_t LastPiece = 2;
     constexpr uint32_t PieceWasNew = 1u << 31;
+
+    // u32: how many titles were installed on their console.
+    //
+    // Here rather than in crossings.idx because that record has three bytes
+    // left of its 128 and the loader refuses a record whose size has changed,
+    // which would cost every existing user their collection. This is exactly
+    // what the sidecar is for.
+    constexpr uint16_t TitleCount = 3;
 }
 
 // One crossing's fields, as read back. Returned by value; the file is written

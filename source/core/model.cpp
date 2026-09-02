@@ -82,6 +82,7 @@ json_t* Pass::toJson() const
     json_object_set_new(o, "district", json_string(district.c_str()));
     json_object_set_new(o, "carrying", js::strArray(carrying));
     json_object_set_new(o, "games", js::strArray(games));
+    json_object_set_new(o, "titles", json_integer(titles));
     json_object_set_new(o, "mii", json_string(mii.c_str()));
     json_object_set_new(o, "portrait", json_integer(portrait));
     json_object_set_new(o, "theme", json_integer(theme));
@@ -103,6 +104,7 @@ Pass Pass::fromJson(json_t* obj)
     p.district = js::getStr(obj, "district");
     p.carrying = js::getStrArray(obj, "carrying", kMaxCarrying);
     p.games = js::getStrArray(obj, "games", kMaxGames);
+    p.titles = static_cast<uint32_t>(js::getInt(obj, "titles", 0));
     p.mii = js::getStr(obj, "mii");
     p.portrait = static_cast<uint32_t>(js::getInt(obj, "portrait"));
     p.theme = static_cast<uint32_t>(js::getInt(obj, "theme"));

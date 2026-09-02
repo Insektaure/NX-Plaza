@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstddef>
 #include <cstdint>
 #include <string>
 #include <vector>
@@ -41,6 +42,14 @@ bool playHistoryReady();
 // thread, and a reference into it would be a reference into something being
 // rewritten.
 std::vector<PlayedTitle> recentlyPlayed();
+
+// How many titles are installed on this console, played or not.
+//
+// Costs nothing: the record enumeration behind recentlyPlayed() already walks
+// every one of them, and this is the only thing wanted from the ones that were
+// never opened. Zero until the scan reaches that point, which is early - it is
+// published before the naming pass that takes the time.
+size_t installedTitles();
 
 // Stops the loader and forgets what it read. Called on the way out.
 void endPlayHistory();
