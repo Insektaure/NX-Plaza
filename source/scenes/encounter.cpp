@@ -163,7 +163,9 @@ public:
         r.clear(theme::bg0);
         app.touchZone(r.viewport(), Touch_None);
 
-        app.hint("A", m_action == 2 ? "block" : (m_action == 1 ? "keep" : "trade back"));
+        app.hint("A",
+            m_action == 2 ? (canReachPlaza(app) ? "block" : "block - offline")
+                          : (m_action == 1 ? "keep" : "trade back"));
         app.hint("B", "back");
         if (m_siblings.size() > 1)
             app.hint("L/R", "next pass");
@@ -229,8 +231,28 @@ private:
         }
     }
 
+    // Whether the plaza can be reached. Blocking is half local and half
+    // server-side, and the server half is queued in memory: made offline, it
+    // would filter their passes on this console while ours kept reaching them,
+    // and quitting before the network returns loses the request entirely. A
+    // block that only works in one direction is worse than one you were told
+    // to come back for.
+    static bool canReachPlaza(App& app)
+    {
+        return app.sync().status().state != Sync::State::Offline;
+    }
+
     void askBlock(App& app)
     {
+        // Checked here rather than at each of the three ways in - the button,
+        // X, and A on the third action.
+        if (!canReachPlaza(app)) {
+            app.toast("Not connected to the plaza",
+                "Blocking has to reach the server, or they would keep receiving your "
+                "pass. Try again when the dot by the tabs is green.");
+            return;
+        }
+
         std::string handle = m_crossing.pass.handle;
         std::string id = m_id;
         app.askConfirm(format("Block %s?", handle.c_str()),
@@ -424,9 +446,13 @@ private:
         Rect secondary { primary.right() + theme::s4, box.y, secondaryWidth, box.h };
         Rect block { secondary.right() + theme::s4, box.y, box.h, box.h };
 
+        bool canBlock = canReachPlaza(app);
+
         app.touchZone(primary, Zone_Primary);
         app.touchZone(secondary, Zone_Secondary);
-        app.touchZone(block, Zone_Block);
+        // No zone when it cannot be acted on, so a tap does not land on it.
+        if (canBlock)
+            app.touchZone(block, Zone_Block);
 
         float pulse = 0.7f + 0.3f * m_pulse;
         bool primaryHeld = app.touchHeld(Zone_Primary);
@@ -440,8 +466,12 @@ private:
 
         r.roundRect(block, theme::r2, theme::bg1);
         r.strokeRect(block, theme::r2, theme::stroke, theme::stroke3);
-        ui::icon(r, block.inset(theme::s4), ui::Icon::Block, theme::fg2, 3.0f);
-        ui::focusRing(r, block, theme::r2, (m_action == 2 || blockHeld) ? pulse : 0.0f);
+        ui::icon(r, block.inset(theme::s4), ui::Icon::Block,
+            canBlock ? theme::fg2 : theme::fg4, 3.0f);
+        // Still ringed when the cursor is on it: the cursor has to be able to
+        // rest there for A to explain why it will not work.
+        ui::focusRing(r, block, theme::r2,
+            (m_action == 2 || (canBlock && blockHeld)) ? pulse : 0.0f);
 
 
     }

@@ -64,6 +64,12 @@ public:
     // they blocked us too, the two stay apart and the server does not say so.
     void unblockPeer(const std::string& id);
 
+    // Asks the plaza to drop every block this console put in place, without
+    // naming them. The list on the card can be incomplete - it is a file on an
+    // SD card, and restoring an old one loses entries the plaza still holds -
+    // and those are reachable by owner when they are not reachable by id.
+    void unblockAllPeers();
+
     Status status() const;
     std::vector<Peer> peers() const;
 
@@ -102,8 +108,41 @@ private:
     Status m_status;
     std::vector<Peer> m_peers;
     std::vector<std::string> m_arrivals;
-    std::vector<std::string> m_blockQueue;
-    std::vector<std::string> m_unblockQueue;
+    // Ids waiting to go to the plaza, with the attempts each has cost.
+    struct Pending {
+        std::string id;
+        int tries = 0;
+    };
+    std::vector<Pending> m_blockQueue;
+    std::vector<Pending> m_unblockQueue;
+    bool m_unblockAllWanted = false;
+
+    // Six attempts span about two minutes: the worker's backoff doubles from
+    // two seconds, so they land at 0, 4, 12, 28, 60 and 124 seconds. That
+    // covers a server restart or a lift being taken. Past it the request is
+    // dropped - one the plaza will never accept, a malformed id or a console it
+    // has no row for, should not be retried for the life of the session.
+    //
+    // The backoff is the worker's, not this item's, so a session where other
+    // requests are also failing spends these six sooner.
+    static constexpr int kMaxSendTries = 6;
+
+    // Puts a failed send back on its queue, counting the attempt, and gives up
+    // once it has cost kMaxSendTries. Declared here rather than with the other
+    // methods because it names Pending, which is declared just above.
+    void requeue(std::vector<Pending>& queue, Pending item, const char* what);
+
+    // The queues, on the card, so closing the app does not lose them.
+    //
+    // Only the worker touches the file. The queues are also read by the drawing
+    // thread - status() runs every frame - and an SD write while holding the
+    // mutex would stall a frame, which is how opening Settings used to freeze
+    // the app. So a caller marks the queues dirty and the worker writes.
+    void loadPending();
+    void savePendingIfDirty();
+    void markPendingDirty();
+
+    bool m_pendingDirty = false;
 
     uint64_t m_nextCheckinMs = 0;
     uint64_t m_nextExchangeMs = 0;

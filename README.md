@@ -240,6 +240,7 @@ sdmc:/switch/nx-plaza/
   crossings.dat    their text: greetings, what they carry, where you crossed
   crossings.ext    extras kept per crossing: starred, the piece they brought
   data/assets/     the puzzle artwork, delivered with the app by the updater
+  pending.json     blocks the plaza has not been told about yet; gone once it has
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server

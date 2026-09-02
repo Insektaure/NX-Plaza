@@ -209,6 +209,10 @@ private:
     struct Row {
         Kind kind = Kind::Value;
         Id id = Id_None;
+        // Drawn dim, no touch zone, and A does nothing. For a row whose work is
+        // a request: pressing it with no network would change this console and
+        // not the plaza, and the two disagreeing is the whole problem.
+        bool enabled = true;
         std::string label;
         std::string hint;
         std::string value;
@@ -291,8 +295,26 @@ private:
         if (delta != 0)
             adjust(app, row.id, delta);
 
-        if (input.accept())
-            activate(app, row.id);
+        if (input.accept()) {
+            if (!row.enabled) {
+                // Says why rather than doing nothing. A dead button that gives
+                // no reason reads as a bug.
+                app.toast("Not connected to the plaza",
+                    "This one needs the server. The dot by the tabs turns green when "
+                    "it can be reached.");
+            } else {
+                activate(app, row.id);
+            }
+        }
+    }
+
+    // Whether a request would go anywhere right now.
+    //
+    // Offline only, not Error: an error has already been retried and will be
+    // again with backoff, so refusing on one is refusing on a wobble.
+    static bool plazaReachable(const Sync::Status& status)
+    {
+        return status.state != Sync::State::Offline;
     }
 
     void build(App& app)
@@ -303,6 +325,7 @@ private:
 
         Settings settings = app.store().settings();
         Sync::Status status = app.sync().status();
+        const bool reachable = plazaReachable(status);
         m_rows.clear();
 
         auto toggle = [&](Id id, const char* label, const char* hint, bool state) {
@@ -329,13 +352,15 @@ private:
         // A std::string label, not a const char*: most rows are literals, but a
         // blocked console's row is named after whoever it was.
         auto value = [&](Id id, const std::string& label, const std::string& hint,
-                         const std::string& shown, Kind kind = Kind::Value) {
+                         const std::string& shown, Kind kind = Kind::Value,
+                         bool enabled = true) {
             Row row;
             row.kind = kind;
             row.id = id;
             row.label = label;
             row.hint = hint;
             row.value = shown;
+            row.enabled = enabled;
             m_rows.push_back(row);
         };
 
@@ -394,7 +419,17 @@ private:
             // you had blocked or whether one of them was a mis-tap. One row
             // each, A to let that one through.
             if (settings.blocked.empty()) {
-                value(Id_None, "Blocked consoles", "Nobody is blocked", "none");
+                // An action, not a dead line of text. This is exactly the state
+                // a restored profile.json leaves behind when the plaza is still
+                // holding blocks the card has forgotten, and there is nothing
+                // else that can ask for those to go.
+                value(Id_Unblock, "Blocked consoles",
+                    reachable
+                        ? "Nobody is blocked here. A asks the plaza to drop any it "
+                          "still has"
+                        : "Nobody is blocked here. Needs the plaza, and this console "
+                          "is offline",
+                    "none", Kind::Action, reachable);
             } else {
                 for (size_t b = 0; b < settings.blocked.size(); b++) {
                     const BlockedConsole& who = settings.blocked[b];
@@ -407,13 +442,18 @@ private:
                     std::string hint = shortCodeFor(who.id);
                     if (who.when != 0)
                         hint += " - blocked " + relativeTime(who.when, nowUnix());
-                    hint += ". A lets them cross you again";
+                    hint = reachable ? hint + ". A lets them cross you again"
+                                     : hint + ". Offline - unblocking needs the plaza";
                     value(static_cast<Id>(Id_BlockedFirst + int(b)), name, hint,
-                        "unblock", Kind::Action);
+                        "unblock", Kind::Action, reachable);
                 }
                 value(Id_Unblock, "Clear the whole list",
-                    format("Clears all %zu at once", settings.blocked.size()), "",
-                    Kind::Action);
+                    reachable
+                        ? format("Clears all %zu at once, on this console and on the "
+                                 "plaza", settings.blocked.size())
+                        : std::string("Offline - clearing the list needs the plaza, or "
+                                      "the two would disagree"),
+                    "", Kind::Action, reachable);
             }
             toggle(Id_LogToFile, "Write a log file",
                 settings.logToFile
@@ -722,27 +762,33 @@ private:
             app.toast("Checking in", settings.serverUrl);
             return;
         case Id_Unblock: {
-            if (settings.blocked.empty()) {
-                app.toast("Nothing blocked", "No console is on your block list.");
-                return;
-            }
+            // No early return on an empty local list any more. An empty list is
+            // precisely when the plaza might be holding something this console
+            // cannot name, and refusing here is what made that unrecoverable.
             // Asked about, unlike before. It is not destructive - nothing is
             // lost by letting somebody through - but it undoes every one of
             // these decisions at once, and they were made one at a time.
             size_t count = settings.blocked.size();
-            app.askConfirm(format("Clear all %zu?", count),
-                "Every console you have blocked can cross you again, except any that "
-                "blocked you as well. Their old passes are not coming back; only the "
-                "block is lifted.",
-                "Clear the list", [appPtr = &app]() {
-                    // The plaza is told one at a time, before the list goes:
-                    // afterwards there is nothing left to read the ids from.
-                    for (const BlockedConsole& b : appPtr->store().settings().blocked)
-                        appPtr->sync().unblockPeer(b.id);
-                    appPtr->store().unblockAll();
-                    appPtr->toast("Block list cleared",
-                        "Those consoles can cross you again.");
-                });
+            std::string question = count == 0
+                ? std::string("Clear any block the plaza still has?")
+                : format("Clear all %zu?", count);
+            std::string detail = count == 0
+                ? std::string("This console has none listed, but the plaza keeps its own "
+                              "copy and a restored backup can leave the two disagreeing. "
+                              "Nothing happens if it has none either.")
+                : std::string("Every console you have blocked can cross you again, except "
+                              "any that blocked you as well. Their old passes are not "
+                              "coming back; only the block is lifted.");
+            app.askConfirm(question, detail, "Clear them", [appPtr = &app]() {
+                // Asked by owner, not by id: the list on this card may be
+                // missing entries the plaza still holds, and those are the ones
+                // this is for.
+                appPtr->sync().unblockAllPeers();
+                appPtr->store().unblockAll();
+                appPtr->toast("Block list cleared",
+                    "This console has none left, and the plaza has been asked to drop "
+                    "the blocks it was holding for you.");
+            });
             return;
         }
         case Id_DeleteAll:
@@ -928,12 +974,16 @@ private:
 
     void drawRow(App& app, Renderer& r, const Rect& box, const Row& row, int index)
     {
-        app.touchZone(box, Zone_Row, row.id);
+        // No zone at all when disabled, so a tap falls through to nothing
+        // rather than landing on a row that will not answer.
+        if (row.enabled)
+            app.touchZone(box, Zone_Row, row.id);
 
         bool focused = !m_inSidebar && index == m_focus;
-        float focus = app.touchHeld(Zone_Row, row.id)
-            ? 1.0f
-            : (focused ? 0.7f + 0.3f * m_pulse : 0.0f);
+        float focus = !row.enabled
+            ? 0.0f
+            : (app.touchHeld(Zone_Row, row.id) ? 1.0f
+                                               : (focused ? 0.7f + 0.3f * m_pulse : 0.0f));
 
         bool danger = row.kind == Kind::Danger;
         Color fill = danger ? theme::dangerTint : (focused ? theme::bg2 : theme::bg1);
@@ -944,7 +994,10 @@ private:
         TextStyle label;
         label.size = theme::textBase;
         label.weight = FontWeight::Bold;
-        label.color = danger ? theme::danger : theme::fg1;
+        // Still focusable while disabled: the cursor has to be able to reach it
+        // to read the hint saying why it will not work.
+        label.color = !row.enabled ? theme::fg3
+                                   : (danger ? theme::danger : theme::fg1);
         r.text(inner.x, inner.y, r.ellipsize(row.label, label, inner.w * 0.6f), label);
 
         if (!row.hint.empty()) {

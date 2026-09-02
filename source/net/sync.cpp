@@ -9,6 +9,7 @@
 #include "net/http.h"
 
 #include <algorithm>
+#include <cstdio>   // remove(), for the pending file
 
 namespace nxp {
 
@@ -35,6 +36,12 @@ bool Sync::start()
 {
     if (m_threadStarted)
         return true;
+
+    // After the guard, not before it: loadPending() appends, so a second
+    // start() would read the file twice and owe the plaza everything twice.
+    // Before the thread, so the worker finds last session's arrears already
+    // in its queues.
+    loadPending();
 
     ueventCreate(&m_wakeEvent, false);
     m_running = true;
@@ -100,7 +107,8 @@ void Sync::blockPeer(const std::string& id)
 {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_blockQueue.push_back(id);
+        m_blockQueue.push_back(Pending { id, 0 });
+        m_pendingDirty = true;
     }
     ueventSignal(&m_wakeEvent);
 }
@@ -109,7 +117,130 @@ void Sync::unblockPeer(const std::string& id)
 {
     {
         std::lock_guard<std::mutex> lock(m_mutex);
-        m_unblockQueue.push_back(id);
+        m_unblockQueue.push_back(Pending { id, 0 });
+        m_pendingDirty = true;
+    }
+    ueventSignal(&m_wakeEvent);
+}
+
+namespace {
+    const char* kPendingFile = "pending.json";
+}
+
+void Sync::markPendingDirty()
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    m_pendingDirty = true;
+}
+
+void Sync::loadPending()
+{
+    json_t* root = js::readFile(dataPath(kPendingFile));
+    if (!root)
+        return;
+
+    // Read straight into the queues rather than through a helper: Pending is
+    // private to this class, and a free function cannot name it without either
+    // making it public or dragging jansson into the header.
+    auto read = [&](const char* key, std::vector<Pending>& out) {
+        json_t* list = js::getArr(root, key);
+        if (!list)
+            return;
+        size_t i = 0;
+        json_t* entry = nullptr;
+        json_array_foreach(list, i, entry) {
+            if (!json_is_object(entry))
+                continue;
+            std::string id = js::getStr(entry, "id");
+            // A bounded read of a file anybody could have edited: a wrong-length
+            // id is not a console, and sixty-four is far past anything a person
+            // does by hand.
+            if (id.size() != 32 || out.size() >= 64)
+                continue;
+            out.push_back(Pending { id, static_cast<int>(js::getInt(entry, "tries", 0)) });
+        }
+    };
+
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        read("block", m_blockQueue);
+        read("unblock", m_unblockQueue);
+        m_unblockAllWanted = js::getBool(root, "unblock_all", false);
+
+        if (!m_blockQueue.empty() || !m_unblockQueue.empty() || m_unblockAllWanted) {
+            LOG("sync: %zu blocks and %zu unblocks still owed to the plaza%s",
+                m_blockQueue.size(), m_unblockQueue.size(),
+                m_unblockAllWanted ? ", plus a clear-all" : "");
+        }
+    }
+    json_decref(root);
+}
+
+void Sync::savePendingIfDirty()
+{
+    json_t* root = nullptr;
+    bool empty = false;
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        if (!m_pendingDirty)
+            return;
+        m_pendingDirty = false;
+
+        empty = m_blockQueue.empty() && m_unblockQueue.empty() && !m_unblockAllWanted;
+        if (!empty) {
+            auto write = [](const std::vector<Pending>& queue) {
+                json_t* list = json_array();
+                for (const Pending& item : queue) {
+                    json_t* e = json_object();
+                    json_object_set_new(e, "id", json_string(item.id.c_str()));
+                    json_object_set_new(e, "tries", json_integer(item.tries));
+                    json_array_append_new(list, e);
+                }
+                return list;
+            };
+            root = json_object();
+            json_object_set_new(root, "version", json_integer(1));
+            json_object_set_new(root, "block", write(m_blockQueue));
+            json_object_set_new(root, "unblock", write(m_unblockQueue));
+            json_object_set_new(root, "unblock_all", json_boolean(m_unblockAllWanted));
+        }
+    }
+
+    // Outside the lock: this is an SD write, and the drawing thread takes the
+    // same mutex every frame for the status pip.
+    const std::string path = dataPath(kPendingFile);
+    if (empty) {
+        // Nothing owed, so nothing on the card. An absent file is the clean
+        // state rather than an empty object somebody has to interpret.
+        remove(path.c_str());
+        return;
+    }
+    if (!js::writeFile(path, root))
+        LOG("sync: could not write %s", kPendingFile);
+    json_decref(root);
+}
+
+void Sync::requeue(std::vector<Pending>& queue, Pending item, const char* what)
+{
+    std::lock_guard<std::mutex> lock(m_mutex);
+    // Either way the file changes: the entry comes back with one more attempt
+    // against it, or it is gone for good and should not be read again on the
+    // next launch.
+    m_pendingDirty = true;
+    if (++item.tries >= kMaxSendTries) {
+        LOG("sync: giving up on %s for %s after %d tries", what, item.id.c_str(),
+            item.tries);
+        return;
+    }
+    queue.push_back(std::move(item));
+}
+
+void Sync::unblockAllPeers()
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_unblockAllWanted = true;
+        m_pendingDirty = true;
     }
     ueventSignal(&m_wakeEvent);
 }
@@ -434,28 +565,60 @@ void Sync::run()
             m_status.placeToken = place.token;
             m_status.placeKnown = false;
         } else {
-            std::vector<std::string> blocks;
+            std::vector<Pending> blocks;
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
                 blocks.swap(m_blockQueue);
             }
-            for (const std::string& id : blocks) {
+            for (Pending& item : blocks) {
                 setState(State::Working, "Blocking a console...");
-                if (!doSimple("/v1/block", "target", id))
+                if (!doSimple("/v1/block", "target", item.id)) {
+                    // Put back rather than dropped. The local half of a block
+                    // has already been applied, so losing this one leaves this
+                    // console filtering their passes while ours keep reaching
+                    // them - the one failure that points the wrong way.
+                    requeue(m_blockQueue, item, "block");
                     failed = true;
+                }
                 didWork = true;
+                markPendingDirty();
             }
 
-            std::vector<std::string> unblocks;
+            std::vector<Pending> unblocks;
             {
                 std::lock_guard<std::mutex> lock(m_mutex);
                 unblocks.swap(m_unblockQueue);
             }
-            for (const std::string& id : unblocks) {
+            for (Pending& item : unblocks) {
                 setState(State::Working, "Unblocking a console...");
-                if (!doSimple("/v1/unblock", "target", id))
+                if (!doSimple("/v1/unblock", "target", item.id)) {
+                    // Same reasoning inverted: the entry is already gone from
+                    // profile.json, so dropping this leaves the plaza holding a
+                    // block with nothing left on the card able to name it.
+                    requeue(m_unblockQueue, item, "unblock");
                     failed = true;
+                }
                 didWork = true;
+                markPendingDirty();
+            }
+
+            bool clearBlocks = false;
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+                std::swap(clearBlocks, m_unblockAllWanted);
+            }
+            if (clearBlocks) {
+                setState(State::Working, "Clearing the block list...");
+                if (!doSimple("/v1/unblock-all", std::string(), std::string())) {
+                    // Put back, unlike a single unblock: this is the recovery
+                    // for a card whose list is already incomplete, so losing it
+                    // to one bad request would leave nothing able to ask again.
+                    std::lock_guard<std::mutex> lock(m_mutex);
+                    m_unblockAllWanted = true;
+                    failed = true;
+                }
+                didWork = true;
+                markPendingDirty();
             }
 
             if (m_forgetWanted) {
@@ -508,6 +671,10 @@ void Sync::run()
                 setState(State::Idle, message);
             }
         }
+
+        // One write per pass rather than one per change: a burst of sends
+        // settles first, and the file is only touched when something moved.
+        savePendingIfDirty();
 
         if (failed) {
             m_failures = std::min(m_failures + 1, 8u);
