@@ -6,6 +6,7 @@
 
 #include "core/mii_parts.h"
 #include "core/identity.h"
+#include "core/wallet.h"
 #include "core/log.h"
 #include "core/pieces.h"
 #include "core/util.h"
@@ -35,6 +36,7 @@ namespace {
         { ui::Icon::Grid, "Collection" },
         { ui::Icon::Crowd, "The Square" },
         { ui::Icon::Puzzle, "Puzzles" },
+        { ui::Icon::Bag, "The shop" },
         { ui::Icon::Person, "Your pass" },
         { ui::Icon::Sliders, "Settings" },
     };
@@ -58,6 +60,10 @@ bool App::init()
     if (!m_renderer.init(m_gpu, m_font))
         return false;
 
+    // Before any screen can show a balance, and after identity() exists -
+    // the wallet is checked against this console's own token.
+    Wallet::get().load();
+
     // The Mii artwork. A face draws nothing without it, so this is a hard
     // failure rather than something to discover on the passport screen.
     if (!miiParts().load("romfs:/mii/parts.bin"))
@@ -78,6 +84,7 @@ bool App::init()
     m_tabScenes[static_cast<int>(Tab::Collection)] = makeCollectionScene();
     m_tabScenes[static_cast<int>(Tab::Square)] = makeSquareScene();
     m_tabScenes[static_cast<int>(Tab::Puzzles)] = makePuzzlesScene();
+    m_tabScenes[static_cast<int>(Tab::Shop)] = makeShopScene();
     m_tabScenes[static_cast<int>(Tab::Passport)] = makePassportScene();
     m_tabScenes[static_cast<int>(Tab::Settings)] = makeSettingsScene();
 
@@ -97,6 +104,7 @@ void App::exit()
     m_sync.stop();
     Update::get().shutdown();
     store().flush();
+    Wallet::get().flush();
 
     m_overlays.clear();
     for (auto& scene : m_tabScenes)
@@ -553,6 +561,9 @@ void App::update(float dt)
     if (saveTimer > 2.0f) {
         saveTimer = 0.0f;
         store().flush();
+        // Alongside the store, and just as cheap when nothing has changed: the
+        // daily grant lands on a check-in, which can happen at any moment.
+        Wallet::get().flush();
     }
 }
 

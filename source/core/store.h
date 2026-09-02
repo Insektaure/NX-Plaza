@@ -154,6 +154,22 @@ public:
     PieceInventory pieces() const;
     void setActivePieceSet(int set);
 
+    // What a purchase produced. `set` is -1 when there was nothing to sell.
+    struct PiecePurchase {
+        int set = -1;
+        int piece = -1;
+    };
+
+    // Grants a piece the owner does not already hold and records the shop as
+    // where it came from. With `activeOnly` it comes from the puzzle being
+    // filled and nothing else, and fails when that one is finished; without,
+    // it is drawn from every unfinished puzzle at once.
+    //
+    // Missing rather than random: a crossing can hand you a piece twice
+    // because meeting somebody twice is its own reward, but paying coins for
+    // one you already had would just be a fine.
+    PiecePurchase buyPiece(bool activeOnly);
+
     // Grants the piece this crossing is worth, into the active set. Returns
     // true only when it was one the owner did not already hold, so a caller can
     // tell "you got something" from "you got another one of those".

@@ -47,6 +47,8 @@ std::unique_ptr<Scene> makeSquareScene();
 
 // The puzzles, and which one the crossings currently fill.
 std::unique_ptr<Scene> makePuzzlesScene();
+// Where the coins a day of checking in earns get spent.
+std::unique_ptr<Scene> makeShopScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

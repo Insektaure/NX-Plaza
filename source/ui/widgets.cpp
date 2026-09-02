@@ -94,6 +94,38 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.circle(cx - half * 0.15f, cy - half, knob, color);
         break;
     }
+    case Icon::Bag: {
+        // A shopping bag: the body, then a handle arching out of its rim.
+        //
+        // strokeRect with a radius of half its side is this file's stroked
+        // circle, which the handle is the top half of - clipped to above the
+        // rim rather than covered over, because an icon has no idea what colour
+        // the surface behind it is.
+        float halfW = s * 0.28f;
+        float top = cy - s * 0.13f; // the handle hangs above it, so the rim sits high
+        Rect body { cx - halfW, top, halfW * 2.0f, s * 0.42f };
+
+        float handle = s * 0.17f;
+        r.pushClipVertical(Rect { box.x, box.y, box.w, top - box.y });
+        r.strokeRect(Rect { cx - handle, top - handle, handle * 2.0f, handle * 2.0f },
+            handle, weight, color);
+        r.popClip();
+
+        r.strokeRect(body, s * 0.07f, weight, color);
+        break;
+    }
+    case Icon::Dice: {
+        // A die showing three: the body, then pips down the diagonal. Filled
+        // discs, because a 3px ring at this size is a smudge.
+        float half = s * 0.30f;
+        r.strokeRect(Rect { cx - half, cy - half, half * 2.0f, half * 2.0f }, s * 0.09f,
+            weight, color);
+        float reach = half * 0.52f;
+        float pip = std::max(weight * 0.9f, s * 0.045f);
+        for (int i = -1; i <= 1; i++)
+            r.circle(cx + float(i) * reach, cy + float(i) * reach, pip, color);
+        break;
+    }
     case Icon::Star: {
         // Ten vertices at alternating radii, stroked edge by edge.
         //

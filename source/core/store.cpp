@@ -801,6 +801,45 @@ void Store::noteTitleCount(const std::string& crossingId, const Pass& pass)
     m_extras.setU32(crossingId, extras::TitleCount, pass.titles);
 }
 
+Store::PiecePurchase Store::buyPiece(bool activeOnly)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    const std::vector<PieceSet>& sets = pieceSets();
+    if (sets.empty())
+        return {};
+
+    // Every piece that is for sale, as (set, piece). One flat list rather than
+    // a set drawn first and a piece drawn inside it: drawing the set first
+    // would make the last piece of an almost-finished puzzle as likely as any
+    // one of fifteen from an untouched one.
+    std::vector<PiecePurchase> missing;
+    for (size_t set = 0; set < sets.size(); set++) {
+        if (activeOnly && int(set) != m_pieces.active)
+            continue;
+        uint8_t total = sets[set].count;
+        for (uint8_t i = 0; i < total; i++) {
+            if (!m_pieces.has(int(set), i))
+                missing.push_back(PiecePurchase { int(set), int(i) });
+        }
+    }
+    if (missing.empty())
+        return {};
+
+    uint32_t roll = 0;
+    randomBytes(&roll, sizeof(roll));
+    PiecePurchase bought = missing[roll % missing.size()];
+    if (!m_pieces.take(bought.set, uint8_t(bought.piece)))
+        return {};
+
+    // "the shop" rather than an empty name, so the provenance panel says where
+    // it came from instead of falling back to "someone".
+    m_pieces.noteSource(bought.set, uint8_t(bought.piece), "the shop", nowUnix());
+    m_profileDirty = true;
+    LOG("pieces: bought piece %u of %s", unsigned(bought.piece + 1),
+        sets[size_t(bought.set)].name);
+    return bought;
+}
+
 bool Store::grantPieceFor(const std::string& crossingId, uint64_t when)
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);

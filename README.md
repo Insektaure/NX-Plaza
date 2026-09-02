@@ -46,7 +46,22 @@ occasionally say what their pass says, and **A** opens whoever the cursor is on.
 **Puzzles.** What you take away from crossing people. Three pictures (for now), fifteen
 pieces each, one piece per console you pass. The list says how full each puzzle
 is and which one the pieces are going into; opening one shows the board, and
-every tile you have remembers who brought it and when.
+every tile you have remembers who brought it and when. Finish one and **A**
+puts the picture on the screen on its own.
+
+**The shop.** Ten coins for every new day you open the app, granted by the
+plaza's clock so the console's own cannot mint them. A hundred buys a piece of
+the puzzle you are filling; fifty buys one drawn from every unfinished puzzle at
+once, since what the difference pays for is the choice rather than the piece.
+
+Never a duplicate. 
+
+Ten days of checking in against roughly three crossings, so
+it is a floor for a console that meets nobody rather than a way around meeting
+anybody.
+
+Spending works offline; the totals are checksummed against your
+console's plaza token.
 
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
@@ -241,6 +256,7 @@ sdmc:/switch/nx-plaza/
   crossings.ext    extras kept per crossing: starred, the piece they brought
   data/assets/     the puzzle artwork, delivered with the app by the updater
   pending.json     blocks the plaza has not been told about yet; gone once it has
+  wallet.dat       coins earned and spent, checked against your own token
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
