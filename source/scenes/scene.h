@@ -25,6 +25,15 @@ public:
 
     // Overlays that own the whole screen (first run) hide the navigation.
     virtual bool coversChrome() const { return false; }
+
+    // And the hint strip with it, for a view that wants the panel itself: a
+    // finished puzzle's picture is 16:9 and so is the screen, so a strip along
+    // the bottom is the difference between filling it and nearly filling it.
+    //
+    // Separate from coversChrome because it is a stronger thing to ask. A
+    // scene that takes the hints away has to leave by any button somebody is
+    // likely to press, since nothing on screen says which one.
+    virtual bool coversHints() const { return false; }
 };
 
 std::unique_ptr<Scene> makePlazaScene();

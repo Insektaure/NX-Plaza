@@ -588,8 +588,10 @@ void App::draw()
         scene->draw(*this, m_renderer);
     }
 
-    // Every view gets the same strip in the same place, overlays included.
-    drawHintBar(m_renderer);
+    // Every view gets the same strip in the same place, overlays included -
+    // unless one has asked for the whole panel.
+    if (!scene || !scene->coversHints())
+        drawHintBar(m_renderer);
 
     drawToast(m_renderer);
     drawDialog(m_renderer);

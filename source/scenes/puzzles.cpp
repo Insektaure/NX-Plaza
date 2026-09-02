@@ -30,11 +30,23 @@ namespace {
             Zone_Back,
         };
 
+        // While a picture is being looked at bare, the tab rail and the status
+        // dot go: the artwork is 16:9 and so is the screen, so anything beside
+        // it is a border the picture did not ask for. The hint bar stays,
+        // because B is the way out and a picture with no way out is a trap.
+        bool coversChrome() const override { return m_showcase >= 0 && m_bare; }
+
+        // The hint strip too: the picture is 16:9 and the panel is 16:9, so
+        // with nothing along the bottom it fits exactly, corner to corner.
+        bool coversHints() const override { return m_showcase >= 0 && m_bare; }
+
         void onEnter(App& app) override
         {
             m_inventory = app.store().pieces();
             m_row = m_inventory.active;
             m_open = -1;
+            m_showcase = -1;
+            m_bare = false;
             // Coming back to the tab lands on the puzzle being filled, which is
             // no use if it is scrolled off. The offset is set on the first draw,
             // once the row geometry is known.
@@ -56,7 +68,9 @@ namespace {
             if (m_open >= count)
                 m_open = -1;
 
-            if (m_open < 0)
+            if (m_showcase >= 0)
+                updateShowcase(app, input, count);
+            else if (m_open < 0)
                 updateList(app, input, dt, count);
             else
                 updateDetail(app, input, sets);
@@ -69,7 +83,9 @@ namespace {
             Rect content { area.x + theme::edge, area.y + theme::s8,
                 area.w - theme::edge * 2.0f, area.h - theme::s8 - theme::s7 };
 
-            if (m_open >= 0 && size_t(m_open) < sets.size())
+            if (m_showcase >= 0 && size_t(m_showcase) < sets.size())
+                drawShowcase(app, r, content);
+            else if (m_open >= 0 && size_t(m_open) < sets.size())
                 drawDetail(app, r, content);
             else
                 drawList(app, r, content, sets);
@@ -179,8 +195,145 @@ namespace {
                 row = std::max(row - 1, 0);
             m_piece = std::min(row * kPerRow + col, count - 1);
 
+            if (input.accept()) {
+                // Inside a finished puzzle A shows it, because filling is not
+                // on offer and that is the only thing left to want. The list's
+                // Y still means fill and says so there, which is why this
+                // decision is here and not inside fill().
+                if (canShow(m_open))
+                    m_showcase = m_open;
+                else
+                    fill(app, m_open);
+            }
+        }
+
+        void updateShowcase(App& app, const Input& input, int count)
+        {
+            if (m_showcase >= count || !m_inventory.complete(m_showcase)) {
+                m_showcase = -1;
+                return;
+            }
+            TouchTarget tap;
+            if (app.takeTap(tap)) {
+                // A tap anywhere leaves bare mode; on the arrow it closes the
+                // picture. Bare has no arrow to aim at, which is the point.
+                if (m_bare)
+                    m_bare = false;
+                else if (tap.is(Zone_Back))
+                    m_showcase = -1;
+                return;
+            }
+
+            // A toggles rather than only entering. Bare has no hint strip, so
+            // nothing on screen says which button leaves - and the one anybody
+            // will try first is the one that got them there.
             if (input.accept())
-                fill(app, m_open);
+                m_bare = !m_bare;
+            if (input.back()) {
+                if (m_bare)
+                    m_bare = false;
+                else
+                    m_showcase = -1;
+            }
+
+            // Left and right walk the finished ones, so a gallery of several
+            // is a gallery rather than a thing you back out of each time.
+            int step = input.navRight ? 1 : (input.navLeft ? -1 : 0);
+            if (step != 0) {
+                for (int i = 1; i <= count; i++) {
+                    int candidate = (m_showcase + step * i + count * i) % count;
+                    if (m_inventory.complete(candidate)
+                        && pictures().has(pieceSets()[size_t(candidate)].image)) {
+                        m_showcase = candidate;
+                        break;
+                    }
+                }
+            }
+        }
+
+        // A finished puzzle, as the picture it turned out to be.
+        void drawShowcase(App& app, Renderer& r, const Rect& content)
+        {
+            const PieceSet& spec = pieceSets()[size_t(m_showcase)];
+            pictures().request(spec.image);
+
+            if (m_bare) {
+                // Every pixel of the panel. The rail, the pip and the hint
+                // strip are all suppressed, and 1920x1080 is exactly the 16:9
+                // the artwork was cut to, so it lands corner to corner with
+                // nothing left over.
+                drawPicture(r, spec, r.viewport());
+                return;
+            }
+
+            app.hint("A", "fill the screen");
+            app.hint("B", "back");
+
+            Rect back { content.x, content.y, 44.0f, 44.0f };
+            app.touchZone(back.inset(-theme::s3, -theme::s3), Zone_Back, 0);
+            ui::icon(r, back, ui::Icon::ArrowLeft, theme::fg3, 3.0f);
+
+            TextStyle title;
+            title.size = theme::text2xl;
+            title.weight = FontWeight::Bold;
+            title.color = theme::fg1;
+            title.tracking = theme::trackingTight;
+            r.text(back.right() + theme::s4,
+                content.y + (back.h - title.size * theme::leadingTight) * 0.5f,
+                spec.name, title);
+
+            // Who it took, and when it came together. Both read off the
+            // provenance rather than stored: the sources are already there.
+            int people = 0;
+            uint64_t finished = 0;
+            std::vector<std::string> seen;
+            for (const PieceSource& src : m_inventory.sources) {
+                if (src.picture != spec.image)
+                    continue;
+                finished = std::max(finished, src.when);
+                if (!src.who.empty()
+                    && std::find(seen.begin(), seen.end(), src.who) == seen.end()) {
+                    seen.push_back(src.who);
+                    people++;
+                }
+            }
+
+            TextStyle caption;
+            caption.size = theme::textSm;
+            caption.color = theme::fg3;
+            std::string line = people == 1
+                ? std::string("One person brought this")
+                : format("%d people brought this", people);
+            if (finished != 0)
+                line += " - finished " + relativeTime(finished, nowUnix());
+            r.text(Rect { content.x, content.y, content.w, back.h }, line, caption,
+                Align::Right, VAlign::Middle);
+
+            drawPicture(r, spec,
+                Rect { content.x, content.y + back.h + theme::s5, content.w,
+                    content.bottom() - (content.y + back.h + theme::s5) });
+        }
+
+        // The picture, as large as the given box allows, keeping the 16:9 the
+        // artwork was cut to.
+        void drawPicture(Renderer& r, const PieceSet& spec, const Rect& box)
+        {
+            float w = std::min(box.w,
+                box.h * (kCropW * float(kPerRow)) / (kCropH * float(kRows)));
+            float h = w * (kCropH * float(kRows)) / (kCropW * float(kPerRow));
+            Rect whole { box.x + (box.w - w) * 0.5f, box.y + (box.h - h) * 0.5f, w, h };
+
+            if (!pictures().resident(spec.image)) {
+                // The slot holds another puzzle's picture until the upload
+                // lands. One frame, and a stale picture under the wrong name
+                // would be worse than a moment of nothing.
+                r.roundRect(whole, theme::r3, theme::bg2);
+                return;
+            }
+            const float uv[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+            // Square corners when it fills the screen: a rounded edge against
+            // the bezel reads as a card, and this is meant to read as a view.
+            r.picture(whole, uv, m_bare ? 0.0f : theme::r3);
         }
 
         void open(int set)
@@ -197,6 +350,17 @@ namespace {
             const std::vector<PieceSet>& sets = pieceSets();
             if (set >= 0 && size_t(set) < sets.size())
                 pictures().request(sets[size_t(set)].image);
+        }
+
+        // Whether this puzzle is finished and there is a picture to show for
+        // it. Both have to be true: a finished puzzle on a card with no
+        // artwork has nothing behind the grid.
+        bool canShow(int set) const
+        {
+            const std::vector<PieceSet>& sets = pieceSets();
+            if (set < 0 || size_t(set) >= sets.size())
+                return false;
+            return m_inventory.complete(set) && pictures().has(sets[size_t(set)].image);
         }
 
         // What pressing the fill button would do, worded as the three things
@@ -384,7 +548,7 @@ namespace {
             bool active = m_open == m_inventory.active;
             int held = m_inventory.countHeld(m_open);
 
-            app.hint("A", fillHintFor(m_open));
+            app.hint("A", canShow(m_open) ? "look at it" : fillHintFor(m_open));
             app.hint("B", "back");
 
             float y = content.y;
@@ -623,6 +787,13 @@ namespace {
         int m_row = 0;    // highlighted row in the list
         int m_open = -1;  // the puzzle filling the screen, or -1 for the list
         int m_piece = 0;  // cursor within the open puzzle
+        // The finished puzzle being looked at, with nothing else on screen, or
+        // -1. Reached from the open puzzle rather than the list: you have to
+        // have filled it to be offered it.
+        int m_showcase = -1;
+        // The picture with nothing else on it: no name, no caption, no arrow,
+        // and the rail and pip suppressed.
+        bool m_bare = false;
         float m_pulse = 0.0f;
     };
 }
