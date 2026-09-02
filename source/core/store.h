@@ -12,6 +12,17 @@
 
 namespace nxp {
 
+// A console that will never be accepted again.
+//
+// The handle is kept alongside the id because blocking deletes their pass:
+// after that there is nothing left to look the name up in, and a list of bare
+// 32-character ids tells nobody who they blocked or whether it was a mistake.
+struct BlockedConsole {
+    std::string id;
+    std::string name;  // their handle when they were blocked, if it was known
+    uint64_t when = 0; // unix seconds
+};
+
 // Everything the user can change on the Settings screen.
 struct Settings {
     // The plaza to talk to. Compiled in; only a DEBUG=1 build can change it.
@@ -42,7 +53,7 @@ struct Settings {
     // 0 = Light (the default), 1 = Dark, 2 = match the console's own setting.
     int themeMode = 0;
 
-    std::vector<std::string> blocked; // console ids we never accept again
+    std::vector<BlockedConsole> blocked; // consoles we never accept again
 
     // The place label that actually leaves the console, honouring placeSharing.
     std::string sharedPlaceLabel() const;
@@ -111,8 +122,14 @@ public:
     void markTradedBack(const std::string& id);
     void markAllOpened();
 
-    void block(const std::string& id);
+    // `name` is their handle, remembered for the list; blocking deletes the
+    // pass it would otherwise have been read from.
+    void block(const std::string& id, const std::string& name = std::string());
     bool isBlocked(const std::string& id) const;
+
+    // Lets one console through again, or all of them. Neither is told.
+    void unblock(const std::string& id);
+    void unblockAll();
 
     // Settings > "Delete every pass". Keeps our own identity and pass.
     void deleteAllCrossings();

@@ -105,6 +105,15 @@ void Sync::blockPeer(const std::string& id)
     ueventSignal(&m_wakeEvent);
 }
 
+void Sync::unblockPeer(const std::string& id)
+{
+    {
+        std::lock_guard<std::mutex> lock(m_mutex);
+        m_unblockQueue.push_back(id);
+    }
+    ueventSignal(&m_wakeEvent);
+}
+
 Sync::Status Sync::status() const
 {
     std::lock_guard<std::mutex> lock(m_mutex);
@@ -433,6 +442,18 @@ void Sync::run()
             for (const std::string& id : blocks) {
                 setState(State::Working, "Blocking a console...");
                 if (!doSimple("/v1/block", "target", id))
+                    failed = true;
+                didWork = true;
+            }
+
+            std::vector<std::string> unblocks;
+            {
+                std::lock_guard<std::mutex> lock(m_mutex);
+                unblocks.swap(m_unblockQueue);
+            }
+            for (const std::string& id : unblocks) {
+                setState(State::Working, "Unblocking a console...");
+                if (!doSimple("/v1/unblock", "target", id))
                     failed = true;
                 didWork = true;
             }

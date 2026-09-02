@@ -237,8 +237,10 @@ private:
             "Their pass is deleted and this console can never cross you again. They are "
             "not told.",
             "Block and forget",
-            [appPtr = &app, id]() {
-                appPtr->store().block(id);
+            [appPtr = &app, id, handle]() {
+                // The handle goes with it: the pass is deleted a line later,
+                // and the block list is the only place their name survives.
+                appPtr->store().block(id, handle);
                 appPtr->sync().blockPeer(id);
                 appPtr->popOverlay();
             });

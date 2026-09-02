@@ -56,13 +56,15 @@ bool Identity::valid() const
     return id.size() == 32 && token.size() == 64;
 }
 
-std::string Identity::shortCode() const
+std::string Identity::shortCode() const { return shortCodeFor(id); }
+
+std::string shortCodeFor(const std::string& consoleId)
 {
     // Crockford-ish base32 without the letters that get misread out loud.
     static const char* alphabet = "0123456789ABCDEFGHJKMNPQRSTVWXYZ";
 
     uint8_t raw[16] = {};
-    if (!fromHex(id, raw, sizeof(raw)))
+    if (!fromHex(consoleId, raw, sizeof(raw)))
         return "--------";
 
     uint64_t v = 0;

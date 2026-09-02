@@ -60,6 +60,10 @@ public:
     // Tell the server never to pair us with `id` again.
     void blockPeer(const std::string& id);
 
+    // Lifts the block this console put in place. The plaza lifts only ours: if
+    // they blocked us too, the two stay apart and the server does not say so.
+    void unblockPeer(const std::string& id);
+
     Status status() const;
     std::vector<Peer> peers() const;
 
@@ -99,6 +103,7 @@ private:
     std::vector<Peer> m_peers;
     std::vector<std::string> m_arrivals;
     std::vector<std::string> m_blockQueue;
+    std::vector<std::string> m_unblockQueue;
 
     uint64_t m_nextCheckinMs = 0;
     uint64_t m_nextExchangeMs = 0;

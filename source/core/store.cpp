@@ -129,7 +129,26 @@ void Store::load()
             m_settings.dailyLimit = static_cast<int>(js::getInt(s, "daily_limit", 12));
             m_settings.firstRunDone = js::getBool(s, "first_run_done", false);
             m_settings.themeMode = static_cast<int>(js::getInt(s, "theme", 0));
-            m_settings.blocked = js::getStrArray(s, "blocked", 128);
+            // Objects now, holding the handle and when. A profile written
+            // before that has bare id strings; reading both is what migrates
+            // it, and an id on its own simply has no name to show.
+            m_settings.blocked.clear();
+            if (json_t* list = js::getArr(s, "blocked")) {
+                size_t bi = 0;
+                json_t* entry = nullptr;
+                json_array_foreach(list, bi, entry) {
+                    BlockedConsole b;
+                    if (json_is_string(entry)) {
+                        b.id = json_string_value(entry);
+                    } else if (json_is_object(entry)) {
+                        b.id = js::getStr(entry, "id");
+                        b.name = js::getStr(entry, "name");
+                        b.when = static_cast<uint64_t>(js::getInt(entry, "when", 0));
+                    }
+                    if (!b.id.empty() && m_settings.blocked.size() < 128)
+                        m_settings.blocked.push_back(std::move(b));
+                }
+            }
         }
 
         json_t* p = json_object_get(profile, "pass");
@@ -234,7 +253,15 @@ void Store::saveProfileLocked()
     json_object_set_new(s, "daily_limit", json_integer(m_settings.dailyLimit));
     json_object_set_new(s, "first_run_done", json_boolean(m_settings.firstRunDone));
     json_object_set_new(s, "theme", json_integer(m_settings.themeMode));
-    json_object_set_new(s, "blocked", js::strArray(m_settings.blocked));
+    json_t* blocked = json_array();
+    for (const BlockedConsole& b : m_settings.blocked) {
+        json_t* e = json_object();
+        json_object_set_new(e, "id", json_string(b.id.c_str()));
+        json_object_set_new(e, "name", json_string(b.name.c_str()));
+        json_object_set_new(e, "when", json_integer(json_int_t(b.when)));
+        json_array_append_new(blocked, e);
+    }
+    json_object_set_new(s, "blocked", blocked);
 
     json_t* root = json_object();
     json_object_set_new(root, "version", json_integer(1));
@@ -615,13 +642,27 @@ void Store::markAllOpened()
     }
 }
 
-void Store::block(const std::string& id)
+void Store::block(const std::string& id, const std::string& name)
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     if (id.empty() || isBlocked(id))
         return;
 
-    m_settings.blocked.push_back(id);
+    BlockedConsole entry;
+    entry.id = id;
+    entry.name = name;
+    // Falls back to the card about to be deleted, so a caller that does not
+    // happen to have the handle to hand still ends up with a name.
+    if (entry.name.empty()) {
+        for (const Crossing& c : m_crossings) {
+            if (c.id == id) {
+                entry.name = c.pass.handle;
+                break;
+            }
+        }
+    }
+    entry.when = nowUnix();
+    m_settings.blocked.push_back(std::move(entry));
     m_crossings.erase(std::remove_if(m_crossings.begin(), m_crossings.end(),
                           [&](const Crossing& c) { return c.id == id; }),
         m_crossings.end());
@@ -635,9 +676,34 @@ void Store::block(const std::string& id)
 bool Store::isBlocked(const std::string& id) const
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
-    return std::find(m_settings.blocked.begin(), m_settings.blocked.end(), id)
-        != m_settings.blocked.end();
+    for (const BlockedConsole& b : m_settings.blocked) {
+        if (b.id == id)
+            return true;
+    }
+    return false;
 }
+
+void Store::unblock(const std::string& id)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    size_t before = m_settings.blocked.size();
+    m_settings.blocked.erase(std::remove_if(m_settings.blocked.begin(),
+                                 m_settings.blocked.end(),
+                                 [&](const BlockedConsole& b) { return b.id == id; }),
+        m_settings.blocked.end());
+    if (m_settings.blocked.size() != before)
+        m_profileDirty = true;
+}
+
+void Store::unblockAll()
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (m_settings.blocked.empty())
+        return;
+    m_settings.blocked.clear();
+    m_profileDirty = true;
+}
+
 
 void Store::deleteAllCrossings()
 {

@@ -36,6 +36,11 @@ struct Identity {
 // Loads the identity, generating and persisting one if this is a first launch.
 // Returns false only if the SD card is unwritable, in which case the app runs
 // with a session-only identity so it still starts.
+// The same short form for any console's id, not just this one's. What a blocked
+// console is shown as: the handle is remembered when it is possible to remember
+// it, and this is what is left when it is not.
+std::string shortCodeFor(const std::string& consoleId);
+
 bool identityInit();
 
 // The identity for this process. Valid after identityInit().

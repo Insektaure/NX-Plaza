@@ -197,6 +197,11 @@ private:
         Id_GetArt,
         Id_CheckUpdates,
         Id_AutoCheckUpdates,
+
+        // One row per blocked console, so their ids are a range rather than a
+        // name. Last in the enum: everything above it is a fixed row, and
+        // anything at or past it is the nth entry on the block list.
+        Id_BlockedFirst = 1000,
     };
 
     enum class Kind { Toggle, Segmented, Value, Action, Danger };
@@ -321,7 +326,9 @@ private:
             row.selected = selected;
             m_rows.push_back(row);
         };
-        auto value = [&](Id id, const char* label, const std::string& hint,
+        // A std::string label, not a const char*: most rows are literals, but a
+        // blocked console's row is named after whoever it was.
+        auto value = [&](Id id, const std::string& label, const std::string& hint,
                          const std::string& shown, Kind kind = Kind::Value) {
             Row row;
             row.kind = kind;
@@ -383,8 +390,31 @@ private:
                 status.placeToken.empty() ? std::string("(none)") : status.placeToken);
             value(Id_TestConnection, "Check in now", status.message,
                 identity().shortCode(), Kind::Action);
-            value(Id_Unblock, "Blocked consoles", "A to clear the whole list",
-                format("%zu blocked", settings.blocked.size()), Kind::Action);
+            // The count was all this said, which told you nothing about who
+            // you had blocked or whether one of them was a mis-tap. One row
+            // each, A to let that one through.
+            if (settings.blocked.empty()) {
+                value(Id_None, "Blocked consoles", "Nobody is blocked", "none");
+            } else {
+                for (size_t b = 0; b < settings.blocked.size(); b++) {
+                    const BlockedConsole& who = settings.blocked[b];
+                    std::string name = who.name.empty()
+                        ? std::string("Somebody")
+                        : who.name;
+                    // The code is there even when the name is: two people can
+                    // pick the same handle, and it is what the list looked like
+                    // before names were kept.
+                    std::string hint = shortCodeFor(who.id);
+                    if (who.when != 0)
+                        hint += " - blocked " + relativeTime(who.when, nowUnix());
+                    hint += ". A lets them cross you again";
+                    value(static_cast<Id>(Id_BlockedFirst + int(b)), name, hint,
+                        "unblock", Kind::Action);
+                }
+                value(Id_Unblock, "Clear the whole list",
+                    format("Clears all %zu at once", settings.blocked.size()), "",
+                    Kind::Action);
+            }
             toggle(Id_LogToFile, "Write a log file",
                 settings.logToFile
                     ? "plaza.log, beside your pass on the SD card - it names this "
@@ -558,6 +588,28 @@ private:
         Settings settings = app.store().settings();
         std::string value;
 
+        // The block list is a range rather than a named row, so it is handled
+        // before the switch. It also writes through the store rather than the
+        // local copy below: the copy is written back wholesale at the end, and
+        // a list that changed underneath it would be undone.
+        if (id >= Id_BlockedFirst) {
+            size_t index = size_t(int(id) - int(Id_BlockedFirst));
+            if (index >= settings.blocked.size())
+                return;
+            const BlockedConsole& who = settings.blocked[index];
+            std::string name = who.name.empty() ? shortCodeFor(who.id) : who.name;
+            std::string id = who.id;
+            app.store().unblock(id);
+            app.sync().unblockPeer(id);
+            // "Can" rather than "will": the plaza lifts our block and not
+            // theirs, and it does not tell us whether theirs is still there -
+            // which is the same discretion blocking gets in the other
+            // direction.
+            app.toast("Unblocked " + name,
+                "They can cross you again, unless they blocked you as well.");
+            return;
+        }
+
         switch (id) {
         case Id_SharePlaying:
             settings.sharePlaying = !settings.sharePlaying;
@@ -669,14 +721,30 @@ private:
             app.sync().kick();
             app.toast("Checking in", settings.serverUrl);
             return;
-        case Id_Unblock:
+        case Id_Unblock: {
             if (settings.blocked.empty()) {
                 app.toast("Nothing blocked", "No console is on your block list.");
                 return;
             }
-            settings.blocked.clear();
-            app.toast("Block list cleared", "Those consoles can cross you again.");
-            break;
+            // Asked about, unlike before. It is not destructive - nothing is
+            // lost by letting somebody through - but it undoes every one of
+            // these decisions at once, and they were made one at a time.
+            size_t count = settings.blocked.size();
+            app.askConfirm(format("Clear all %zu?", count),
+                "Every console you have blocked can cross you again, except any that "
+                "blocked you as well. Their old passes are not coming back; only the "
+                "block is lifted.",
+                "Clear the list", [appPtr = &app]() {
+                    // The plaza is told one at a time, before the list goes:
+                    // afterwards there is nothing left to read the ids from.
+                    for (const BlockedConsole& b : appPtr->store().settings().blocked)
+                        appPtr->sync().unblockPeer(b.id);
+                    appPtr->store().unblockAll();
+                    appPtr->toast("Block list cleared",
+                        "Those consoles can cross you again.");
+                });
+            return;
+        }
         case Id_DeleteAll:
             app.askConfirm("Delete every pass?",
                 "Every pass you have collected is removed from this console. Your own pass "
