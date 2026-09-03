@@ -59,12 +59,15 @@ def render(rows) -> str:
     lines = [
         HEADING,
         "",
-        f"All {len(rows)} of them, as the app lists them. Every one is worked out"
-        " from your",
-        "collection, your puzzles and your wallet when the screen draws - none of"
-        " it",
-        "is scored or stored, so nothing here can disagree with what actually",
-        "happened. They are worth no coins and unlock nothing.",
+        f"All {len(rows)} of them, as the app lists them. Nearly every one is"
+        " worked out from",
+        "your collection, your puzzles and your wallet at the moment the screen"
+        " draws,",
+        "so it cannot disagree with what actually happened; the three about the"
+        " plaza",
+        "dash read the best distance that game keeps. None of them pays a coin,"
+        " and",
+        "none unlocks anything.",
         "",
     ]
     for tier in TIERS:

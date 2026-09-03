@@ -865,6 +865,11 @@ TrophyFacts Store::trophyFacts() const
         }
     }
 
+    // The lock is recursive, so the accessor would work here too - read
+    // straight from the map rather than take it twice.
+    auto dash = m_bestScores.find("dash");
+    if (dash != m_bestScores.end())
+        f.dashBest = dash->second;
     // What makes a pass worth crossing: a name, something to say, and
     // something to hand over.
     f.carrying = static_cast<uint32_t>(m_pass.carrying.size());

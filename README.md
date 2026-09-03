@@ -81,7 +81,7 @@ Spending works offline; the totals are checksummed against your console's plaza 
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
-**Trophies.** What this console has done: 53 of them, in bronze, silver,
+**Trophies.** What this console has done: 56 of them, in bronze, silver,
 gold and one platinum for the lot.
 
 Some are meant to be tripped over in the first hour - cross a pass with 
@@ -324,12 +324,13 @@ setting, re-read whenever the app regains focus). The choice is saved in
 
 ## Trophies
 
-All 53 of them, as the app lists them. Every one is worked out from your
-collection, your puzzles and your wallet when the screen draws - none of it
-is scored or stored, so nothing here can disagree with what actually
-happened. They are worth no coins and unlock nothing.
+All 56 of them, as the app lists them. Nearly every one is worked out from
+your collection, your puzzles and your wallet at the moment the screen draws,
+so it cannot disagree with what actually happened; the three about the plaza
+dash read the best distance that game keeps.\
+None of them pays a coin, and none unlocks anything.
 
-### Bronze (16)
+### Bronze (17)
 
 | | |
 | --- | --- |
@@ -343,6 +344,7 @@ happened. They are worth no coins and unlock nothing.
 | **Two down** | Finish two puzzles. |
 | **First purchase** | Buy something in the shop. |
 | **Beginner's luck** | Win a bet at the Mii race. |
+| **Off the mark** | Run a hundred metres in the plaza dash. |
 | **Your own face** | Make a face of your own in the Mii maker. |
 | **Redecorated** | Give your card a look of your own. |
 | **Out in the world** | Have your pass reach somebody. |
@@ -350,7 +352,7 @@ happened. They are worth no coins and unlock nothing.
 | **Same taste** | Cross somebody carrying something you carry too. |
 | **The strong silent type** | Cross a pass with nothing written on it. |
 
-### Silver (22)
+### Silver (23)
 
 | | |
 | --- | --- |
@@ -376,8 +378,9 @@ happened. They are worth no coins and unlock nothing.
 | **The shop's best customer** | Spend five hundred coins. |
 | **Saving up** | Have five hundred coins at once. |
 | **A good day at the races** | Win fifty coins at the Mii race. |
+| **A good run** | Run five hundred metres in the plaza dash. |
 
-### Gold (14)
+### Gold (15)
 
 | | |
 | --- | --- |
@@ -393,6 +396,7 @@ happened. They are worth no coins and unlock nothing.
 | **Known you for a year** | Keep a card for a year. |
 | **Every picture** | Finish every puzzle. |
 | **By hand alone** | Finish a puzzle without buying a single piece. |
+| **A kilometre of plaza** | Run a thousand metres in the plaza dash. |
 | **The bookmaker's problem** | Win two hundred coins at the Mii race. |
 | **Fifty contributors** | Take pieces from fifty different people. |
 

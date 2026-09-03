@@ -45,6 +45,9 @@ namespace {
         { "first_winnings", "Beginner's luck",
             "Win a bet at the Mii race.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.coinsWon >= 3; } },
+        { "dash_hundred", "Off the mark",
+            "Run a hundred metres in the plaza dash.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.dashBest >= 100; } },
         { "own_face", "Your own face",
             "Make a face of your own in the Mii maker.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.ownFace; } },
@@ -137,6 +140,11 @@ namespace {
         { "good_day_racing", "A good day at the races",
             "Win fifty coins at the Mii race.", Tier::Silver,
             [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
+        // Half a kilometre is a little over half a minute of running and about
+        // twenty-three things jumped, at a pace that never stops climbing.
+        { "dash_five_hundred", "A good run",
+            "Run five hundred metres in the plaza dash.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.dashBest >= 500; } },
 
         // -------------------------------------------------------------- gold
         { "five_hundred_people", "Five hundred faces",
@@ -178,6 +186,12 @@ namespace {
         { "by_hand", "By hand alone",
             "Finish a puzzle without buying a single piece.", Tier::Gold,
             [](const TrophyFacts& f) { return f.puzzleByHand; } },
+        // A kilometre takes about fifty-five seconds, which is past the point
+        // where the plaza stops getting quicker - so it is roughly forty
+        // hazards, the last dozen of them at full speed.
+        { "dash_kilometre", "A kilometre of plaza",
+            "Run a thousand metres in the plaza dash.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.dashBest >= 1000; } },
         // Two hundred won means about two hundred and seventy raced, since the
         // odds are against the player - which is twenty-seven days of coins
         // spent at the track.

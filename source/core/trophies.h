@@ -69,6 +69,12 @@ struct TrophyFacts {
     // anywhere, so anything about races run would have to be counted rather
     // than derived.
     uint32_t coinsWon = 0;
+    // Furthest run in the plaza dash, in metres.
+    //
+    // The one fact here that the app counted rather than worked out. A score
+    // is a record of something that happened, where everything else on this
+    // struct is a state that either holds or does not.
+    uint32_t dashBest = 0;
 
     bool passReady = false;    // a name, a greeting and something carried
     bool lateCrossing = false; // one between midnight and four
