@@ -747,8 +747,9 @@ namespace {
             };
             std::string notes[kOptions] = {
                 std::string("Just to watch."),
-                format("Pays %u if it comes in.", unsigned(kPayoutWin)),
-                format("For free, or bet 1 coin to win %u.", unsigned(kPayoutExacta)),
+                format("%u back if it comes in.", unsigned(kPayoutWin)),
+                format("For free, or bet 1 coin for %u back.",
+                    unsigned(kPayoutExacta)),
             };
 
             for (int i = 0; i < kOptions; i++) {
@@ -1061,8 +1062,12 @@ namespace {
         void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
             bool canStake)
         {
-            std::string staked = format("Bet %u coin to win %u if lucky!",
-                unsigned(kStake), unsigned(payout()));
+            // "N back" rather than "win N": gross, the way odds are quoted, and
+            // the one wording that cannot be read as either the stake or the
+            // profit. It is also what the result says - "the bet paid 3" - so
+            // the two screens tell the same story.
+            std::string staked = format("Bet %u coin - %u back", unsigned(kStake),
+                unsigned(payout()));
             float plainW = ui::actionButtonWidth(r, plainLabel);
             float stakeW = ui::actionButtonWidth(r, staked);
 

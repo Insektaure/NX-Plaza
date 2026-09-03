@@ -140,7 +140,7 @@ namespace {
                               textW, inner.h },
                 "Three of the people you have crossed, against your own Mii. Nobody "
                 "is faster than anybody. Watch for nothing, bet a coin on your own "
-                "Mii for three, or call first and second for eleven.",
+                "Mii for three back, or call first and second for eleven.",
                 body, 2);
         }
 
