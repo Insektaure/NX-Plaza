@@ -339,7 +339,11 @@ void App::drawHintBar(Renderer& r)
         // move when nothing is layered over them.
         if (m_overlays.empty())
             hints.emplace_back("L/R", titleCase("switch tab"));
-        hints.emplace_back("+", titleCase("quit"));
+        // Not offered while it would not work: a strip that lists a button
+        // doing nothing is worse than one that does not list it.
+        Scene* busy = activeScene();
+        if (!busy || !busy->blocksExit())
+            hints.emplace_back("+", titleCase("quit"));
     }
 
     ui::buttonHints(r, Rect { bar.x, bar.y, bar.w - theme::edge, bar.h }, hints.data(),
@@ -499,7 +503,12 @@ bool App::handleChromeInput(const Input& input)
     }
 
     if (input.pressed(HidNpadButton_Plus)) {
-        requestExit();
+        // Unless a scene is mid-flight. The race is the case: the stake is
+        // already on the card, so quitting eighteen seconds of running by
+        // catching + would cost a coin for nothing.
+        Scene* busy = activeScene();
+        if (!busy || !busy->blocksExit())
+            requestExit();
         return true;
     }
 

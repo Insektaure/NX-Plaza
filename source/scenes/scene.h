@@ -34,6 +34,15 @@ public:
     // scene that takes the hints away has to leave by any button somebody is
     // likely to press, since nothing on screen says which one.
     virtual bool coversHints() const { return false; }
+
+    // Holds the quit button for as long as something is mid-flight.
+    //
+    // + is the one control the app takes before any scene sees it, which is
+    // right almost everywhere and wrong during a race: a coin is already spent
+    // and eighteen seconds of running would end on a mis-hit. A scene that
+    // says yes here must be certain to say no again shortly - nothing should
+    // be able to hold the console hostage for longer than it takes to watch.
+    virtual bool blocksExit() const { return false; }
 };
 
 std::unique_ptr<Scene> makePlazaScene();
@@ -52,9 +61,11 @@ std::unique_ptr<Scene> makeShopScene();
 // What this console has done. Every line is a question asked of the store, so
 // there is no separate record of it to go stale or be edited.
 std::unique_ptr<Scene> makeTrophiesScene();
-// Things to play with what the collection holds. Empty for now: the shelf is
-// here so a game is a scene and a row, not a tab and a rail slot.
+// Things to play with what the collection holds: a shelf, and a scene behind
+// each row of it.
 std::unique_ptr<Scene> makeGamesScene();
+// Four Miis, one line, and a coin on it if you like.
+std::unique_ptr<Scene> makeMiiRaceScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

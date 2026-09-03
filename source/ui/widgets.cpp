@@ -114,6 +114,28 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.strokeRect(body, s * 0.07f, weight, color);
         break;
     }
+    case Icon::Flag: {
+        // A chequered flag on its pole: the outline, then every other cell
+        // filled. Three across and two down is the fewest that still reads as
+        // chequered rather than as a window.
+        float poleX = cx - s * 0.24f;
+        r.rect(Rect { poleX, cy - s * 0.32f, weight, s * 0.64f }, color);
+
+        Rect flag { poleX + weight, cy - s * 0.30f, s * 0.42f, s * 0.30f };
+        r.strokeRect(flag, s * 0.02f, weight, color);
+
+        float cw = flag.w / 3.0f;
+        float ch = flag.h / 2.0f;
+        for (int row = 0; row < 2; row++) {
+            for (int col = 0; col < 3; col++) {
+                if ((row + col) % 2 != 0)
+                    continue;
+                r.rect(Rect { flag.x + float(col) * cw, flag.y + float(row) * ch, cw, ch },
+                    color);
+            }
+        }
+        break;
+    }
     case Icon::Pad: {
         // A controller: a wide rounded body, a cross on the left and two
         // buttons on the right. The grips are the body's own corner radius

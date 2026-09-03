@@ -11,11 +11,21 @@ namespace nxp {
 namespace {
     const char* kFile = "wallet.dat";
     constexpr char kMagic[4] = { 'N', 'X', 'P', 'W' };
-    constexpr uint16_t kVersion = 1;
+    // 2 added `won`. A version 1 file still reads: it is parsed with no
+    // winnings and rewritten as version 2 on the next flush, so nobody loses a
+    // coin to the upgrade.
+    constexpr uint16_t kVersion = 2;
 
-    // magic, version, reserved, granted, spent, lastDay, then the hash.
-    constexpr size_t kBodySize = 4 + 2 + 2 + 4 + 4 + 4;
+    // magic, version, reserved, granted, spent, lastDay, won, then the hash.
+    constexpr size_t kBodyV1 = 4 + 2 + 2 + 4 + 4 + 4;
+    constexpr size_t kBodySize = kBodyV1 + 4;
     constexpr size_t kFileSize = kBodySize + 32;
+    constexpr size_t kFileV1 = kBodyV1 + 32;
+
+    size_t bodySizeFor(uint16_t version)
+    {
+        return version == 1 ? kBodyV1 : kBodySize;
+    }
 
     void put16(uint8_t*& p, uint16_t v)
     {
@@ -47,23 +57,28 @@ Wallet& Wallet::get()
     return instance;
 }
 
-std::string Wallet::signature() const
+std::string Wallet::signature(uint16_t version) const
 {
+    // Packed exactly as the file of that version is, because a hash over a
+    // different byte layout is a hash over a different file.
     uint8_t body[kBodySize];
     uint8_t* p = body;
     memcpy(p, kMagic, sizeof(kMagic));
     p += sizeof(kMagic);
-    put16(p, kVersion);
+    put16(p, version);
     put16(p, 0);
     put32(p, m_granted);
     put32(p, m_spent);
     put32(p, m_lastDay);
+    if (version != 1)
+        put32(p, m_won);
+    size_t size = bodySizeFor(version);
 
     // The token is the key. It is 256 secret bits that live in identity.json
     // and never leave this console except as a bearer header, so the hash
     // cannot be reproduced from the source alone.
     uint8_t digest[32];
-    sha256Over({ std::string(reinterpret_cast<const char*>(body), kBodySize),
+    sha256Over({ std::string(reinterpret_cast<const char*>(body), size),
                    identity().token },
         digest);
     return std::string(reinterpret_cast<const char*>(digest), sizeof(digest));
@@ -80,8 +95,11 @@ void Wallet::load()
         return; // no wallet yet, which is a wallet with nothing in it
 
     const uint8_t* p = reinterpret_cast<const uint8_t*>(blob.data());
-    if (blob.size() != kFileSize || memcmp(p, kMagic, sizeof(kMagic)) != 0
-        || get16(p + 4) != kVersion) {
+    uint16_t version = blob.size() >= 6 ? get16(p + 4) : 0;
+    bool sizeOk = (version == 1 && blob.size() == kFileV1)
+        || (version == kVersion && blob.size() == kFileSize);
+    if (!sizeOk || memcmp(p, kMagic, sizeof(kMagic)) != 0
+        || (version != 1 && version != kVersion)) {
         LOG("wallet: %s is not a wallet this build reads; starting empty", kFile);
         return;
     }
@@ -89,17 +107,20 @@ void Wallet::load()
     uint32_t granted = get32(p + 8);
     uint32_t spent = get32(p + 12);
     uint32_t lastDay = get32(p + 16);
+    uint32_t won = version == 1 ? 0u : get32(p + 20);
 
     // Verified against what the file claims, not against what is in memory.
     uint32_t wasGranted = m_granted;
     uint32_t wasSpent = m_spent;
     uint32_t wasDay = m_lastDay;
+    uint32_t wasWon = m_won;
     m_granted = granted;
     m_spent = spent;
     m_lastDay = lastDay;
-    std::string expected = signature();
+    m_won = won;
+    std::string expected = signature(version);
     bool ok = expected.size() == 32
-        && memcmp(expected.data(), p + kBodySize, 32) == 0;
+        && memcmp(expected.data(), p + bodySizeFor(version), 32) == 0;
 
     if (!ok) {
         // Erring towards no coins on purpose. A wallet that does not verify has
@@ -109,16 +130,24 @@ void Wallet::load()
         m_granted = wasGranted;
         m_spent = wasSpent;
         m_lastDay = wasDay;
+        m_won = wasWon;
         return;
     }
 
-    if (m_spent > m_granted) {
+    // A version 1 file is now in memory as a version 2 wallet with nothing
+    // won. Marking it dirty is what upgrades the file, on the next flush.
+    if (version == 1) {
+        LOG("wallet: upgrading %s from version 1", kFile);
+        m_dirty = true;
+    }
+
+    if (m_spent > m_granted + m_won) {
         // Only reachable by editing, since spend() will not go past the
         // balance. Clamped rather than refused: the owner keeps their record
         // of having spent it.
-        LOG("wallet: spent %u of %u granted; clamping", unsigned(m_spent),
-            unsigned(m_granted));
-        m_spent = m_granted;
+        LOG("wallet: spent %u of %u earned; clamping", unsigned(m_spent),
+            unsigned(m_granted + m_won));
+        m_spent = m_granted + m_won;
         m_dirty = true;
     }
 }
@@ -137,8 +166,9 @@ bool Wallet::flush()
     put32(p, m_granted);
     put32(p, m_spent);
     put32(p, m_lastDay);
+    put32(p, m_won);
 
-    std::string sig = signature();
+    std::string sig = signature(kVersion);
     memcpy(file + kBodySize, sig.data(), 32);
 
     if (!writeWholeFileAtomic(dataPath(kFile),
@@ -152,7 +182,17 @@ bool Wallet::flush()
 
 uint32_t Wallet::balance() const
 {
-    return m_granted > m_spent ? m_granted - m_spent : 0u;
+    uint32_t earned = m_granted + m_won;
+    return earned > m_spent ? earned - m_spent : 0u;
+}
+
+void Wallet::award(uint32_t amount)
+{
+    if (amount == 0)
+        return;
+    m_won += amount;
+    m_dirty = true;
+    LOG("wallet: won %u, %u to spend", unsigned(amount), unsigned(balance()));
 }
 
 void Wallet::notePlazaTime(uint64_t serverTime)

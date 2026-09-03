@@ -36,6 +36,7 @@ public:
     uint32_t balance() const;
     uint32_t granted() const { return m_granted; }
     uint32_t spent() const { return m_spent; }
+    uint32_t won() const { return m_won; }
 
     // Unix seconds from the plaza. Grants the day's coins if this is a day the
     // wallet has not seen. Cheap and safe to call on every check-in.
@@ -44,6 +45,19 @@ public:
     // Takes `amount` if it is there. Nothing partial: a purchase either
     // happens or does not.
     bool spend(uint32_t amount);
+
+    // Coins won rather than granted.
+    //
+    // A third total instead of adding to the grant, because the grant is what
+    // counts days: the trophies read `granted / kDaily` as "days this console
+    // was opened", and winnings folded in there would make an afternoon at the
+    // races look like a month of showing up.
+    //
+    // Safe to hand out only because every caller must take a stake first and
+    // the odds are against the player - four racers paying three for one makes
+    // a quarter of a coin a race, downhill. Anything that could award without
+    // charging would be a coin printer.
+    void award(uint32_t amount);
 
     // How many coins a day is worth.
     static constexpr uint32_t kDaily = 10;
@@ -56,10 +70,11 @@ public:
 private:
     Wallet() = default;
 
-    std::string signature() const;
+    std::string signature(uint16_t version) const;
 
     uint32_t m_granted = 0;
     uint32_t m_spent = 0;
+    uint32_t m_won = 0;
     // The plaza day the last grant was for. Days since the epoch by the
     // server's clock, not this console's.
     uint32_t m_lastDay = 0;
