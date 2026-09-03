@@ -119,7 +119,7 @@ namespace {
         {
             rebuild(app);
 
-            app.hint("X", filterName(m_filter));
+            app.hint("X", format("show %s", filterName((m_filter + 1) % Filter_Count)));
 
             Rect area = app.contentArea();
             Rect content { area.x + theme::edge, area.y + theme::s8,
@@ -138,15 +138,18 @@ namespace {
             title.leading = theme::leadingTight;
             r.text(content.x, y, format("%d of %zu", m_earnedCount, all.size()), title);
 
-            // The tiers, opposite the count. Says at a glance whether what is
-            // left is a bronze away or a thousand crossings away.
-            TextStyle tally;
-            tally.size = theme::textSm;
-            tally.color = theme::fg3;
-            tally.tracking = theme::trackingWide;
-            r.text(Rect { content.x, y, content.w, title.size * theme::leadingTight },
-                tallyText(), tally, Align::Right, VAlign::Middle);
-            y += title.size * theme::leadingTight + theme::s3;
+            // What the list is showing, then the tiers, opposite the count -
+            // the shape the collection puts its sort order in, because it is
+            // the same statement: which slice of a list is on screen, and how
+            // much of it there is.
+            float line = title.size * theme::leadingTight;
+            TextStyle meta;
+            meta.size = theme::textSm;
+            meta.color = theme::fg3;
+            r.text(Rect { content.x, y, content.w, line },
+                format("%s - %s", filterName(m_filter), tallyText().c_str()), meta,
+                Align::Right, VAlign::Middle);
+            y += line + theme::s3;
 
             // How far along, as one bar. The same shape the puzzles list uses
             // for a picture, because it is the same kind of statement.
@@ -281,8 +284,46 @@ namespace {
                 earned ? metal.scaleAlpha(0.20f) : theme::bg3);
             ui::icon(r, medal.inset(kMedal * 0.22f), ui::Icon::Trophy, metal, 3.0f);
 
+            // The metal, and when it happened, along the right edge. Both are
+            // about the trophy and putting them here
+            // leaves the description in place on every row - a row that is
+            // earned should still say what it was for.
+            TextStyle right;
+            right.size = theme::textSm;
+            right.weight = FontWeight::Medium;
+            right.color = earned ? metal : theme::fg4;
+            right.tracking = theme::trackingWide;
+            std::string tier = tierName(trophy.tier);
+
+            TextStyle when;
+            when.size = theme::textSm;
+            when.color = theme::fg3;
+            std::string date;
+            if (earned) {
+                uint64_t at = app.store().trophyDate(trophy.id);
+                date = at != 0
+                    ? format("earned %s", relativeTime(at, nowUnix()).c_str())
+                    : std::string("earned");
+            }
+
+            // The column is as wide as its widest line, so the text column
+            // gives up exactly what this needs and no more.
+            float rightW = std::max(r.measure(tier, right), r.measure(date, when));
+            Rect rightBox { inner.right() - rightW, inner.y, rightW, inner.h };
+
+            float lineH = theme::textSm * theme::leadingSnug;
+            if (earned) {
+                // Two lines, sitting on the same baselines as the name and the
+                // description opposite them.
+                r.text(rightBox, tier, right, Align::Right, VAlign::Top);
+                r.text(Rect { rightBox.x, rightBox.y + lineH + 6.0f, rightW, lineH }, date,
+                    when, Align::Right, VAlign::Top);
+            } else {
+                r.text(rightBox, tier, right, Align::Right, VAlign::Middle);
+            }
+
             float textX = medal.right() + theme::s5;
-            float textW = inner.right() - textX;
+            float textW = std::max(rightBox.x - theme::s5 - textX, 120.0f);
 
             TextStyle name;
             name.size = theme::textBase;
@@ -291,25 +332,15 @@ namespace {
             name.leading = theme::leadingSnug;
             r.text(textX, inner.y, r.ellipsize(trophy.name, name, textW), name);
 
-            // Earned: the metal and when. Not yet: what earns it. Both are one
-            // line, so the rows stay the same height however long the table
-            // gets.
+            // What it takes, on every row whether it is earned or not: the
+            // list reads as a record of what happened, which needs the reason
+            // as much as the date.
             TextStyle sub;
             sub.size = theme::textSm;
             sub.color = earned ? theme::fg2 : theme::fg3;
             sub.leading = theme::leadingNormal;
-            std::string line;
-            if (earned) {
-                uint64_t when = app.store().trophyDate(trophy.id);
-                line = when != 0
-                    ? format("%s - earned %s", tierName(trophy.tier),
-                          relativeTime(when, nowUnix()).c_str())
-                    : format("%s - earned", tierName(trophy.tier));
-            } else {
-                line = trophy.hint;
-            }
             r.text(textX, inner.y + name.size * theme::leadingSnug + 6.0f,
-                r.ellipsize(line, sub, textW), sub);
+                r.ellipsize(trophy.hint, sub, textW), sub);
         }
 
         std::vector<uint8_t> m_state;
