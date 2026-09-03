@@ -106,7 +106,8 @@ public:
                 return;
             }
             if (tap.is(Zone_Secondary)) {
-                close(app);
+                m_action = 1;
+                toggleStar(app);
                 return;
             }
             if (tap.is(Zone_Block)) {
@@ -129,7 +130,7 @@ public:
             if (m_action == 2)
                 askBlock(app);
             else if (m_action == 1)
-                close(app);
+                toggleStar(app);
             else
                 trade(app);
             return;
@@ -164,8 +165,10 @@ public:
         app.touchZone(r.viewport(), Touch_None);
 
         app.hint("A",
-            m_action == 2 ? (canReachPlaza(app) ? "block" : "block - offline")
-                          : (m_action == 1 ? "keep" : "trade back"));
+            m_action == 2
+                ? (canReachPlaza(app) ? "block" : "block - offline")
+                : (m_action == 1 ? (app.store().isFavourite(m_id) ? "unstar" : "star")
+                                 : "trade back"));
         app.hint("B", "back");
         if (m_siblings.size() > 1)
             app.hint("L/R", "next pass");
@@ -191,7 +194,7 @@ public:
             screen.w - portraitWidth - theme::s9 - theme::edge,
             screen.h - theme::s8 - theme::s5 };
 
-        drawHeader(r, body);
+        drawHeader(app, r, body);
         float y = body.y + headerHeight() + theme::s6;
 
         if (!m_crossing.pass.greeting.empty()) {
@@ -229,6 +232,19 @@ private:
         } else {
             close(app);
         }
+    }
+
+    // Starring is the thing that screen was missing: the collection has it on
+    // Y, and this is where you are when you decide somebody is worth keeping.
+    void toggleStar(App& app)
+    {
+        bool on = !app.store().isFavourite(m_id);
+        app.store().setFavourite(m_id, on);
+        // The same words the collection uses, because it is the same flag.
+        app.toast(on ? "Starred " + m_crossing.pass.handle
+                     : "Unstarred " + m_crossing.pass.handle,
+            on ? "Kept when the collection fills up."
+               : "No longer kept when the collection fills up.");
     }
 
     // Whether the plaza can be reached. Blocking is half local and half
@@ -296,7 +312,7 @@ private:
             theme::cardTheme(m_crossing.pass.theme).name, label);
     }
 
-    void drawHeader(Renderer& r, const Rect& body)
+    void drawHeader(App& app, Renderer& r, const Rect& body)
     {
         TextStyle eyebrow;
         eyebrow.size = theme::textSm;
@@ -316,7 +332,25 @@ private:
         name.leading = theme::leadingTight;
 
         float nameY = body.y + theme::textSm * theme::leadingNormal + theme::s3;
-        r.text(body.x, nameY, r.ellipsize(m_crossing.pass.handle, name, body.w), name);
+
+        // The star beside the handle, when the card is one.
+        //
+        // The room it needs comes off the width the name is allowed first, so
+        // a long handle ellipsises instead of running under the glyph. r.text
+        // hands back what it drew, which is what puts the star against the end
+        // of a short name rather than out at the margin.
+        bool starred = app.store().isFavourite(m_id);
+        float starBox = kNameSize * 0.72f;
+        float room = starred ? body.w - (starBox + theme::s4) : body.w;
+        float nameWidth
+            = r.text(body.x, nameY, r.ellipsize(m_crossing.pass.handle, name, room), name);
+        if (starred) {
+            float line = kNameSize * theme::leadingTight;
+            ui::icon(r,
+                Rect { body.x + nameWidth + theme::s4, nameY + (line - starBox) * 0.5f,
+                    starBox, starBox },
+                ui::Icon::Star, theme::accent, 3.0f);
+        }
 
         // "Namba Station, Osaka · 4th crossing · playing Turnip Grove"
         std::string meta;
@@ -439,8 +473,11 @@ private:
                     ? "Trade something back"
                     : format("Take it, send something back"));
 
+        bool starred = app.store().isFavourite(m_id);
+        const char* secondaryLabel = starred ? "Unstar this card" : "Star this card";
+
         float primaryWidth = std::min(ui::actionButtonWidth(r, primaryLabel), box.w * 0.5f);
-        float secondaryWidth = ui::actionButtonWidth(r, "Keep the pass");
+        float secondaryWidth = ui::actionButtonWidth(r, secondaryLabel);
 
         Rect primary { box.x, box.y, primaryWidth, box.h };
         Rect secondary { primary.right() + theme::s4, box.y, secondaryWidth, box.h };
@@ -461,7 +498,7 @@ private:
 
         ui::actionButton(r, primary, primaryLabel, !m_crossing.tradedBack,
             (m_action == 0 || primaryHeld) ? pulse : 0.0f);
-        ui::actionButton(r, secondary, "Keep the pass", false,
+        ui::actionButton(r, secondary, secondaryLabel, false,
             (m_action == 1 || secondaryHeld) ? pulse : 0.0f);
 
         r.roundRect(block, theme::r2, theme::bg1);
