@@ -318,6 +318,86 @@ Theme*: `Light`, `Dark`, or `Console` (follow the Switch's own light/dark
 setting, re-read whenever the app regains focus). The choice is saved in
 `profile.json`.
 
+## Trophies
+
+All 53 of them, as the app lists them. Every one is worked out from your
+collection, your puzzles and your wallet when the screen draws - none of it
+is scored or stored, so nothing here can disagree with what actually
+happened. They are worth no coins and unlock nothing.
+
+### Bronze (16)
+
+| | |
+| --- | --- |
+| **Somebody's out there** | Cross one other console. |
+| **Properly introduced** | Give your pass a name, a greeting and something to carry. |
+| **Fully laden** | Carry four things on your pass at once. |
+| **A corner of something** | Take your first puzzle piece off a crossing. |
+| **Worth keeping** | Star a card. |
+| **Ten faces** | Cross ten different consoles. |
+| **A week of it** | Open the app on seven different days. |
+| **Two down** | Finish two puzzles. |
+| **First purchase** | Buy something in the shop. |
+| **Beginner's luck** | Win a bet at the Mii race. |
+| **Your own face** | Make a face of your own in the Mii maker. |
+| **Redecorated** | Give your card a look of your own. |
+| **Out in the world** | Have your pass reach somebody. |
+| **Matching outfits** | Cross somebody whose card wears the same look as yours. |
+| **Same taste** | Cross somebody carrying something you carry too. |
+| **The strong silent type** | Cross a pass with nothing written on it. |
+
+### Silver (22)
+
+| | |
+| --- | --- |
+| **A busy afternoon** | Cross ten consoles in one day. |
+| **Fifty faces** | Cross fifty different consoles. |
+| **A hundred faces** | Cross a hundred different consoles. |
+| **A hundred hellos** | Cross people a hundred times, the same ones included. |
+| **A regular** | Cross the same console ten times. |
+| **Around town** | Cross people in five different places. |
+| **Ten places** | Cross people in ten different places. |
+| **The late train** | Cross somebody between midnight and four. |
+| **Every day of the week** | Cross somebody on each of the seven weekdays. |
+| **A fortnight** | Open the app on fourteen different days. |
+| **An old friend** | Keep a card for six months. |
+| **A picture at last** | Finish a puzzle. |
+| **Halfway through** | Hold half of every piece there is. |
+| **A picture by committee** | Take pieces from ten different people. |
+| **A shortlist** | Star twenty-five cards. |
+| **Nothing left unread** | Open every card you hold, with fifty of them. |
+| **Reciprocated** | Send something back to twenty-five people. |
+| **Namesake** | Cross somebody who chose the same name as you. |
+| **Somebody with a life** | Cross a pass carrying a thousand hours in one title. |
+| **The shop's best customer** | Spend five hundred coins. |
+| **Saving up** | Have five hundred coins at once. |
+| **A good day at the races** | Win fifty coins at the Mii race. |
+
+### Gold (14)
+
+| | |
+| --- | --- |
+| **Five hundred faces** | Cross five hundred different consoles. |
+| **A thousand faces** | Cross a thousand different consoles. |
+| **A thousand hellos** | Cross people a thousand times, the same ones included. |
+| **Practically neighbours** | Cross the same console fifty times. |
+| **Far travelled** | Cross people in twenty-five different places. |
+| **Fifty places** | Cross people in fifty different places. |
+| **A month of it** | Open the app on thirty different days. |
+| **A hundred days** | Open the app on a hundred different days. |
+| **A year of it** | Open the app on three hundred and sixty-five different days. |
+| **Known you for a year** | Keep a card for a year. |
+| **Every picture** | Finish every puzzle. |
+| **By hand alone** | Finish a puzzle without buying a single piece. |
+| **The bookmaker's problem** | Win two hundred coins at the Mii race. |
+| **Fifty contributors** | Take pieces from fifty different people. |
+
+### Platinum (1)
+
+| | |
+| --- | --- |
+| **The whole plaza** | Earn everything else. |
+
 ## Disclaimer
 
 This is a homebrew app. It is not affiliated with Nintendo, and it is not
