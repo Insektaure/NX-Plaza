@@ -50,6 +50,8 @@ namespace {
             Zone_Race = Touch_SceneBase,
             Zone_Stake,
             Zone_Back,
+            Zone_Option, // index = a row on the ready screen
+            Zone_Pick,   // index = a runner on the prediction screen
         };
 
         bool coversChrome() const override { return true; }
@@ -67,6 +69,17 @@ namespace {
             cast(app);
             m_phase = Phase_Ready;
             m_clock = 0.0f;
+            // Everything about the last visit goes, including the cursor: the
+            // free row is what A lands on, every time the scene opens.
+            m_mode = Mode_Win;
+            m_row = 0;
+            m_button = 0;
+            m_pickStep = 0;
+            m_pick[0] = -1;
+            m_pick[1] = -1;
+            m_staked = false;
+            m_paid = 0;
+            m_called = false;
         }
 
         void update(App& app, const Input& input, float dt) override
@@ -79,10 +92,83 @@ namespace {
 
             switch (m_phase) {
             case Phase_Ready:
-            case Phase_Done:
-                // Nothing to stake, nothing to stand on: the cursor cannot
-                // rest on a button that would only refuse.
+                // The cursor is shared with the prediction screen, which has
+                // four rows to this one's three. Clamped rather than trusted,
+                // so no path back here can leave it pointing past the list.
+                m_row = std::min(m_row, kOptions - 1);
+                if (tapped) {
+                    if (tap.is(Zone_Back)) {
+                        app.popOverlay();
+                        return;
+                    }
+                    if (tap.is(Zone_Option) && tap.index >= 0
+                        && tap.index < kOptions) {
+                        m_row = tap.index;
+                        choose(app, tap.index);
+                    }
+                    return;
+                }
+                if (input.back()) {
+                    app.popOverlay();
+                    return;
+                }
+                if (input.navDown)
+                    m_row = (m_row + 1) % kOptions;
+                if (input.navUp)
+                    m_row = (m_row - 1 + kOptions) % kOptions;
+                // Only A, and only whatever the cursor is on.
+                if (input.accept())
+                    choose(app, m_row);
+                break;
+
+            case Phase_Predict:
                 if (Wallet::get().balance() < kStake)
+                    m_button = 0;
+
+                if (tapped) {
+                    if (tap.is(Zone_Back)) {
+                        stepBack(app);
+                        return;
+                    }
+                    if (m_pickStep < 2 && tap.is(Zone_Pick) && tap.index >= 0
+                        && tap.index < int(m_racers.size())) {
+                        pick(tap.index);
+                    } else if (m_pickStep == 2 && tap.is(Zone_Race)) {
+                        m_button = 0;
+                        begin(app, false, Mode_Predict);
+                    } else if (m_pickStep == 2 && tap.is(Zone_Stake)) {
+                        m_button = 1;
+                        begin(app, true, Mode_Predict);
+                    }
+                    return;
+                }
+                if (input.back()) {
+                    stepBack(app);
+                    return;
+                }
+
+                if (m_pickStep < 2) {
+                    int count = int(m_racers.size());
+                    if (input.navDown)
+                        m_row = (m_row + 1) % count;
+                    if (input.navUp)
+                        m_row = (m_row - 1 + count) % count;
+                    if (input.accept())
+                        pick(m_row);
+                } else {
+                    if (input.navLeft)
+                        m_button = 0;
+                    if (input.navRight && Wallet::get().balance() >= kStake)
+                        m_button = 1;
+                    if (input.accept())
+                        begin(app, m_button == 1, Mode_Predict);
+                }
+                break;
+
+            case Phase_Done: {
+                // A prediction has one way on from here; a win bet has two.
+                bool choice = m_mode != Mode_Predict;
+                if (!choice || Wallet::get().balance() < kStake)
                     m_button = 0;
 
                 if (tapped) {
@@ -92,10 +178,10 @@ namespace {
                     }
                     if (tap.is(Zone_Race)) {
                         m_button = 0;
-                        begin(app, false);
-                    } else if (tap.is(Zone_Stake)) {
+                        again(app, false);
+                    } else if (choice && tap.is(Zone_Stake)) {
                         m_button = 1;
-                        begin(app, true);
+                        again(app, true);
                     }
                     return;
                 }
@@ -103,18 +189,16 @@ namespace {
                     app.popOverlay();
                     return;
                 }
-                if (input.navLeft)
-                    m_button = 0;
-                if (input.navRight && Wallet::get().balance() >= kStake)
-                    m_button = 1;
-
-                // Only A, and only whatever the cursor is on. There was an X
-                // shortcut straight into the bet, which made a coin
-                // reachable by one press of a button nothing on the screen
-                // mentioned - a mis-hit should never cost anything.
+                if (choice) {
+                    if (input.navLeft)
+                        m_button = 0;
+                    if (input.navRight && Wallet::get().balance() >= kStake)
+                        m_button = 1;
+                }
                 if (input.accept())
-                    begin(app, m_button == 1);
+                    again(app, m_button == 1);
                 break;
+            }
 
             // Neither B nor + does anything from here until the result is up.
             // A race is three seconds of countdown and at most fourteen of
@@ -160,6 +244,9 @@ namespace {
             case Phase_Ready:
                 drawReady(app, r);
                 break;
+            case Phase_Predict:
+                drawPredict(app, r);
+                break;
             case Phase_Count:
                 drawCountdown(app, r);
                 break;
@@ -175,9 +262,18 @@ namespace {
     private:
         enum Phase : int {
             Phase_Ready = 0,
+            Phase_Predict, // choosing who comes first and second
             Phase_Count,
             Phase_Run,
             Phase_Done,
+        };
+
+        // What the race is being played for. Both can be played for nothing:
+        // a prediction with no coin on it still tells you whether you read the
+        // field right, which is the whole of what it is for.
+        enum Mode : int {
+            Mode_Win = 0, // your own Mii to win
+            Mode_Predict, // first and second, in order
         };
 
         struct Racer {
@@ -210,8 +306,15 @@ namespace {
         static constexpr float kFigure = 132.0f;
         static constexpr float kButton = 76.0f;
         static constexpr uint32_t kStake = 1;
-        // The stake back and two more, so a win is worth three.
-        static constexpr uint32_t kPayout = 3;
+        // The stake back and two more, so betting on your own Mii is worth
+        // three. One runner in four is a quarter of the time, so three-for-one
+        // is a house edge of a quarter of a coin a race.
+        static constexpr uint32_t kPayoutWin = 3;
+        // First and second in order is one of twelve orderings, so eleven -
+        // the coin back and ten - is an edge of a twelfth. Longer odds, longer
+        // price, and still downhill for the player over enough races.
+        static constexpr uint32_t kPayoutExacta = 11;
+        static constexpr float kOption = 76.0f;
 
         // ------------------------------------------------------------- setup
 
@@ -296,7 +399,94 @@ namespace {
                 m_racers[size_t(order[i])].place = int(i) + 1;
         }
 
-        void begin(App& app, bool staked)
+        static constexpr int kOptions = 3;
+
+        // A row on the ready screen.
+        void choose(App& app, int option)
+        {
+            switch (option) {
+            case 0:
+                begin(app, false, Mode_Win);
+                break;
+            case 1:
+                begin(app, true, Mode_Win);
+                break;
+            default:
+                // The mode is set on the way in, not in begin(): the bet
+                // button prices whatever payout() returns, and payout() reads
+                // the mode - so setting it only at the start of the race left
+                // the prediction screen offering three coins for an eleven
+                // coin bet.
+                m_mode = Mode_Predict;
+                m_phase = Phase_Predict;
+                m_pickStep = 0;
+                m_pick[0] = -1;
+                m_pick[1] = -1;
+                m_row = 0;
+                m_button = 0;
+                break;
+            }
+        }
+
+        // Racing again from the result keeps whatever was played for, so the
+        // person working through a prediction is not sent back to the menu
+        // every time - but the pick itself is drawn fresh, since the field is.
+        void again(App& app, bool staked)
+        {
+            if (m_mode == Mode_Predict) {
+                // Straight back to the pick screen. `staked` is not consulted
+                // and the result screen does not ask for it: the coin is
+                // decided there, once there is something to bet on.
+                m_phase = Phase_Predict;
+                m_pickStep = 0;
+                m_pick[0] = -1;
+                m_pick[1] = -1;
+                m_row = 0;
+                m_button = 0;
+                return;
+            }
+            begin(app, staked, Mode_Win);
+        }
+
+        void pick(int racer)
+        {
+            if (racer < 0 || racer >= int(m_racers.size()))
+                return;
+            if (m_pickStep == 0) {
+                m_pick[0] = racer;
+                m_pickStep = 1;
+                // Onto somebody who is still available, so A twice in a row
+                // cannot pick the same runner for both places.
+                m_row = (racer + 1) % int(m_racers.size());
+                return;
+            }
+            if (m_pickStep == 1) {
+                if (racer == m_pick[0])
+                    return;
+                m_pick[1] = racer;
+                m_pickStep = 2;
+            }
+        }
+
+        void stepBack(App& app)
+        {
+            if (m_pickStep == 0) {
+                m_phase = Phase_Ready;
+                m_row = 2;
+                return;
+            }
+            m_pickStep--;
+            m_pick[m_pickStep] = -1;
+            m_row = 0;
+            (void)app;
+        }
+
+        uint32_t payout() const
+        {
+            return m_mode == Mode_Predict ? kPayoutExacta : kPayoutWin;
+        }
+
+        void begin(App& app, bool staked, int mode)
         {
             Wallet& wallet = Wallet::get();
             if (staked) {
@@ -308,8 +498,10 @@ namespace {
                 // Written now, so quitting on a bad race still costs the coin.
                 wallet.flush();
             }
+            m_mode = mode;
             m_staked = staked;
             m_paid = 0;
+            m_called = false;
             // Back to the free button for the next one. Betting twice takes
             // two deliberate presses of Right, which is the point: the result
             // screen appears under your thumb, and whatever it says, A on it
@@ -320,36 +512,54 @@ namespace {
             m_clock = 0.0f;
         }
 
+        // Did the thing that was played for come in?
+        bool called() const
+        {
+            if (m_mode == Mode_Predict) {
+                if (m_pick[0] < 0 || m_pick[1] < 0)
+                    return false;
+                return m_racers[size_t(m_pick[0])].place == 1
+                    && m_racers[size_t(m_pick[1])].place == 2;
+            }
+            for (const Racer& racer : m_racers) {
+                if (racer.you)
+                    return racer.place == 1;
+            }
+            return false;
+        }
+
         void settle()
         {
             m_phase = Phase_Done;
             // The clock keeps running rather than resetting: progress() reads
             // it, so zeroing it here sent everybody back to the start line and
             // ran the whole race again behind the result plate.
-            if (!m_staked)
+            m_called = called();
+            if (!m_staked || !m_called)
                 return;
 
-            for (const Racer& racer : m_racers) {
-                if (racer.you && racer.place == 1) {
-                    Wallet& wallet = Wallet::get();
-                    wallet.award(kPayout);
-                    wallet.flush();
-                    m_paid = kPayout;
-                    break;
-                }
-            }
+            Wallet& wallet = Wallet::get();
+            wallet.award(payout());
+            wallet.flush();
+            m_paid = payout();
         }
 
         // ------------------------------------------------------------ motion
 
         float progress(const Racer& racer) const
         {
-            if (m_phase == Phase_Ready || m_phase == Phase_Count)
-                return 0.0f;
             // Everybody is home by the time the result is up, and saying so
             // here means no future change to the clock can restart them.
             if (m_phase == Phase_Done)
                 return 1.0f;
+            // Only a running race reads the clock. This was a list of the
+            // phases that stand still instead, which is the wrong way round:
+            // adding the prediction screen added a phase the list did not
+            // name, so it fell through to the arithmetic and - with the clock
+            // counting since the scene opened - put the whole field on the
+            // finish line while you were choosing.
+            if (m_phase != Phase_Run)
+                return 0.0f;
             float u = std::min(m_clock / racer.finish, 1.0f);
             // Zero at both ends, so the order the lots drew is the order that
             // crosses the line however much the middle of the race moves.
@@ -491,15 +701,13 @@ namespace {
         void drawReady(App& app, Renderer& r)
         {
             uint32_t coins = Wallet::get().balance();
-            // Just "race". Which kind is a choice made in the box, where both
-            // buttons are named and priced - repeating it in the strip said
-            // the same thing twice and in fewer words.
-            app.hint("A", "race");
+            app.hint("A", "choose");
             app.hint("B", "back");
 
-            // 30 of eyebrow, 67 of title, two 36px lines of body and a 76px
-            // button row, inside two 48/32 insets.
-            Rect box = plate(1100.0f, 380.0f);
+            // Three rows rather than a row of buttons: a third choice made the
+            // widest button wider than the plate, and a list grows downwards
+            // for as long as there are things to play for.
+            Rect box = plate(1100.0f, 520.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s6);
@@ -515,24 +723,175 @@ namespace {
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
             r.text(inner.x, y, "Four runners, one line", title);
-            y += title.size * theme::leadingTight + 10.0f;
+
+            TextStyle purse;
+            purse.size = theme::textSm;
+            purse.color = theme::fg3;
+            r.text(Rect { inner.x, y, inner.w, title.size * theme::leadingTight },
+                format("%u %s", unsigned(coins), coins == 1 ? "coin" : "coins"), purse,
+                Align::Right, VAlign::Middle);
+            y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;
             body.size = theme::textBase;
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
-            // Short enough to fit two lines with room to spare: the last
-            // version filled both and ellipsised the end of its own sentence.
-            y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
-                format("Nobody is faster than anybody. Racing is free, or bet a coin "
-                       "and win %u. You have %u.",
-                    unsigned(kPayout), unsigned(coins)),
-                body, 2);
+            r.text(inner.x, y,
+                "Nobody is faster than anybody. Nothing you do changes that.", body);
+            y += body.size * theme::leadingNormal + theme::s5;
 
-            drawButtons(app, r, Rect { inner.x, inner.bottom() - kButton, inner.w,
-                                     kButton },
-                "Race for free", coins >= kStake);
+            const char* labels[kOptions] = {
+                "Race for free",
+                "Bet 1 coin - your Mii to win",
+                "Predict 1st and 2nd",
+            };
+            std::string notes[kOptions] = {
+                std::string("Just to watch."),
+                format("Pays %u if it comes in.", unsigned(kPayoutWin)),
+                format("For free, or bet 1 coin to win %u.", unsigned(kPayoutExacta)),
+            };
+
+            for (int i = 0; i < kOptions; i++) {
+                Rect row { inner.x, y, inner.w, kOption };
+                bool poor = i == 1 && coins < kStake;
+                drawOption(app, r, row, i, labels[i],
+                    poor ? std::string("Nothing to bet with.") : notes[i], !poor);
+                y += kOption + theme::s3;
+            }
+
             drawBack(app, r, box);
+        }
+
+        void drawOption(App& app, Renderer& r, const Rect& row, int index,
+            const char* label, const std::string& note, bool live)
+        {
+            bool focused = index == m_row;
+            app.touchZone(row, Zone_Option, index);
+            float focus = focused
+                ? (app.touchHeld(Zone_Option, index) ? 1.0f : 0.7f + 0.3f * m_pulse)
+                : 0.0f;
+            ui::card(r, row, focus, focused ? theme::bg3 : theme::bg2, theme::r3);
+
+            Rect inner = row.inset(theme::s5, theme::s4);
+            TextStyle name;
+            name.size = theme::textBase;
+            name.weight = FontWeight::Bold;
+            name.color = live ? theme::fg1 : theme::fg3;
+            r.text(inner.x, inner.centerY() - name.size * 0.62f, label, name);
+
+            TextStyle hint;
+            hint.size = theme::textSm;
+            hint.color = live ? theme::fg3 : theme::fg4;
+            r.text(Rect { inner.x, inner.y, inner.w, inner.h }, note, hint, Align::Right,
+                VAlign::Middle);
+        }
+
+        // Pick who comes first, then who comes second. The field is the four
+        // runners already standing on the line behind this plate, so the names
+        // here are the names out there.
+        void drawPredict(App& app, Renderer& r)
+        {
+            uint32_t coins = Wallet::get().balance();
+            app.hint("A", m_pickStep < 2 ? "choose" : "race");
+            app.hint("B", "back");
+
+            // 30 of eyebrow, 67 of title, a line of text, four 76px rows and a
+            // 76px button row: 622 of interior, which 720 provides.
+            Rect box = plate(1100.0f, 720.0f);
+            r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s7, theme::s6);
+            float y = inner.y;
+
+            ui::eyebrow(r, Rect { inner.x, y, inner.w, 30.0f }, "your prediction");
+            y += 30.0f + theme::s3;
+
+            TextStyle title;
+            title.size = theme::text2xl;
+            title.weight = FontWeight::Bold;
+            title.color = theme::fg1;
+            title.tracking = theme::trackingTight;
+            title.leading = theme::leadingTight;
+            const char* asks[3] = { "Who comes first?", "And who comes second?",
+                "That is your call" };
+            r.text(inner.x, y, asks[m_pickStep], title);
+            y += title.size * theme::leadingTight + theme::s3;
+
+            TextStyle body;
+            body.size = theme::textBase;
+            body.color = theme::fg3;
+            body.leading = theme::leadingNormal;
+            r.text(inner.x, y, callText(), body);
+            y += body.size * theme::leadingNormal + theme::s5;
+
+            for (size_t i = 0; i < m_racers.size(); i++) {
+                Rect row { inner.x, y, inner.w, kOption };
+                drawPickRow(app, r, row, int(i));
+                y += kOption + theme::s3;
+            }
+
+            if (m_pickStep == 2) {
+                drawButtons(app, r,
+                    Rect { inner.x, inner.bottom() - kButton, inner.w, kButton },
+                    "Race for free", coins >= kStake);
+            }
+            drawBack(app, r, box);
+        }
+
+        void drawPickRow(App& app, Renderer& r, const Rect& row, int index)
+        {
+            const Racer& racer = m_racers[size_t(index)];
+            bool first = index == m_pick[0];
+            bool second = index == m_pick[1];
+            bool taken = first || second;
+            bool choosable = m_pickStep < 2 && !taken;
+            bool focused = m_pickStep < 2 && index == m_row;
+
+            if (choosable || m_pickStep == 2)
+                app.touchZone(row, Zone_Pick, index);
+            float focus = focused
+                ? (app.touchHeld(Zone_Pick, index) ? 1.0f : 0.7f + 0.3f * m_pulse)
+                : 0.0f;
+            ui::card(r, row, focus, taken ? theme::bg3 : theme::bg2, theme::r3);
+
+            Rect inner = row.inset(theme::s5, theme::s4);
+
+            // The runner's own face, so the pick is made against what is on the
+            // track rather than against a list of words.
+            Rect head { inner.x, inner.centerY() - 26.0f, 52.0f, 52.0f };
+            ui::miiHead(r, head, racer.mii, 1.0f);
+
+            TextStyle name;
+            name.size = theme::textBase;
+            name.weight = FontWeight::Bold;
+            name.color = racer.you ? theme::accent : theme::fg1;
+            r.text(head.right() + theme::s4, inner.centerY() - name.size * 0.62f,
+                r.ellipsize(racer.name, name, inner.w * 0.6f), name);
+
+            if (taken) {
+                TextStyle badge;
+                badge.size = theme::textSm;
+                badge.weight = FontWeight::Bold;
+                std::string label = first ? "1st" : "2nd";
+                float width = r.measure(label, badge) + theme::s5;
+                ui::pill(r,
+                    Rect { inner.right() - width, inner.centerY() - 18.0f, width, 36.0f },
+                    label, theme::bg0, theme::accent, theme::textSm);
+            }
+        }
+
+        // What has been called so far, in words, so the plate always says what
+        // pressing A would commit to.
+        std::string callText() const
+        {
+            if (m_pick[0] < 0)
+                return format("First and second, in order. Eleven for a coin if you "
+                              "call it, or watch for nothing.");
+            const std::string& first = m_racers[size_t(m_pick[0])].name;
+            if (m_pick[1] < 0)
+                return format("%s to win. Now who is behind them?", first.c_str());
+            return format("%s first, %s second.", first.c_str(),
+                m_racers[size_t(m_pick[1])].name.c_str());
         }
 
         void drawCountdown(App& app, Renderer& r)
@@ -580,19 +939,19 @@ namespace {
 
         void drawResult(App& app, Renderer& r)
         {
-            app.hint("A", "race again");
+            app.hint("A", m_mode == Mode_Predict ? "predict again" : "race again");
             app.hint("B", "back");
 
-            Rect box = plate(1100.0f, 470.0f);
+            Rect box = plate(1100.0f, 520.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s6);
 
-            const Racer* you = nullptr;
+            // Only the winner is needed here now: whether the thing played
+            // for came in is m_called, decided at the line rather than worked
+            // out again from the field.
             const Racer* first = nullptr;
             for (const Racer& racer : m_racers) {
-                if (racer.you)
-                    you = &racer;
                 if (racer.place == 1)
                     first = &racer;
             }
@@ -600,17 +959,42 @@ namespace {
             TextStyle title;
             title.size = theme::text2xl;
             title.weight = FontWeight::Bold;
-            title.color = you && you->place == 1 ? theme::accent : theme::fg1;
+            title.color = m_called ? theme::accent : theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            std::string headline = you && you->place == 1
-                ? std::string("You won")
-                : format("%s won", first ? first->name.c_str() : "Nobody");
+            // The headline is about whatever was played for: your own runner
+            // winning, or the order coming in as called.
+            std::string headline;
+            if (m_mode == Mode_Predict) {
+                headline = m_called ? std::string("Called it")
+                                    : format("%s won", first ? first->name.c_str()
+                                                             : "Nobody");
+            } else {
+                headline = m_called ? std::string("You won")
+                                    : format("%s won", first ? first->name.c_str()
+                                                             : "Nobody");
+            }
             r.text(inner.x, inner.y, headline, title);
+            float y = inner.y + title.size * theme::leadingTight + 8.0f;
 
             TextStyle body;
             body.size = theme::textBase;
             body.color = theme::fg3;
+            body.leading = theme::leadingNormal;
+
+            // What was called, next to what happened, so a near miss reads as
+            // a near miss rather than as a flat no.
+            if (m_mode == Mode_Predict && m_pick[0] >= 0 && m_pick[1] >= 0) {
+                const Racer& one = m_racers[size_t(m_pick[0])];
+                const Racer& two = m_racers[size_t(m_pick[1])];
+                r.text(inner.x, y,
+                    format("You said %s then %s - they came %s and %s.",
+                        one.name.c_str(), two.name.c_str(), ordinal(one.place),
+                        ordinal(two.place)),
+                    body);
+                y += body.size * theme::leadingNormal + 4.0f;
+            }
+
             std::string line;
             if (m_staked) {
                 line = m_paid > 0
@@ -619,14 +1003,13 @@ namespace {
                     : format("The bet cost you a coin. %u left.",
                           unsigned(Wallet::get().balance()));
             } else {
-                line = you && you->place == 1 ? "Nothing bet, but a win is a win."
-                                              : "Nothing bet, nothing lost.";
+                line = m_called ? "Nothing bet, but right is right."
+                                : "Nothing bet, nothing lost.";
             }
-            r.text(inner.x, inner.y + title.size * theme::leadingTight + 8.0f, line, body);
+            r.text(inner.x, y, line, body);
 
             // The order, so a fourth place still says who beat you.
-            float y = inner.y + title.size * theme::leadingTight + 8.0f
-                + body.size * theme::leadingNormal + theme::s5;
+            y += body.size * theme::leadingNormal + theme::s5;
             for (int place = 1; place <= int(m_racers.size()); place++) {
                 for (const Racer& racer : m_racers) {
                     if (racer.place != place)
@@ -643,10 +1026,33 @@ namespace {
                 }
             }
 
-            drawButtons(app, r, Rect { inner.x, inner.bottom() - kButton, inner.w,
-                                     kButton },
-                "Race again", Wallet::get().balance() >= kStake);
+            Rect row { inner.x, inner.bottom() - kButton, inner.w, kButton };
+            if (m_mode == Mode_Predict) {
+                // One button, because both of them did the same thing: a
+                // prediction goes back to the pick screen, and the choice
+                // between free and a coin is made there, after the two runners
+                // have been named. Offering it twice priced a bet that had not
+                // been placed yet.
+                drawOneButton(app, r, row, "Predict again");
+            } else {
+                drawButtons(app, r, row, "Race again",
+                    Wallet::get().balance() >= kStake);
+            }
             drawBack(app, r, box);
+        }
+
+        static const char* ordinal(int place)
+        {
+            switch (place) {
+            case 1:
+                return "1st";
+            case 2:
+                return "2nd";
+            case 3:
+                return "3rd";
+            default:
+                return "4th";
+            }
         }
 
         // The two ways to start, side by side, so the coin is a thing on the
@@ -656,7 +1062,7 @@ namespace {
             bool canStake)
         {
             std::string staked = format("Bet %u coin to win %u if lucky!",
-                unsigned(kStake), unsigned(kPayout));
+                unsigned(kStake), unsigned(payout()));
             float plainW = ui::actionButtonWidth(r, plainLabel);
             float stakeW = ui::actionButtonWidth(r, staked);
 
@@ -678,6 +1084,15 @@ namespace {
                                                       : (onStake ? pulse : 0.0f));
         }
 
+        // The only thing to press, so it is always the focused thing.
+        void drawOneButton(App& app, Renderer& r, const Rect& row, const char* label)
+        {
+            Rect only { row.x, row.y, ui::actionButtonWidth(r, label), row.h };
+            app.touchZone(only, Zone_Race);
+            ui::actionButton(r, only, label, true,
+                app.touchHeld(Zone_Race) ? 1.0f : 0.7f + 0.3f * m_pulse);
+        }
+
         void drawBack(App& app, Renderer& r, const Rect& box)
         {
             Rect back { box.right() - 60.0f, box.y + 18.0f, 42.0f, 42.0f };
@@ -693,6 +1108,12 @@ namespace {
         uint32_t m_paid = 0;
         int m_button = 0; // 0 = race for free, 1 = race with a bet
         float m_pulse = 0.0f;
+
+        int m_mode = Mode_Win;
+        int m_row = 0;      // the ready screen's cursor
+        int m_pickStep = 0; // 0 = first, 1 = second, 2 = ready to run
+        int m_pick[2] = { -1, -1 };
+        bool m_called = false; // the prediction came in
     };
 }
 

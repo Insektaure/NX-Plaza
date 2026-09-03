@@ -139,8 +139,8 @@ namespace {
             r.textWrapped(Rect { textX, inner.y + name.size * theme::leadingSnug + 6.0f,
                               textW, inner.h },
                 "Three of the people you have crossed, against your own Mii. Nobody "
-                "is faster than anybody. Racing is free, or bet a coin on yourself "
-                "and win three if you are lucky.",
+                "is faster than anybody. Watch for nothing, bet a coin on your own "
+                "Mii for three, or call first and second for eleven.",
                 body, 2);
         }
 
