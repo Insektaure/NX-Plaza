@@ -65,13 +65,8 @@ own Mii and win three if you are lucky. The odds are honest and they are against
 races are a way to spend coins and not a way to make them.
 
 **The shop.** Ten coins for every new day you open the app, granted by the
-plaza's clock so the console's own cannot mint them. A hundred buys a piece of
-the puzzle you are filling; fifty buys one drawn from every unfinished puzzle at
-once, since what the difference pays for is the choice rather than the piece.
-Never a duplicate, and every purchase asks before it spends. Ten days of
-checking in against roughly three crossings, so it is a floor for a console that
-meets nobody rather than a way around meeting anybody. Spending works offline;
-the totals are checksummed against your console's plaza token.
+plaza's clock so the console's own cannot mint them.
+Spending works offline; the totals are checksummed against your console's plaza token.
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
