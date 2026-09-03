@@ -64,6 +64,11 @@ struct TrophyFacts {
     uint32_t daysCheckedIn = 0; // from the wallet: ten coins a day
     uint32_t coinsSpent = 0;
     uint32_t balance = 0;
+    // Coins won at the races. The one thing a race writes down, and the only
+    // reason there can be trophies for it at all: a free race leaves no trace
+    // anywhere, so anything about races run would have to be counted rather
+    // than derived.
+    uint32_t coinsWon = 0;
 
     bool passReady = false;    // a name, a greeting and something carried
     bool lateCrossing = false; // one between midnight and four

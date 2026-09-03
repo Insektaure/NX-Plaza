@@ -42,6 +42,9 @@ namespace {
         { "first_purchase", "First purchase",
             "Buy something in the shop.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.coinsSpent >= 50; } },
+        { "first_winnings", "Beginner's luck",
+            "Win a bet at the Mii race.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.coinsWon >= 3; } },
         { "own_face", "Your own face",
             "Make a face of your own in the Mii maker.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.ownFace; } },
@@ -131,6 +134,9 @@ namespace {
         { "saving_up", "Saving up",
             "Have five hundred coins at once.", Tier::Silver,
             [](const TrophyFacts& f) { return f.balance >= 500; } },
+        { "good_day_racing", "A good day at the races",
+            "Win fifty coins at the Mii race.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
 
         // -------------------------------------------------------------- gold
         { "five_hundred_people", "Five hundred faces",
@@ -172,6 +178,12 @@ namespace {
         { "by_hand", "By hand alone",
             "Finish a puzzle without buying a single piece.", Tier::Gold,
             [](const TrophyFacts& f) { return f.puzzleByHand; } },
+        // Two hundred won means about two hundred and seventy raced, since the
+        // odds are against the player - which is twenty-seven days of coins
+        // spent at the track.
+        { "bookmakers_problem", "The bookmaker's problem",
+            "Win two hundred coins at the Mii race.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.coinsWon >= 200; } },
         { "fifty_donors", "Fifty contributors",
             "Take pieces from fifty different people.", Tier::Gold,
             [](const TrophyFacts& f) { return f.pieceDonors >= 50; } },
@@ -196,6 +208,7 @@ TrophyFacts trophyFacts(const Store& store)
     facts.daysCheckedIn = Wallet::get().granted() / Wallet::kDaily;
     facts.coinsSpent = Wallet::get().spent();
     facts.balance = Wallet::get().balance();
+    facts.coinsWon = Wallet::get().won();
     return facts;
 }
 

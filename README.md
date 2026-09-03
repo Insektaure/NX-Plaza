@@ -70,7 +70,7 @@ Spending works offline; the totals are checksummed against your console's plaza 
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
-**Trophies.** What this console has done: 50 of them, in bronze, silver,
+**Trophies.** What this console has done: 53 of them, in bronze, silver,
 gold and one platinum for the lot.
 
 Some are meant to be tripped over in the first hour - cross a pass with 
