@@ -216,6 +216,16 @@ public:
     // was new, which is what the toast waits for.
     bool noteTrophyDate(const std::string& id, uint64_t when);
 
+    // -------------------------------------------------------------- scores
+
+    // Best score for a game, by name. Nothing hangs off these - no coins, no
+    // unlocks - so they live in profile.json with everything else readable,
+    // and an edited number costs the owner their own record and nothing more.
+    uint32_t bestScore(const std::string& game) const;
+    // True when this beat what was there, which is what a screen wants to
+    // know to say "a new best".
+    bool noteBestScore(const std::string& game, uint32_t score);
+
     // Favourites. A favourite is kept when the collection prunes at its cap,
     // which is the point of it: the people worth keeping are the ones you said
     // were worth keeping.
@@ -255,6 +265,7 @@ private:
     // id -> when it was first seen earned. Keyed by id so the table can grow,
     // shrink or be reordered without a date landing on the wrong trophy.
     std::map<std::string, uint64_t> m_trophyDates;
+    std::map<std::string, uint32_t> m_bestScores;
     bool m_loaded = false;
 };
 

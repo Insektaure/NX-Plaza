@@ -4,6 +4,7 @@
 #include "core/wallet.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
+#include "ui/plaza_scroll.h"
 #include "ui/theme.h"
 #include "ui/widgets.h"
 
@@ -584,34 +585,11 @@ namespace {
 
         // ---------------------------------------------------------- painting
 
-        // Three layers at three speeds. Nothing here is art: a gradient, some
-        // hills, some lamp posts. The parallax is what says "moving", which is
-        // the only job it has when the runners themselves stay put on screen.
+        // The plaza's own three layers, which the dash uses too: extracted the
+        // day there was a second game to move through them.
         void drawBackground(Renderer& r, float camera)
         {
-            Rect sky { 0.0f, 0.0f, Renderer::DesignWidth, kLaneTop };
-            r.gradientRect(sky, theme::plazaTop, theme::plazaMid);
-
-            // Far hills, a quarter of the speed.
-            float far = camera * 0.22f;
-            for (int i = -1; i < 8; i++) {
-                float cx = float(i) * 520.0f - std::fmod(far, 520.0f);
-                float w = 620.0f;
-                float h = 190.0f + float((i + 8) % 3) * 46.0f;
-                r.ellipse(cx, sky.bottom(), w * 0.5f, h, theme::plazaBottom, 0.0f);
-            }
-
-            // Lamp posts, half speed, so there is something with an edge to it
-            // to measure the motion against.
-            float mid = camera * 0.55f;
-            for (int i = -1; i < 12; i++) {
-                float x = float(i) * 340.0f - std::fmod(mid, 340.0f);
-                Rect post { x, sky.bottom() - 210.0f, 8.0f, 210.0f };
-                r.rect(post, theme::bg2);
-                r.glow(Rect { post.centerX() - 34.0f, post.y - 34.0f, 68.0f, 68.0f },
-                    theme::accentGlow.scaleAlpha(0.35f), 1.8f);
-                r.circle(post.centerX(), post.y, 13.0f, theme::mark);
-            }
+            ui::plazaBackdrop(r, camera, kLaneTop);
         }
 
         void drawTrack(Renderer& r, float camera)

@@ -66,6 +66,8 @@ std::unique_ptr<Scene> makeTrophiesScene();
 std::unique_ptr<Scene> makeGamesScene();
 // Four Miis, one line, and a coin on it if you like.
 std::unique_ptr<Scene> makeMiiRaceScene();
+// Your own Mii, running, jumping what the market leaves in the way.
+std::unique_ptr<Scene> makePlazaDashScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

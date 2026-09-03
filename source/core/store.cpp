@@ -97,6 +97,18 @@ void Store::load()
             }
         }
 
+        if (json_t* scores = js::getObj(profile, "scores")) {
+            const char* game = nullptr;
+            json_t* value = nullptr;
+            json_object_foreach(scores, game, value) {
+                if (game && json_is_integer(value)) {
+                    json_int_t best = json_integer_value(value);
+                    if (best > 0)
+                        m_bestScores[game] = uint32_t(best);
+                }
+            }
+        }
+
         if (json_t* p = js::getObj(profile, "pieces")) {
             m_pieces.fromHex(js::getStrArray(p, "owned", 64),
                 static_cast<int>(js::getInt(p, "active", 0)));
@@ -318,6 +330,11 @@ void Store::saveProfileLocked()
     for (const std::pair<const std::string, uint64_t>& e : m_trophyDates)
         json_object_set_new(earned, e.first.c_str(), json_integer(json_int_t(e.second)));
     json_object_set_new(root, "trophies", earned);
+
+    json_t* scores = json_object();
+    for (const std::pair<const std::string, uint32_t>& e : m_bestScores)
+        json_object_set_new(scores, e.first.c_str(), json_integer(json_int_t(e.second)));
+    json_object_set_new(root, "scores", scores);
 
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
@@ -860,6 +877,27 @@ TrophyFacts Store::trophyFacts() const
     f.ownTheme = m_pass.theme != 0;
     f.passSent = m_passesSent >= 1;
     return f;
+}
+
+uint32_t Store::bestScore(const std::string& game) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    auto it = m_bestScores.find(game);
+    return it == m_bestScores.end() ? 0u : it->second;
+}
+
+bool Store::noteBestScore(const std::string& game, uint32_t score)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (game.empty())
+        return false;
+    auto it = m_bestScores.find(game);
+    if (it != m_bestScores.end() && it->second >= score)
+        return false;
+    m_bestScores[game] = score;
+    m_profileDirty = true;
+    LOG("scores: %s best is %u", game.c_str(), unsigned(score));
+    return true;
 }
 
 uint64_t Store::trophyDate(const std::string& id) const

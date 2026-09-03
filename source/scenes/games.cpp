@@ -96,7 +96,7 @@ namespace {
         }
 
     private:
-        static constexpr int kGames = 1;
+        static constexpr int kGames = 2;
         static constexpr float kRowHeight = 148.0f;
         static constexpr float kIconBox = 76.0f;
 
@@ -104,6 +104,8 @@ namespace {
         {
             if (index == 0)
                 app.pushOverlay(makeMiiRaceScene());
+            else if (index == 1)
+                app.pushOverlay(makePlazaDashScene());
         }
 
         void drawRow(App& app, Renderer& r, const Rect& box, int index)
@@ -115,12 +117,34 @@ namespace {
                 : 0.0f;
             ui::card(r, box, focus, focused ? theme::bg2 : theme::bg1, theme::r3);
 
+            struct Entry {
+                ui::Icon icon;
+                const char* name;
+                const char* body;
+            };
+            // The \n is honoured: layoutWrapped turns it into a line break and
+            // counts it against the two lines a row has. What each game *is*
+            // goes on the first line, what you *do* on the second, so the two
+            // rows read down the same way.
+            const Entry kEntries[kGames] = {
+                { ui::Icon::Flag, "The Mii race",
+                    "Three of the people you have crossed, against your own Mii, "
+                    "and nobody is faster than anybody.\n"
+                    "Watch for nothing, bet a coin for three back, or call first "
+                    "and second for eleven." },
+                { ui::Icon::Runner, "Plaza dash",
+                    "Your own Mii running through the plaza, jumping what the "
+                    "market leaves in the way.\n"
+                    "It gets quicker. Nothing staked, nothing won - only how far "
+                    "you got." },
+            };
+            const Entry& entry = kEntries[size_t(index)];
+
             Rect inner = box.inset(theme::s6, theme::s5);
             Rect icon { inner.x, inner.centerY() - kIconBox * 0.5f, kIconBox, kIconBox };
             r.circle(icon.centerX(), icon.centerY(), kIconBox * 0.5f,
                 theme::accent.scaleAlpha(0.18f));
-            ui::icon(r, icon.inset(kIconBox * 0.18f), ui::Icon::Flag, theme::accent,
-                2.5f);
+            ui::icon(r, icon.inset(kIconBox * 0.18f), entry.icon, theme::accent, 2.5f);
 
             float textX = icon.right() + theme::s5;
             float textW = inner.right() - textX;
@@ -130,7 +154,19 @@ namespace {
             name.weight = FontWeight::Bold;
             name.color = theme::fg1;
             name.leading = theme::leadingSnug;
-            r.text(textX, inner.y, "The Mii race", name);
+            r.text(textX, inner.y, entry.name, name);
+
+            // The record, opposite the name, for a game that keeps one.
+            uint32_t best = index == 1 ? app.store().bestScore("dash") : 0u;
+            if (best > 0) {
+                TextStyle meta;
+                meta.size = theme::textSm;
+                meta.color = theme::fg3;
+                meta.tracking = theme::trackingWide;
+                r.text(Rect { textX, inner.y, textW, name.size * theme::leadingSnug },
+                    format("best %u m", unsigned(best)), meta, Align::Right,
+                    VAlign::Top);
+            }
 
             TextStyle body;
             body.size = theme::textSm;
@@ -138,10 +174,7 @@ namespace {
             body.leading = theme::leadingNormal;
             r.textWrapped(Rect { textX, inner.y + name.size * theme::leadingSnug + 6.0f,
                               textW, inner.h },
-                "Three of the people you have crossed, against your own Mii. Nobody "
-                "is faster than anybody. Watch for nothing, bet a coin on your own "
-                "Mii for three back, or call first and second for eleven.",
-                body, 2);
+                entry.body, body, 2);
         }
 
         int m_row = 0;

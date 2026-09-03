@@ -114,6 +114,42 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.strokeRect(body, s * 0.07f, weight, color);
         break;
     }
+    case Icon::Runner: {
+        // A figure at a dead run: head, a torso leaning into it, two legs mid
+        // stride and two arms counterbalancing them.
+        //
+        // Limbs are what `band` is for - a quad with two parallel long sides,
+        // which is one stroke at any angle - with a disc at each joint to fill
+        // the butt-cut ends, the same way the star is drawn.
+        auto limb = [&](float x1, float y1, float x2, float y2) {
+            float ax = cx + x1 * s;
+            float ay = cy + y1 * s;
+            float bx = cx + x2 * s;
+            float by = cy + y2 * s;
+            float dx = bx - ax;
+            float dy = by - ay;
+            float len = std::sqrt(dx * dx + dy * dy);
+            if (len < 1e-4f)
+                return;
+            float nx = -dy / len * weight * 0.5f;
+            float ny = dx / len * weight * 0.5f;
+            const float corners[8] = { ax + nx, ay + ny, bx + nx, by + ny, bx - nx,
+                by - ny, ax - nx, ay - ny };
+            r.band(corners, color);
+            r.circle(ax, ay, weight * 0.5f, color);
+            r.circle(bx, by, weight * 0.5f, color);
+        };
+
+        r.circle(cx + 0.11f * s, cy - 0.30f * s, s * 0.115f, color);
+        limb(0.075f, -0.18f, -0.05f, 0.08f); // torso, leaning forward
+        limb(-0.05f, 0.08f, 0.19f, 0.17f);   // leading thigh
+        limb(0.19f, 0.17f, 0.15f, 0.38f);    // and its shin, planting
+        limb(-0.05f, 0.08f, -0.25f, 0.19f);  // trailing thigh
+        limb(-0.25f, 0.19f, -0.14f, 0.36f);  // kicked up behind
+        limb(0.04f, -0.12f, 0.25f, -0.20f);  // leading arm
+        limb(0.04f, -0.12f, -0.20f, -0.02f); // trailing arm
+        break;
+    }
     case Icon::Flag: {
         // A chequered flag on its pole: the outline, then every other cell
         // filled. Three across and two down is the fewest that still reads as

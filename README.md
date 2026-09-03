@@ -64,6 +64,10 @@ drawn before the countdown ends. Watching costs nothing; a coin on your own Mii
 gets 3 back, and calling first and second in order gets 11. The odds are honest and they are against you, so the
 races are a way to spend coins and not a way to make them.
 
+The second is Plaza dash: your own Mii runs through the same plaza, **A**
+jumps, and it gets quicker until you hit something. Nothing is staked and
+nothing is won - it keeps a best distance and that is all.
+
 |                                                                            | |
 |----------------------------------------------------------------------------| --- |
 | ![The games shelf, with the Mii race on it](screenshots/017.jpg)           | ![Four runners on the start line, and the three ways to play](screenshots/018.jpg) |
