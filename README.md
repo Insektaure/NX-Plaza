@@ -123,7 +123,7 @@ of them:
 | ![Privacy settings](screenshots/007.jpg) | ![Exchange settings](screenshots/008.jpg) |
 | *Privacy - how much of a place you attach, and whether a title rides along at all.* | *Exchange - how far a crossing reaches, and how many you will take in a day.* |
 | ![Notification settings](screenshots/009.jpg) | ![Appearance settings](screenshots/010.jpg) |
-| *Notifications - a card in the corner, or nothing.* | *Appearance - light, dark, or whatever the console is set to.* |
+| *Notifications - a card in the corner, or nothing.* | *Appearance - light, dark, or whatever the console is set to, and whether the scenery moves.* |
 
 ## What a pass is
 

@@ -183,6 +183,7 @@ private:
         Id_DailyLimit,
         Id_Notify,
         Id_Theme,
+        Id_ReduceMotion,
         Id_ServerUrl,
         Id_PlaceToken,
         Id_TestConnection,
@@ -401,6 +402,10 @@ private:
                           theme::resolvedMode() == theme::Mode::Dark ? "dark" : "light")
                     : std::string("light by default"),
                 themeOptions, 3, settings.themeMode);
+            toggle(Id_ReduceMotion, "Hold the scenery still",
+                "For anybody the Plaza Dash minigame makes queasy: the background stops "
+                "moving and only what you have to dodge does",
+                settings.reduceMotion);
             break;
 
         case Sec_Console:
@@ -660,6 +665,9 @@ private:
         case Id_Notify:
             settings.notify = !settings.notify;
             break;
+        case Id_ReduceMotion:
+            settings.reduceMotion = !settings.reduceMotion;
+            break;
         case Id_AutoCheckUpdates:
             settings.checkUpdates = !settings.checkUpdates;
             break;
@@ -823,7 +831,8 @@ private:
 
         app.store().setSettings(settings);
         app.store().flush();
-        app.sync().publishPass();
+        if (id != Id_ReduceMotion)
+            app.sync().publishPass();
     }
 
     // ------------------------------------------------------------------ draw

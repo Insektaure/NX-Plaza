@@ -136,8 +136,18 @@ namespace {
         void draw(App& app, Renderer& r) override
         {
             r.clear(theme::bg0);
-            ui::plazaBackdrop(r, m_travelled, kHorizon);
-            ui::plazaGround(r, m_travelled, kHorizon);
+
+            // With the scenery held still, the camera handed to the backdrop
+            // simply stops advancing: the hills, the posts and the floor marks
+            // freeze where they are and the hazards and the runner carry on
+            // exactly as before. Nothing about the pace or the distance
+            // changes, so a score is a score either way.
+            float scenery = app.store().settings().reduceMotion ? 0.0f : m_travelled;
+            // Sparser and dimmer than the race's lamps, because this runs at
+            // three times the pace: 560px is 1.5 Hz at full speed where 340
+            // was 2.4, and the bloom is half as strong.
+            ui::plazaBackdrop(r, scenery, kHorizon, 560.0f, 0.16f);
+            ui::plazaGround(r, scenery, kHorizon);
 
             for (const Hazard& hazard : m_hazards)
                 drawHazard(r, hazard);

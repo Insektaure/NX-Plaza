@@ -56,6 +56,12 @@ struct Settings {
     // 0 = Light (the default), 1 = Dark, 2 = match the console's own setting.
     int themeMode = 0;
 
+    // Hold the scenery still. A whole screen of pattern sliding past is what
+    // makes people ill - the plaza dash is the worst of it - so this freezes
+    // the backdrop and the floor and leaves only the things you have to react
+    // to moving. It changes nothing about pace or scoring.
+    bool reduceMotion = false;
+
     std::vector<BlockedConsole> blocked; // consoles we never accept again
 
     // The place label that actually leaves the console, honouring placeSharing.

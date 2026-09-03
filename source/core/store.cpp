@@ -166,6 +166,7 @@ void Store::load()
             m_settings.dailyLimit = static_cast<int>(js::getInt(s, "daily_limit", 12));
             m_settings.firstRunDone = js::getBool(s, "first_run_done", false);
             m_settings.themeMode = static_cast<int>(js::getInt(s, "theme", 0));
+            m_settings.reduceMotion = js::getBool(s, "reduce_motion", false);
             // Objects now, holding the handle and when. A profile written
             // before that has bare id strings; reading both is what migrates
             // it, and an id on its own simply has no name to show.
@@ -290,6 +291,7 @@ void Store::saveProfileLocked()
     json_object_set_new(s, "daily_limit", json_integer(m_settings.dailyLimit));
     json_object_set_new(s, "first_run_done", json_boolean(m_settings.firstRunDone));
     json_object_set_new(s, "theme", json_integer(m_settings.themeMode));
+    json_object_set_new(s, "reduce_motion", json_boolean(m_settings.reduceMotion));
     json_t* blocked = json_array();
     for (const BlockedConsole& b : m_settings.blocked) {
         json_t* e = json_object();
