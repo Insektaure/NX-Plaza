@@ -306,10 +306,14 @@ void App::hint(const char* button, const std::string& label)
 // space carries the name of the view instead - the rail is icons only.
 void App::drawHintBar(Renderer& r)
 {
-    // Starts where the rail ends. Run full width and it covers the bottom of
-    // the rail, where the artboard parks Settings 40px off the floor.
-    Rect bar { theme::railWidth, Renderer::DesignHeight - kHintBarHeight,
-        Renderer::DesignWidth - theme::railWidth, kHintBarHeight };
+    // Starts where the rail ends, and only while there is a rail to end.
+    // Running it full width would otherwise cover the bottom of the rail.
+    // On a scene that owns the whole screen there is no rail there, and the inset left a
+    // 112px notch of the scene showing through the left end of the strip.
+    Scene* whole = activeScene();
+    float left = whole && whole->coversChrome() ? 0.0f : theme::railWidth;
+    Rect bar { left, Renderer::DesignHeight - kHintBarHeight,
+        Renderer::DesignWidth - left, kHintBarHeight };
     r.rect(bar, theme::bg1);
     r.rect(Rect { bar.x, bar.y, bar.w, theme::stroke }, theme::stroke1);
 
@@ -341,8 +345,7 @@ void App::drawHintBar(Renderer& r)
             hints.emplace_back("L/R", titleCase("switch tab"));
         // Not offered while it would not work: a strip that lists a button
         // doing nothing is worse than one that does not list it.
-        Scene* busy = activeScene();
-        if (!busy || !busy->blocksExit())
+        if (!whole || !whole->blocksExit())
             hints.emplace_back("+", titleCase("quit"));
     }
 
