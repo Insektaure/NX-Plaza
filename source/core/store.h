@@ -60,7 +60,12 @@ struct Settings {
     // makes people ill - the plaza dash is the worst of it - so this freezes
     // the backdrop and the floor and leaves only the things you have to react
     // to moving. It changes nothing about pace or scoring.
-    bool reduceMotion = false;
+    //
+    // On by default, which is the way round an accessibility setting belongs:
+    // somebody the motion makes ill should not have to find a setting after
+    // being made ill, whereas somebody who wants the full parallax loses
+    // nothing by turning it off once.
+    bool reduceMotion = true;
 
     std::vector<BlockedConsole> blocked; // consoles we never accept again
 

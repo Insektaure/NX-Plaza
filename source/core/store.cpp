@@ -166,7 +166,10 @@ void Store::load()
             m_settings.dailyLimit = static_cast<int>(js::getInt(s, "daily_limit", 12));
             m_settings.firstRunDone = js::getBool(s, "first_run_done", false);
             m_settings.themeMode = static_cast<int>(js::getInt(s, "theme", 0));
-            m_settings.reduceMotion = js::getBool(s, "reduce_motion", false);
+            // Defaulting to true here as well as in the struct, so a profile
+            // written before the key existed comes up with the scenery still
+            // rather than with the setting silently inverted.
+            m_settings.reduceMotion = js::getBool(s, "reduce_motion", true);
             // Objects now, holding the handle and when. A profile written
             // before that has bare id strings; reading both is what migrates
             // it, and an id on its own simply has no name to show.

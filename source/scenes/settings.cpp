@@ -403,8 +403,9 @@ private:
                     : std::string("light by default"),
                 themeOptions, 3, settings.themeMode);
             toggle(Id_ReduceMotion, "Hold the scenery still",
-                "For anybody the Plaza Dash minigame makes queasy: the background stops "
-                "moving and only what you have to dodge does",
+                "On, for anybody the Plaza Dash minigame makes queasy: the background "
+                "stops moving and only what you have to dodge does. Turn it off for "
+                "the full parallax",
                 settings.reduceMotion);
             break;
 
