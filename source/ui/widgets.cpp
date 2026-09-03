@@ -115,26 +115,34 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         break;
     }
     case Icon::Trophy: {
-        // A cup: the bowl as a rounded box, a handle either side, then the stem
-        // and the foot. The bowl's bottom corners carry the radius, which is
-        // what stops it reading as a bucket.
-        float halfW = s * 0.20f;
-        float top = cy - s * 0.30f;
+        // A cup: the bowl, a handle each side, then the stem and the foot.
+        //
+        // The handles are halves of a stroked ring centred on the bowl's own
+        // edge, clipped to the side that sticks out - so both ends of each arc
+        // finish exactly on the bowl's outline and read as joined to it.
+        float halfW = s * 0.22f;
+        float top = cy - s * 0.26f;
         float bowl = s * 0.30f;
-        r.strokeRect(Rect { cx - halfW, top, halfW * 2.0f, bowl }, s * 0.10f, weight,
+        Rect cupRect { cx - halfW, top, halfW * 2.0f, bowl };
+
+        float ear = s * 0.11f;
+        float earY = top + bowl * 0.40f;
+        for (int side = 0; side < 2; side++) {
+            float edge = side == 0 ? cupRect.x : cupRect.right();
+            Rect keep = side == 0 ? Rect { box.x, box.y, edge - box.x, box.h }
+                                  : Rect { edge, box.y, box.right() - edge, box.h };
+            r.pushClipHorizontal(keep);
+            r.strokeRect(Rect { edge - ear, earY - ear, ear * 2.0f, ear * 2.0f }, ear,
+                weight, color);
+            r.popClip();
+        }
+
+        r.strokeRect(cupRect, s * 0.10f, weight, color);
+
+        // Stem and foot, both centred: a cup on a stand rather than a tub.
+        r.rect(Rect { cx - weight * 0.5f, cupRect.bottom(), weight, s * 0.16f }, color);
+        r.rect(Rect { cx - s * 0.15f, cupRect.bottom() + s * 0.16f, s * 0.30f, weight },
             color);
-
-        // The handles are the sides of a wider stroked circle, clipped to the
-        // bowl's own band so the top and bottom arcs do not show.
-        float ear = s * 0.13f;
-        r.pushClipVertical(Rect { box.x, top + weight, box.w, bowl * 0.55f });
-        r.strokeRect(Rect { cx - halfW - ear, top + bowl * 0.10f,
-                         (halfW + ear) * 2.0f, ear * 2.0f },
-            ear, weight, color);
-        r.popClip();
-
-        r.rect(Rect { cx - weight * 0.5f, top + bowl, weight, s * 0.16f }, color);
-        r.rect(Rect { cx - s * 0.15f, top + bowl + s * 0.16f, s * 0.30f, weight }, color);
         break;
     }
     case Icon::Dice: {

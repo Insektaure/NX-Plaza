@@ -282,7 +282,7 @@ namespace {
             Rect medal { inner.x, inner.centerY() - kMedal * 0.5f, kMedal, kMedal };
             r.circle(medal.centerX(), medal.centerY(), kMedal * 0.5f,
                 earned ? metal.scaleAlpha(0.20f) : theme::bg3);
-            ui::icon(r, medal.inset(kMedal * 0.22f), ui::Icon::Trophy, metal, 3.0f);
+            ui::icon(r, medal.inset(kMedal * 0.22f), ui::Icon::Trophy, metal, 2.5f);
 
             // The metal, and when it happened, along the right edge. Both are
             // about the trophy and putting them here
