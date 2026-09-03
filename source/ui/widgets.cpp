@@ -114,6 +114,29 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.strokeRect(body, s * 0.07f, weight, color);
         break;
     }
+    case Icon::Pad: {
+        // A controller: a wide rounded body, a cross on the left and two
+        // buttons on the right. The grips are the body's own corner radius
+        // pushed to half its height, which at this size reads better than
+        // drawing horns that would be three pixels of stroke each.
+        float halfW = s * 0.34f;
+        float halfH = s * 0.20f;
+        Rect body { cx - halfW, cy - halfH, halfW * 2.0f, halfH * 2.0f };
+        r.strokeRect(body, halfH, weight, color);
+
+        // The d-pad, as one horizontal and one vertical bar.
+        float padX = cx - halfW * 0.48f;
+        float arm = s * 0.09f;
+        r.rect(Rect { padX - arm, cy - weight * 0.5f, arm * 2.0f, weight }, color);
+        r.rect(Rect { padX - weight * 0.5f, cy - arm, weight, arm * 2.0f }, color);
+
+        // Two buttons, on the diagonal a controller actually puts them.
+        float dot = std::max(weight * 0.9f, s * 0.035f);
+        float btnX = cx + halfW * 0.44f;
+        r.circle(btnX - dot * 1.6f, cy + dot * 1.1f, dot, color);
+        r.circle(btnX + dot * 1.6f, cy - dot * 1.1f, dot, color);
+        break;
+    }
     case Icon::Trophy: {
         // A cup: the bowl, a handle each side, then the stem and the foot.
         //

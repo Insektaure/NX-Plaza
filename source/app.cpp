@@ -26,6 +26,16 @@ namespace {
     // control strip: 88px, --bg-1, controls right-aligned.
     constexpr float kHintBarHeight = 88.0f;
 
+    // Step from one rail slot to the next, top to top. The icon inside a slot
+    // stays 72px whatever this is; the pitch only decides how much air falls
+    // between them, so compressing it costs gaps and not legibility.
+    //
+    // The rail carries nine icons above Settings:
+    // nine at 104 would end at y=1044, which is 76px
+    // through the Settings icon pinned at 968. At 90 the last one ends at 932
+    // and there is still 36px under it. A tenth would want 84.
+    constexpr float kTabPitch = 90.0f;
+
     struct TabInfo {
         ui::Icon icon;
         const char* label;
@@ -37,6 +47,7 @@ namespace {
         { ui::Icon::Grid, "Collection" },
         { ui::Icon::Crowd, "The Square" },
         { ui::Icon::Puzzle, "Puzzles" },
+        { ui::Icon::Pad, "Games" },
         { ui::Icon::Bag, "The shop" },
         { ui::Icon::Trophy, "Trophies" },
         { ui::Icon::Person, "Your pass" },
@@ -88,6 +99,7 @@ bool App::init()
     m_tabScenes[static_cast<int>(Tab::Puzzles)] = makePuzzlesScene();
     m_tabScenes[static_cast<int>(Tab::Shop)] = makeShopScene();
     m_tabScenes[static_cast<int>(Tab::Trophies)] = makeTrophiesScene();
+    m_tabScenes[static_cast<int>(Tab::Games)] = makeGamesScene();
     m_tabScenes[static_cast<int>(Tab::Passport)] = makePassportScene();
     m_tabScenes[static_cast<int>(Tab::Settings)] = makeSettingsScene();
 
@@ -652,7 +664,7 @@ void App::draw()
 void App::drawNavRail(Renderer& r)
 {
     // 112px on --bg-1, padding 40px 0, gap --space-6.
-    // The lantern is 44px with a 28px bloom, then 72px icon slots on a 104px pitch,
+    // The lantern is 44px with a 28px bloom, then 72px icon slots on kTabPitch,
     // with Settings pinned to the floor by a flex spacer.
     Rect rail { 0.0f, 0.0f, theme::railWidth, Renderer::DesignHeight };
     r.rect(rail, theme::bg1);
@@ -671,7 +683,10 @@ void App::drawNavRail(Renderer& r)
         Rect box { rail.centerX() - 36.0f, y, 72.0f, 72.0f };
         bool selected = index == static_cast<int>(m_tab);
 
-        touchZone(Rect { 0.0f, y - 16.0f, rail.w, 104.0f }, Touch_Tab, index);
+        // A full pitch tall, starting above the icon, so consecutive zones abut
+        // and there is no dead strip between two tabs.
+        touchZone(Rect { 0.0f, y - (kTabPitch - 72.0f) * 0.5f, rail.w, kTabPitch },
+            Touch_Tab, index);
 
         if (selected)
             r.roundRect(box, theme::r2, theme::accentTint);
@@ -697,7 +712,7 @@ void App::drawNavRail(Renderer& r)
     float y = 140.0f;
     for (int i = 0; i < static_cast<int>(Tab::Settings); i++) {
         drawTab(i, y);
-        y += 104.0f;
+        y += kTabPitch;
     }
     drawTab(static_cast<int>(Tab::Settings), Renderer::DesignHeight - 40.0f - 72.0f);
 }

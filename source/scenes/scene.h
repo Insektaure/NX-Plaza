@@ -52,6 +52,9 @@ std::unique_ptr<Scene> makeShopScene();
 // What this console has done. Every line is a question asked of the store, so
 // there is no separate record of it to go stale or be edited.
 std::unique_ptr<Scene> makeTrophiesScene();
+// Things to play with what the collection holds. Empty for now: the shelf is
+// here so a game is a scene and a row, not a tab and a rail slot.
+std::unique_ptr<Scene> makeGamesScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

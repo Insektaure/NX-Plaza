@@ -34,6 +34,7 @@ enum class Icon {
     Bag,
     Dice,
     Trophy,
+    Pad,
 };
 
 void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight = 2.5f);

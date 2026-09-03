@@ -45,6 +45,7 @@ enum class Tab : int {
     Collection,
     Square,
     Puzzles,
+    Games,
     Shop,
     Trophies,
     Passport,
