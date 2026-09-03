@@ -6,6 +6,7 @@
 
 #include "core/mii_parts.h"
 #include "core/identity.h"
+#include "core/trophies.h"
 #include "core/wallet.h"
 #include "core/log.h"
 #include "core/pieces.h"
@@ -37,6 +38,7 @@ namespace {
         { ui::Icon::Crowd, "The Square" },
         { ui::Icon::Puzzle, "Puzzles" },
         { ui::Icon::Bag, "The shop" },
+        { ui::Icon::Trophy, "Trophies" },
         { ui::Icon::Person, "Your pass" },
         { ui::Icon::Sliders, "Settings" },
     };
@@ -85,6 +87,7 @@ bool App::init()
     m_tabScenes[static_cast<int>(Tab::Square)] = makeSquareScene();
     m_tabScenes[static_cast<int>(Tab::Puzzles)] = makePuzzlesScene();
     m_tabScenes[static_cast<int>(Tab::Shop)] = makeShopScene();
+    m_tabScenes[static_cast<int>(Tab::Trophies)] = makeTrophiesScene();
     m_tabScenes[static_cast<int>(Tab::Passport)] = makePassportScene();
     m_tabScenes[static_cast<int>(Tab::Settings)] = makeSettingsScene();
 
@@ -560,10 +563,45 @@ void App::update(float dt)
     saveTimer += dt;
     if (saveTimer > 2.0f) {
         saveTimer = 0.0f;
+        // Before the flush, so a trophy earned on this tick goes to the card
+        // with everything else rather than waiting two seconds for the next.
+        checkTrophies();
         store().flush();
         // Alongside the store, and just as cheap when nothing has changed: the
         // daily grant lands on a check-in, which can happen at any moment.
         Wallet::get().flush();
+    }
+}
+
+// Notices what has been earned since the last look.
+//
+// The dates are the only thing recorded, and noteTrophyDate is what makes this
+// fire once: it refuses an id it has already seen.
+void App::checkTrophies()
+{
+    const std::vector<Trophy>& all = trophies();
+    std::vector<uint8_t> state = trophyState(store(), trophyFacts(store()));
+    uint64_t now = nowUnix();
+
+    int fresh = 0;
+    const Trophy* last = nullptr;
+    for (size_t i = 0; i < all.size() && i < state.size(); i++) {
+        if (!state[i])
+            continue;
+        if (store().noteTrophyDate(all[i].id, now)) {
+            fresh++;
+            last = &all[i];
+        }
+    }
+
+    if (fresh == 1 && last) {
+        toast(last->name, format("A %s trophy.", tierName(last->tier)));
+    } else if (fresh > 1) {
+        // A console that had all this history before the feature existed earns
+        // a fistful at once. One toast for the lot, rather than nine in a row
+        // that push each other off the screen.
+        toast(format("%d trophies earned", fresh),
+            "Your record is in the trophies tab.");
     }
 }
 

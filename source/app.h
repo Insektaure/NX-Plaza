@@ -46,6 +46,7 @@ enum class Tab : int {
     Square,
     Puzzles,
     Shop,
+    Trophies,
     Passport,
     Settings,
     Count
@@ -149,6 +150,10 @@ private:
     void update(float dt);
     void pollUpdate();
     void draw();
+
+    // Records anything newly earned and says so. Cheap enough for the save
+    // timer, which is where it is called from.
+    void checkTrophies();
 
     void drawNavRail(Renderer& r);
     void drawHintBar(Renderer& r);

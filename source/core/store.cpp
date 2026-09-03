@@ -6,9 +6,11 @@
 #include "core/pieces.h"
 #include "core/play_history.h"
 #include "core/place.h"
+#include "core/trophies.h"
 #include "core/util.h"
 
 #include <algorithm>
+#include <cctype>
 #include <ctime>
 #include <set>
 
@@ -23,6 +25,17 @@ namespace {
     // now about what is reasonable to hold in memory and draw, not what is
     // affordable to rewrite. 5000 is roughly 600 KB of index.
     constexpr size_t kMaxCrossings = 5000;
+
+    // Enough case folding to compare two handles. ASCII only on purpose: a
+    // handle can be Japanese, and half-folding UTF-8 by byte would be worse
+    // than not folding it - two identical handles still match exactly.
+    std::string lowerAscii(const std::string& in)
+    {
+        std::string out = in;
+        for (char& c : out)
+            c = char(tolower(static_cast<unsigned char>(c)));
+        return out;
+    }
 
     uint64_t startOfLocalDay(uint64_t when)
     {
@@ -71,6 +84,18 @@ void Store::load()
         // profile written before this, which reads as zero and is corrected by
         // the first check-in.
         m_passesSent = static_cast<uint32_t>(js::getInt(profile, "passes_sent", 0));
+
+        // Trophy dates, as a flat object of id -> unix seconds. Unknown ids are
+        // kept as they are rather than dropped: a build that removes a trophy
+        // should not throw away the date in case the next one brings it back.
+        if (json_t* earned = js::getObj(profile, "trophies")) {
+            const char* key = nullptr;
+            json_t* value = nullptr;
+            json_object_foreach(earned, key, value) {
+                if (key && json_is_integer(value))
+                    m_trophyDates[key] = uint64_t(json_integer_value(value));
+            }
+        }
 
         if (json_t* p = js::getObj(profile, "pieces")) {
             m_pieces.fromHex(js::getStrArray(p, "owned", 64),
@@ -285,6 +310,15 @@ void Store::saveProfileLocked()
     }
     json_object_set_new(pieces, "from", from);
     json_object_set_new(root, "pieces", pieces);
+
+    // Dates only. What is earned is a question asked of everything above; this
+    // is just when the answer first came back yes, so an edited or missing
+    // object costs a date on a screen and never a trophy.
+    json_t* earned = json_object();
+    for (const std::pair<const std::string, uint64_t>& e : m_trophyDates)
+        json_object_set_new(earned, e.first.c_str(), json_integer(json_int_t(e.second)));
+    json_object_set_new(root, "trophies", earned);
+
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
 
@@ -718,6 +752,134 @@ void Store::deleteAllCrossings()
         m_extras.flush();
 }
 
+TrophyFacts Store::trophyFacts() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+
+    TrophyFacts f;
+    uint64_t now = nowUnix();
+    uint64_t today = startOfLocalDay(now);
+    std::set<std::string> places;
+    uint64_t earliest = 0;
+
+    // Folded once, outside the loop: a handle is compared against every card
+    // in the collection and the answer does not change per card.
+    std::string myHandle = lowerAscii(m_pass.handle);
+
+    f.uniquePeople = static_cast<uint32_t>(m_crossings.size());
+    for (const Crossing& c : m_crossings) {
+        f.totalCrossings += c.count;
+        f.mostSeen = std::max(f.mostSeen, c.count);
+        f.maxHours = std::max(f.maxHours, c.pass.hours);
+        if (!c.place.empty())
+            places.insert(c.place);
+        if (c.lastSeen >= today)
+            f.today++;
+        if (!c.opened)
+            f.unopened++;
+        if (c.tradedBack)
+            f.tradedBack++;
+        if (isFavouriteLocked(c.id))
+            f.starred++;
+        if (c.firstSeen != 0 && (earliest == 0 || c.firstSeen < earliest))
+            earliest = c.firstSeen;
+
+        // The hour and the weekday a crossing happened on are not stored, so
+        // both are read back off the timestamp on the clock the console keeps -
+        // the same way the collection reads its dates.
+        time_t t = time_t(c.lastSeen);
+        struct tm parts {};
+        localtime_r(&t, &parts);
+        if (parts.tm_hour < 4)
+            f.lateCrossing = true;
+        if (parts.tm_wday >= 0 && parts.tm_wday < 7)
+            f.weekdays |= static_cast<uint8_t>(1u << parts.tm_wday);
+
+        // The four that are about them rather than you. Each is a coincidence
+        // worth noticing once, so a single card setting the flag is the whole
+        // condition.
+        if (m_pass.theme != 0 && c.pass.theme == m_pass.theme)
+            f.matchingTheme = true;
+        if (c.pass.greeting.empty())
+            f.silentPass = true;
+        if (!myHandle.empty() && lowerAscii(c.pass.handle) == myHandle)
+            f.namesake = true;
+        if (!f.sharedCarry) {
+            for (const std::string& theirs : c.pass.carrying) {
+                for (const std::string& mine : m_pass.carrying) {
+                    if (!mine.empty() && mine == theirs) {
+                        f.sharedCarry = true;
+                        break;
+                    }
+                }
+                if (f.sharedCarry)
+                    break;
+            }
+        }
+    }
+    f.places = static_cast<uint32_t>(places.size());
+    if (earliest != 0 && now > earliest)
+        f.oldestFriendDays = static_cast<uint32_t>((now - earliest) / (24 * 3600));
+
+    // Who filled the puzzles. `sources` only ever holds pieces that are held,
+    // so a name in here is somebody whose piece is still in a picture.
+    std::set<std::string> donors;
+    std::vector<uint8_t> bought(pieceSets().size(), 0);
+    for (const PieceSource& src : m_pieces.sources) {
+        if (src.who == kShopSource) {
+            int set = pieceSetIndex(src.picture);
+            if (set >= 0 && size_t(set) < bought.size())
+                bought[size_t(set)] = 1;
+        } else if (!src.who.empty()) {
+            donors.insert(src.who);
+        }
+    }
+    f.pieceDonors = static_cast<uint32_t>(donors.size());
+
+    const std::vector<PieceSet>& sets = pieceSets();
+    f.puzzleCount = static_cast<uint32_t>(sets.size());
+    for (size_t i = 0; i < sets.size(); i++) {
+        f.piecesTotal += sets[i].count;
+        f.piecesHeld += static_cast<uint32_t>(m_pieces.countHeld(int(i)));
+        if (m_pieces.complete(int(i))) {
+            f.puzzlesDone++;
+            if (!bought[i])
+                f.puzzleByHand = true;
+        }
+    }
+
+    // What makes a pass worth crossing: a name, something to say, and
+    // something to hand over.
+    f.carrying = static_cast<uint32_t>(m_pass.carrying.size());
+    f.passReady = !m_pass.handle.empty() && !m_pass.greeting.empty()
+        && !m_pass.carrying.empty();
+
+    // The face is stored only once the maker has been used; until then a pass
+    // wears one derived from the seed, which nobody chose.
+    f.ownFace = !m_pass.mii.empty();
+    f.ownTheme = m_pass.theme != 0;
+    f.passSent = m_passesSent >= 1;
+    return f;
+}
+
+uint64_t Store::trophyDate(const std::string& id) const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    auto it = m_trophyDates.find(id);
+    return it == m_trophyDates.end() ? 0 : it->second;
+}
+
+bool Store::noteTrophyDate(const std::string& id, uint64_t when)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (id.empty() || m_trophyDates.count(id) != 0)
+        return false;
+    m_trophyDates[id] = when;
+    m_profileDirty = true;
+    LOG("trophies: %s earned", id.c_str());
+    return true;
+}
+
 Stats Store::stats() const
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
@@ -833,7 +995,7 @@ Store::PiecePurchase Store::buyPiece(bool activeOnly)
 
     // "the shop" rather than an empty name, so the provenance panel says where
     // it came from instead of falling back to "someone".
-    m_pieces.noteSource(bought.set, uint8_t(bought.piece), "the shop", nowUnix());
+    m_pieces.noteSource(bought.set, uint8_t(bought.piece), kShopSource, nowUnix());
     m_profileDirty = true;
     LOG("pieces: bought piece %u of %s", unsigned(bought.piece + 1),
         sets[size_t(bought.set)].name);

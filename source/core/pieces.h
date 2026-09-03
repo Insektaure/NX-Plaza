@@ -17,6 +17,11 @@ namespace nxp {
 // and takes nothing away, so meeting somebody with an empty collection is worth
 // exactly as much as meeting a completist.
 
+// What the shop records itself as in a piece's provenance. Written by the
+// store when a piece is bought and read by the trophies that ask how a puzzle
+// was filled, so it lives here rather than as a literal in both.
+inline constexpr const char* kShopSource = "the shop";
+
 struct PieceSet {
     const char* name;
     // Which picture this puzzle is, as a key into the baked artwork.

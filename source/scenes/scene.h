@@ -49,6 +49,9 @@ std::unique_ptr<Scene> makeSquareScene();
 std::unique_ptr<Scene> makePuzzlesScene();
 // Where the coins a day of checking in earns get spent.
 std::unique_ptr<Scene> makeShopScene();
+// What this console has done. Every line is a question asked of the store, so
+// there is no separate record of it to go stale or be edited.
+std::unique_ptr<Scene> makeTrophiesScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

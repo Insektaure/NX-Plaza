@@ -20,7 +20,9 @@ read it.
 
 **A pass, opened.** The greeting they typed, what they are carrying, and the
 numbers that build up as you keep running into each other. **L** and **R** walk
-the rest of the stack without going back out to the list.
+the rest of the stack without going back out to the list, and the middle action
+stars the card - the same star the collection sorts by, and the one that keeps a
+card when the collection reaches its cap.
 
 ![An opened pass showing a greeting, carried items and crossing stats](screenshots/002.jpg)
 
@@ -65,6 +67,22 @@ meets nobody rather than a way around meeting anybody. Spending works offline;
 the totals are checksummed against your console's plaza token.
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
+
+**Trophies.** What this console has done: 50 of them, in bronze, silver,
+gold and one platinum for the lot.
+
+Some are meant to be tripped over in the first hour - cross a pass with 
+nothing written on it, cross somebody wearing
+the same card look as you. Others are not: a year of opening the app, a
+thousand different consoles, a puzzle finished without buying a piece.
+
+**X** filters to what is earned or what is left.
+
+Nothing is scored or kept: every line is a question asked of your collection,
+your puzzles and your wallet when the screen draws, so it always agrees with
+them.
+The only thing written down is the date each one first came back true -
+lose that and you lose a date, never a trophy.
 
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
@@ -221,7 +239,7 @@ are always spelled out for the view you are on.
 | D-pad or stick | move the cursor |
 | A | open, edit, toggle - in the square, look at whoever the cursor is on; in Settings, the only way into a section |
 | B | back |
-| X | plaza: look for passes now · collection: change sort (recent, name, starred) · the square: shuffle the crowd · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
+| X | plaza: look for passes now · collection: change sort (recent, name, starred) · trophies: filter (all, earned, still to earn) · the square: shuffle the crowd · your pass: new portrait · encounter: block and forget · Mii maker: shuffle |
 | Y | plaza: mark everything read · collection: star this card · puzzles: fill this one next · encounter and radar: save that face · Mii maker: save / load faces |
 | B | back - in Settings, out of a section's rows to the section list |
 | + | quit |

@@ -6,11 +6,14 @@
 #include "core/pieces.h"
 #include "core/util.h"
 
+#include <map>
 #include <mutex>
 #include <string>
 #include <vector>
 
 namespace nxp {
+
+struct TrophyFacts;
 
 // A console that will never be accepted again.
 //
@@ -197,6 +200,22 @@ public:
     void extraSetText(const std::string& id, uint16_t tag, const std::string& value);
     void extraClear(const std::string& id, uint16_t tag);
 
+    // ------------------------------------------------------------ trophies
+
+    // Everything the trophy conditions ask about, in one walk of the
+    // collection. The answers are derived every time rather than counted as
+    // they happen: a figure kept alongside the crossings is a figure that can
+    // disagree with them.
+    TrophyFacts trophyFacts() const;
+
+    // When a trophy was first seen to be earned, or 0. Only the date is
+    // stored - whether it is earned at all is re-derived - so losing this
+    // costs a date and nothing else.
+    uint64_t trophyDate(const std::string& id) const;
+    // Records `when` against `id` if there is nothing there yet. True when it
+    // was new, which is what the toast waits for.
+    bool noteTrophyDate(const std::string& id, uint64_t when);
+
     // Favourites. A favourite is kept when the collection prunes at its cap,
     // which is the point of it: the people worth keeping are the ones you said
     // were worth keeping.
@@ -233,6 +252,9 @@ private:
     CrossingExtraFile m_extras;
     PieceInventory m_pieces;
     uint32_t m_passesSent = 0;
+    // id -> when it was first seen earned. Keyed by id so the table can grow,
+    // shrink or be reordered without a date landing on the wrong trophy.
+    std::map<std::string, uint64_t> m_trophyDates;
     bool m_loaded = false;
 };
 
