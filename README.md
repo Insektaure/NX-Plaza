@@ -58,11 +58,18 @@ on. Finish one and **A** puts the picture on the screen on its own.
 ![A puzzle board with two pieces found, and the panel naming the piece under the cursor](screenshots/014.jpg)
 
 **Games.** Things to play with the people you have crossed. The first is the
-Mii race: three of them against your own Mii in four lanes, a countdown, a
+Mii race: 3 of them against your own Mii in four lanes, a countdown, a
 parallax run and a finish line. Nobody is faster than anybody - every result is
 drawn before the countdown ends. Watching costs nothing; a coin on your own Mii
-gets three back, and calling first and second in order gets eleven. The odds are honest and they are against you, so the
+gets 3 back, and calling first and second in order gets 11. The odds are honest and they are against you, so the
 races are a way to spend coins and not a way to make them.
+
+|                                                                            | |
+|----------------------------------------------------------------------------| --- |
+| ![The games shelf, with the Mii race on it](screenshots/017.jpg)           | ![Four runners on the start line, and the three ways to play](screenshots/018.jpg) |
+| *The shelf - one game so far, and the coins you have.*                     | *Race for nothing, a coin on your own Mii, or call first and second.* |
+| ![Mid-race, four Miis running between the lamp posts](screenshots/019.jpg) | ![The finishing order, with everybody's time](screenshots/20.jpg) |
+| *The run - a parallax race track, and who is in front.*                    | *The order at the line, to the hundredth of a second.* |
 
 **The shop.** Ten coins for every new day you open the app, granted by the
 plaza's clock so the console's own cannot mint them.
@@ -85,6 +92,8 @@ your puzzles and your wallet when the screen draws, so it always agrees with
 them.
 The only thing written down is the date each one first came back true -
 lose that and you lose a date, never a trophy.
+
+![The trophy list, ten of fifty-three earned, with the tier tally](screenshots/016.jpg)
 
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
