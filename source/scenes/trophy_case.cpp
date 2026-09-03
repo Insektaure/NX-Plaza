@@ -198,7 +198,9 @@ namespace {
     private:
         static constexpr float kRowHeight = 120.0f;
         static constexpr float kScrollGutter = 24.0f;
-        static constexpr float kMedal = 64.0f;
+        // As wide as the row is tall inside its insets: 120 less two 24px
+        // insets leaves exactly 72, so the disc fills the height it has.
+        static constexpr float kMedal = 72.0f;
 
         // Read every frame, because that is the whole idea: the screen shows
         // what is true of the store now, not what something once wrote down.
@@ -282,7 +284,9 @@ namespace {
             Rect medal { inner.x, inner.centerY() - kMedal * 0.5f, kMedal, kMedal };
             r.circle(medal.centerX(), medal.centerY(), kMedal * 0.5f,
                 earned ? metal.scaleAlpha(0.20f) : theme::bg3);
-            ui::icon(r, medal.inset(kMedal * 0.22f), ui::Icon::Trophy, metal, 2.5f);
+            // 14% rather than 22%: the cup only fills two thirds of the box it
+            // is given, so a generous inset left it small inside a big disc.
+            ui::icon(r, medal.inset(kMedal * 0.14f), ui::Icon::Trophy, metal, 2.5f);
 
             // The metal, and when it happened, along the right edge. Both are
             // about the trophy and putting them here
