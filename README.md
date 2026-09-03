@@ -43,25 +43,28 @@ occasionally say what their pass says, and **A** opens whoever the cursor is on.
 
 ![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg)
 
-**Puzzles.** What you take away from crossing people. Three pictures (for now), fifteen
-pieces each, one piece per console you pass. The list says how full each puzzle
-is and which one the pieces are going into; opening one shows the board, and
-every tile you have remembers who brought it and when. Finish one and **A**
-puts the picture on the screen on its own.
+**Puzzles.** What you take away from crossing people. Three pictures (for now),
+fifteen pieces each, one piece per console you pass. The list says how full each
+puzzle is and which one the pieces are going into.
+
+![The puzzles list: three pictures, the first one filling](screenshots/013.jpg)
+
+Opening one shows the board, and every tile you have remembers who brought it
+and when - the panel beside the grid says who, for whichever piece the cursor is
+on. Finish one and **A** puts the picture on the screen on its own.
+
+![A puzzle board with two pieces found, and the panel naming the piece under the cursor](screenshots/014.jpg)
 
 **The shop.** Ten coins for every new day you open the app, granted by the
 plaza's clock so the console's own cannot mint them. A hundred buys a piece of
 the puzzle you are filling; fifty buys one drawn from every unfinished puzzle at
 once, since what the difference pays for is the choice rather than the piece.
+Never a duplicate, and every purchase asks before it spends. Ten days of
+checking in against roughly three crossings, so it is a floor for a console that
+meets nobody rather than a way around meeting anybody. Spending works offline;
+the totals are checksummed against your console's plaza token.
 
-Never a duplicate. 
-
-Ten days of checking in against roughly three crossings, so
-it is a floor for a console that meets nobody rather than a way around meeting
-anybody.
-
-Spending works offline; the totals are checksummed against your
-console's plaza token.
+![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
 **Your pass.** The left half is exactly what lands on someone else's console:
 nothing on this screen leaves without you having typed or picked it.
