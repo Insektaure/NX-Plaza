@@ -43,11 +43,11 @@ occasionally say what their pass says, and **A** opens whoever the cursor is on.
 
 ![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg)
 
-**Puzzles.** What you take away from crossing people. Three pictures (for now),
-fifteen pieces each, one piece per console you pass. The list says how full each
+**Puzzles.** What you take away from crossing people. Six pictures, fifteen
+pieces each, one piece per console you pass. The list says how full each
 puzzle is and which one the pieces are going into.
 
-![The puzzles list: three pictures, the first one filling](screenshots/013.jpg)
+![The puzzles list, with the first picture filling](screenshots/013.jpg)
 
 Opening one shows the board, and every tile you have remembers who brought it
 and when - the panel beside the grid says who, for whichever piece the cursor is

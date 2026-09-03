@@ -22,6 +22,9 @@ namespace {
         { "Forest in the Rain", "forest_in_the_rain", 15 },
         { "Mountain in the Fog", "mountain_in_the_fog", 15 },
         { "Mystical Swamp", "mystical_swamp", 15 },
+        { "Old Farm", "old_farm", 15 },
+        { "Castle Blue", "castle_blue", 15 },
+        { "Beach at Dusk", "beach_at_dusk", 15 },
     };
 
     // The day, in whole local days since the epoch. Local rather than UTC so
