@@ -114,6 +114,8 @@ namespace {
             r.clear(theme::bg0);
             ui::plazaBackdrop(r, 0.0f, kHorizon);
             ui::plazaGround(r, 0.0f, kHorizon);
+            drawTent(r);
+            drawStand(r);
 
             drawRing(r);
             drawNeedle(r);
@@ -166,6 +168,65 @@ namespace {
         static constexpr float kSpin = 2.5f;
         static constexpr float kHold = 0.55f;
         static constexpr float kTurns = 4.0f; // whole turns before it settles
+
+        // A big top, off to the left, standing on the same ground the plaza's
+        // lamp posts stand on.
+        //
+        // `trapezoid` takes its top and bottom widths separately, so a stripe
+        // that narrows to a point is one call and a fan of them from an apex
+        // is a conical roof. Amber and cream rather than the circus red: red
+        // is not in this palette and would fight the lanterns.
+        void drawTent(Renderer& r) const
+        {
+            constexpr float kLeft = 140.0f;
+            constexpr float kRight = 640.0f;
+            constexpr float kApexX = (kLeft + kRight) * 0.5f;
+            constexpr float kApexY = 250.0f;
+            constexpr float kEaves = 470.0f;
+            constexpr int kStripes = 8;
+
+            // The pennant first, so the roof covers where its pole enters.
+            r.rect(Rect { kApexX - 2.0f, kApexY - 52.0f, 4.0f, 60.0f }, theme::fg4);
+            r.rect(Rect { kApexX + 2.0f, kApexY - 50.0f, 56.0f, 22.0f },
+                theme::accent);
+
+            // Walls, then the doorway cut into them as a dark arch.
+            Rect walls { kLeft + 30.0f, kEaves, kRight - kLeft - 60.0f,
+                kHorizon - kEaves };
+            r.rect(walls, theme::bg1);
+            r.rect(Rect { walls.x, walls.y, walls.w, theme::stroke }, theme::stroke2);
+            Rect door { kApexX - 62.0f, kEaves + 34.0f, 124.0f, kHorizon - kEaves - 34.0f };
+            r.roundRect(door, 58.0f, theme::bg0.scaleAlpha(0.85f));
+
+            // The roof: a fan from the apex to the eaves.
+            float step = (kRight - kLeft) / float(kStripes);
+            for (int i = 0; i < kStripes; i++) {
+                float x0 = kLeft + step * float(i);
+                r.trapezoid(kApexY, kApexX, kApexX, kEaves, x0, x0 + step,
+                    (i % 2) == 0 ? theme::accentTint : theme::bg2);
+            }
+
+            // And the scalloped hem along the eaves, which is what says canvas
+            // rather than a striped roof.
+            float bump = step * 0.5f;
+            for (int i = 0; i < kStripes * 2; i++) {
+                float x = kLeft + bump * float(i) + bump * 0.5f;
+                r.circle(x, kEaves, bump * 0.5f,
+                    (i % 2) == 0 ? theme::accent.scaleAlpha(0.5f) : theme::accentTint);
+            }
+        }
+
+        // What the wheel is mounted on, so it is standing at a stall rather
+        // than hanging in the air.
+        void drawStand(Renderer& r) const
+        {
+            float top = kCentreY + kRadius - 20.0f;
+            r.rect(Rect { kCentreX - 11.0f, top, 22.0f, kHorizon - top }, theme::bg2);
+            r.ellipse(kCentreX, kHorizon + 4.0f, 96.0f, 16.0f,
+                theme::bg0.scaleAlpha(0.30f), 0.0f);
+            r.roundRect(Rect { kCentreX - 84.0f, kHorizon - 16.0f, 168.0f, 26.0f },
+                8.0f, theme::bg3);
+        }
 
         static float lanternAngle(int index)
         {
@@ -462,7 +523,7 @@ namespace {
 
         void drawBack(App& app, Renderer& r, const Rect& box)
         {
-            Rect back { box.x + 18.0f, box.y + 18.0f, 42.0f, 42.0f };
+            Rect back { box.right() - 60.0f, box.y + 18.0f, 42.0f, 42.0f };
             app.touchZone(back.inset(-theme::s3, -theme::s3), Zone_Back);
             ui::icon(r, back, ui::Icon::ArrowLeft, theme::fg3, 3.0f);
         }
