@@ -203,6 +203,12 @@ namespace {
         static constexpr float kCabW = 660.0f;
         static constexpr float kCabH = 400.0f;
         static constexpr float kBaseY = 770.0f; // where the foot meets the floor
+        // The board on the wall, named here rather than inside the drawing so
+        // the sconce between it and the machine can be placed from it.
+        static constexpr float kBoardX = 1420.0f;
+        static constexpr float kBoardY = 150.0f;
+        static constexpr float kBoardW = 380.0f;
+        static constexpr float kBoardH = 450.0f;
         static constexpr float kCell = 170.0f;  // one symbol's slot on a reel
         static constexpr float kWinY = 282.0f;  // the window's top
         static constexpr float kWinH = 168.0f;
@@ -430,9 +436,12 @@ namespace {
             for (int i = 0; i < 15; i++)
                 r.circle(60.0f + float(i) * 128.0f, 64.0f, 9.0f, theme::mark);
 
-            // A sconce on either side of the machine: bracket, shade, light.
-            drawSconce(r, 180.0f);
-            drawSconce(r, 1130.0f);
+            // A sconce in the middle of each stretch of bare wall: half way to
+            // the machine on the left, and half way between the machine and the
+            // board on the right. Placed from those edges rather than by eye,
+            // so moving either one takes the lamp with it.
+            drawSconce(r, kCabX * 0.5f);
+            drawSconce(r, (kCabX + kCabW + kBoardX) * 0.5f);
 
             // Carpet: diamonds in two tones, which is what a casino floor is.
             r.gradientRect(Rect { 0.0f, kFloorY, Renderer::DesignWidth,
@@ -620,7 +629,7 @@ namespace {
         // the one number worth knowing, which is how often a triple lands.
         void drawPaytable(Renderer& r) const
         {
-            Rect panel { 1420.0f, 150.0f, 380.0f, 450.0f };
+            Rect panel { kBoardX, kBoardY, kBoardW, kBoardH };
             r.roundRect(panel, theme::r3, theme::bg1);
             r.strokeRect(panel, theme::r3, theme::stroke, theme::stroke2);
             Rect inner = panel.inset(theme::s5, theme::s5);
