@@ -152,8 +152,7 @@ namespace {
             title.color = theme::accent;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(content.x, y,
-                format("%u %s", unsigned(coins), coins == 1 ? "coin" : "coins"), title);
+            ui::coinAmount(r, content.x, y, coins, title);
 
             // Earned and spent, opposite it. Two totals is all the wallet
             // keeps, and it is the only way to see a day has been credited

@@ -803,7 +803,7 @@ namespace {
             std::string line;
             if (m_staked) {
                 line = m_paid > 0
-                    ? format("%u coins, and %u to spend.", unsigned(m_paid),
+                    ? format("%u back, and %u to spend.", unsigned(m_paid),
                           unsigned(Wallet::get().balance()))
                     : format("That coin is gone. %u left.",
                           unsigned(Wallet::get().balance()));

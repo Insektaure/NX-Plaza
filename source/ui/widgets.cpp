@@ -114,6 +114,28 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.strokeRect(body, s * 0.07f, weight, color);
         break;
     }
+    case Icon::Coin: {
+        // A coin stood on its edge and turned a little towards you: a filled
+        // oval, taller than it is wide, which is how a coin has been drawn in
+        // games since they were sprites.
+        //
+        // A rim with a face mark inside it, both in the one colour this is
+        // handed - the shop draws it in amber and the games shelf in grey, so
+        // reaching for a palette colour would be wrong in one of them. The gap
+        // between rim and mark is whatever is behind the icon, which is why it
+        // works on either surface.
+        //
+        // There is no stroked ellipse in the renderer, but a stadium - a rect
+        // whose corner radius is half its width - is straight-sided with
+        // semicircular ends, and at three parts wide to four tall that is a
+        // stroked oval as far as the eye is concerned.
+        float rx = s * 0.26f;
+        float ry = s * 0.36f;
+        r.strokeRect(Rect { cx - rx, cy - ry, rx * 2.0f, ry * 2.0f }, rx,
+            std::max(weight, s * 0.075f), color);
+        r.ellipse(cx, cy, rx * 0.44f, ry * 0.44f, color, 0.0f);
+        break;
+    }
     case Icon::Stack: {
         // Three slabs stacked, each offset a little further than the last: a
         // tower with a lean in it, which is the whole subject.
@@ -641,6 +663,26 @@ void stageGradient(uint32_t cardTheme, Color& top, Color& bottom)
 
     top = Color::hsl(hue, p.stageSaturation, p.stageTopLightness);
     bottom = Color::hsl(hue, p.stageSaturation * 0.8f, p.stageBottomLightness);
+}
+
+float coinAmountWidth(Renderer& r, uint32_t coins, const TextStyle& style)
+{
+    return style.size * 0.95f + style.size * 0.26f
+        + r.measure(format("%u", unsigned(coins)), style);
+}
+
+float coinAmount(Renderer& r, float x, float yTop, uint32_t coins,
+    const TextStyle& style)
+{
+    float mark = style.size * 0.95f;
+    // Centred on the text's own line box, so the coin sits with the digits
+    // rather than on their baseline.
+    float line = r.lineHeight(style);
+    icon(r, Rect { x, yTop + (line - mark) * 0.5f, mark, mark }, Icon::Coin,
+        style.color, std::max(style.size * 0.09f, 2.0f));
+    float textX = x + mark + style.size * 0.26f;
+    r.text(textX, yTop, format("%u", unsigned(coins)), style);
+    return coinAmountWidth(r, coins, style);
 }
 
 void statCard(Renderer& r, const Rect& box, const std::string& value,

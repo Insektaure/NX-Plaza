@@ -705,9 +705,10 @@ namespace {
             TextStyle purse;
             purse.size = theme::textSm;
             purse.color = theme::fg3;
-            r.text(Rect { inner.x, y, inner.w, title.size * theme::leadingTight },
-                format("%u %s", unsigned(coins), coins == 1 ? "coin" : "coins"), purse,
-                Align::Right, VAlign::Middle);
+            float width = ui::coinAmountWidth(r, coins, purse);
+            ui::coinAmount(r, inner.right() - width,
+                y + (title.size * theme::leadingTight - r.lineHeight(purse)) * 0.5f,
+                coins, purse);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;

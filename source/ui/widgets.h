@@ -38,6 +38,7 @@ enum class Icon {
     Flag,
     Runner,
     Stack,
+    Coin,
 };
 
 void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight = 2.5f);
@@ -75,6 +76,19 @@ void pill(Renderer& r, const Rect& box, const std::string& text, Color fg, Color
 
 // The teal "new" flag from the inbox rows.
 void newFlag(Renderer& r, float x, float y);
+
+// An amount of coins: the coin, then the number, as one unit.
+//
+// Everywhere a balance or a payout is shown on its own, so the currency is a
+// thing rather than the word "coins" repeated down the screen. Sentences keep
+// the word - an icon dropped into the middle of a line of prose reads worse
+// than the noun does, and the trophy descriptions are also listed in the
+// README, where an icon cannot be drawn at all.
+//
+// Returns the width drawn, so a caller can right-align by measuring first.
+float coinAmount(Renderer& r, float x, float yTop, uint32_t coins,
+    const TextStyle& style);
+float coinAmountWidth(Renderer& r, uint32_t coins, const TextStyle& style);
 
 // A big number over a caption, as used for "1,284 / people met".
 void statBlock(Renderer& r, const Rect& box, const std::string& value,

@@ -155,9 +155,10 @@ namespace {
             meta.size = theme::textSm;
             meta.color = theme::fg3;
             uint32_t coins = Wallet::get().balance();
-            r.text(Rect { content.x, y, content.w, title.size * theme::leadingTight },
-                format("%u %s", unsigned(coins), coins == 1 ? "coin" : "coins"), meta,
-                Align::Right, VAlign::Middle);
+            float purse = ui::coinAmountWidth(r, coins, meta);
+            ui::coinAmount(r, content.right() - purse,
+                y + (title.size * theme::leadingTight - r.lineHeight(meta)) * 0.5f,
+                coins, meta);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle sub;

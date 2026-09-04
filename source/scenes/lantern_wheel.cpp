@@ -600,12 +600,15 @@ namespace {
             if (m_piece)
                 headline = format("A piece of %s", m_pieceName.c_str());
             else if (m_staked)
-                headline = format("%u coins", unsigned(m_paid));
+                headline.clear(); // the coin and the number, drawn below
             else
                 headline = onPiece ? std::string("The piece lantern")
                                    : format("The %u lantern",
                                          unsigned(kPrize[size_t(m_landed)]));
-            r.text(inner.x, y, r.ellipsize(headline, title, inner.w), title);
+            if (headline.empty())
+                ui::coinAmount(r, inner.x, y, m_paid, title);
+            else
+                r.text(inner.x, y, r.ellipsize(headline, title, inner.w), title);
             y += title.size * theme::leadingSnug + 6.0f;
 
             TextStyle body;
