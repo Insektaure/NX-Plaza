@@ -171,6 +171,12 @@ namespace {
         { "tower_twenty", "Twenty up",
             "Stack twenty floors in the Mii tower.", Tier::Silver,
             [](const TrophyFacts& f) { return f.towerBest >= 20; } },
+        // Five in a row inside six pixels, at a swing that is widening and
+        // quickening the whole time. The only tower trophy about precision
+        // rather than how long you lasted.
+        { "tower_steady", "Steady hands",
+            "Land five floors in a row dead centre.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.towerCentredRun >= 5; } },
         // The signed lean is what makes the tower a game rather than a timing
         // test, and this is the only thing that rewards noticing it.
         { "tower_recovered", "Talked it down",

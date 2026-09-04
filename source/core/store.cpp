@@ -880,6 +880,7 @@ TrophyFacts Store::trophyFacts() const
     f.wheelPieces = score("wheel_pieces");
     f.towerBest = score("tower");
     f.towerCentred = score("tower_centred") != 0;
+    f.towerCentredRun = score("tower_centred_run");
     f.towerRecovered = score("tower_recovered") != 0;
     f.diceWins = score("dice_wins");
     f.diceStreakBest = score("dice_streak_best");

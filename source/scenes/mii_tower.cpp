@@ -240,6 +240,7 @@ namespace {
             m_beatBest = false;
             m_missed = false;
             m_teetered = false;
+            m_centred = 0;
 
             // The ground floor is placed for you, dead centre: the game is
             // what you put on top of it.
@@ -340,8 +341,17 @@ namespace {
             }
 
             // Within six pixels of the shoulders below: worth marking once.
-            if (std::abs(offset) <= kDeadCentre)
+            // Dead centre, and how many of those have come one after another.
+            // The run lives in the scene rather than in the store: it is only
+            // ever compared against the best, and a run that a crash
+            // interrupts was not a run.
+            if (std::abs(offset) <= kDeadCentre) {
                 app.store().setScore("tower_centred", 1);
+                m_centred++;
+                app.store().noteBestScore("tower_centred_run", m_centred);
+            } else {
+                m_centred = 0;
+            }
 
             m_carried.x = m_floors.back().x + offset;
             m_carried.vx = 0.0f;
@@ -656,6 +666,7 @@ namespace {
         bool m_dropping = false;
         bool m_missed = false;
         bool m_teetered = false; // has been within a whisker of going over
+        uint32_t m_centred = 0;  // dead centre drops, one after another
         std::string m_blame;     // who the result plate is about
         uint32_t m_best = 0;
         bool m_beatBest = false;

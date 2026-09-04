@@ -96,7 +96,7 @@ Spending works offline; the totals are checksummed against your console's plaza 
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
-**Trophies.** What this console has done: 68 of them, in bronze, silver,
+**Trophies.** What this console has done: 69 of them, in bronze, silver,
 gold and one platinum for the lot.
 
 Some are meant to be tripped over in the first hour - cross a pass with 
@@ -339,7 +339,7 @@ setting, re-read whenever the app regains focus). The choice is saved in
 
 ## Trophies
 
-All 68 of them, as the app lists them. Nearly every one is worked out from
+All 69 of them, as the app lists them. Nearly every one is worked out from
 your collection, your puzzles and your wallet at the moment the screen draws,
 so it cannot disagree with what actually happened; the three about the plaza
 dash read the best distance that game keeps. None of them pays a coin, and
@@ -372,7 +372,7 @@ none unlocks anything.
 | **Same taste** | Cross somebody carrying something you carry too. |
 | **The strong silent type** | Cross a pass with nothing written on it. |
 
-### Silver (27)
+### Silver (28)
 
 | | |
 | --- | --- |
@@ -401,6 +401,7 @@ none unlocks anything.
 | **A good day at the tables** | Win fifty coins betting in the games tab. |
 | **Twice lucky** | Win two puzzle pieces on the lantern wheel. |
 | **Twenty up** | Stack twenty floors in the Mii tower. |
+| **Steady hands** | Land five floors in a row dead centre. |
 | **Talked it down** | Lean a tower to the edge of going over, and bring it back. |
 | **A good run** | Run five hundred metres in the plaza dash. |
 

@@ -87,6 +87,9 @@ struct TrophyFacts {
     uint32_t towerBest = 0;
     bool towerCentred = false;
     bool towerRecovered = false;
+    // The longest run of dead centre drops, which is the one thing about the
+    // tower that measures precision rather than persistence.
+    uint32_t towerCentredRun = 0;
 
     // Furthest run in the plaza dash, in metres.
     //
