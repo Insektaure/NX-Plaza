@@ -112,7 +112,9 @@ namespace {
         void draw(App& app, Renderer& r) override
         {
             r.clear(theme::bg0);
-            ui::plazaBackdrop(r, 0.0f, kHorizon);
+            // No lamp posts: a row of lit posts behind a ring of lit lanterns
+            // is one glowing circle too many.
+            ui::plazaBackdrop(r, 0.0f, kHorizon, 0.0f);
             ui::plazaGround(r, 0.0f, kHorizon);
             drawTent(r);
             drawStand(r);
@@ -156,12 +158,11 @@ namespace {
         // 330 +/- 240 is 90 to 570, and a label hangs 46 below that, which
         // clears the plate at 672. It used to be a 260px ring centred at 470,
         // whose labels ran 36px into the plate.
-        static constexpr float kHorizon = 640.0f;
+        static constexpr float kHorizon = 600.0f;
         static constexpr float kCentreX = 960.0f;
-        static constexpr float kCentreY = 330.0f;
+        static constexpr float kCentreY = 645.0f;
         static constexpr float kRadius = 240.0f;
         static constexpr float kLampR = 34.0f;
-        static constexpr float kHintRoom = 108.0f; // the strip, plus a gap
         static constexpr float kButton = 76.0f;
 
         // Two and a half seconds of slowing down, then a moment on the answer.
@@ -181,8 +182,8 @@ namespace {
             constexpr float kLeft = 140.0f;
             constexpr float kRight = 640.0f;
             constexpr float kApexX = (kLeft + kRight) * 0.5f;
-            constexpr float kApexY = 250.0f;
-            constexpr float kEaves = 470.0f;
+            constexpr float kApexY = 320.0f;
+            constexpr float kEaves = 455.0f;
             constexpr int kStripes = 8;
 
             // The pennant first, so the roof covers where its pole enters.
@@ -220,12 +221,16 @@ namespace {
         // than hanging in the air.
         void drawStand(Renderer& r) const
         {
+            // Down to a plinth in front of the ground line rather than onto it:
+            // the wheel is nearer the camera than the tent is, so its feet
+            // belong lower on the screen.
+            constexpr float kFloor = 955.0f;
             float top = kCentreY + kRadius - 20.0f;
-            r.rect(Rect { kCentreX - 11.0f, top, 22.0f, kHorizon - top }, theme::bg2);
-            r.ellipse(kCentreX, kHorizon + 4.0f, 96.0f, 16.0f,
+            r.rect(Rect { kCentreX - 11.0f, top, 22.0f, kFloor - top }, theme::bg2);
+            r.ellipse(kCentreX, kFloor + 6.0f, 96.0f, 16.0f,
                 theme::bg0.scaleAlpha(0.30f), 0.0f);
-            r.roundRect(Rect { kCentreX - 84.0f, kHorizon - 16.0f, 168.0f, 26.0f },
-                8.0f, theme::bg3);
+            r.roundRect(Rect { kCentreX - 84.0f, kFloor - 16.0f, 168.0f, 26.0f }, 8.0f,
+                theme::bg3);
         }
 
         static float lanternAngle(int index)
@@ -392,8 +397,8 @@ namespace {
 
         Rect plate(float width, float height) const
         {
-            return Rect { Renderer::DesignWidth * 0.5f - width * 0.5f,
-                Renderer::DesignHeight - kHintRoom - height, width, height };
+            return Rect { Renderer::DesignWidth * 0.5f - width * 0.5f, 30.0f, width,
+                height };
         }
 
         void drawReady(App& app, Renderer& r)
@@ -405,7 +410,7 @@ namespace {
             // 57 of title, two 36px lines of body, a gap and a 76px button
             // row: 230 of interior, which 300 provides. The old plate was 210
             // and drew its body straight through the button.
-            Rect box = plate(1100.0f, 300.0f);
+            Rect box = plate(1100.0f, 280.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s5);
@@ -442,7 +447,7 @@ namespace {
             app.hint("A", "spin");
             app.hint("B", "back");
 
-            Rect box = plate(1100.0f, 300.0f);
+            Rect box = plate(1100.0f, 280.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s5);

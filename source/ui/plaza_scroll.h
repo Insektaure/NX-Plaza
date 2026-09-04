@@ -21,6 +21,10 @@ namespace nxp::ui {
 // The dash goes three times faster, where the same lamps swept a bright
 // pattern across the whole field 2.4 times a second and made people ill, so it
 // asks for them sparser and dimmer.
+//
+// A pitch of zero draws no lamps at all: the lantern wheel wants the plaza's
+// sky and hills behind it and nothing else, because a row of lit posts behind
+// a ring of lit lanterns is one glowing circle too many.
 void plazaBackdrop(Renderer& r, float camera, float horizon, float lampPitch = 340.0f,
     float lampGlow = 0.35f);
 

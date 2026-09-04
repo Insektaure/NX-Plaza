@@ -24,6 +24,9 @@ void plazaBackdrop(Renderer& r, float camera, float horizon, float lampPitch,
     // Lamp posts, half speed, so there is something with an edge to it to
     // measure the motion against. How many and how bright is the caller's
     // business: see the header.
+    if (lampPitch <= 0.0f)
+        return;
+
     float mid = camera * 0.55f;
     int count = int(Renderer::DesignWidth / lampPitch) + 3;
     for (int i = -1; i < count; i++) {
