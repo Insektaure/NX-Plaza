@@ -559,16 +559,22 @@ namespace {
         }
 
         // Every line the machine pays, from the same arrays payout() reads.
+        //
+        // A board on the wall, not a wall of board: this was 640 by 800 - a
+        // third of the screen for seven lines - with 56px symbols and a
+        // paragraph of prose under them. Forty pixel symbols on a 48px pitch
+        // say the same thing in 380 by 450, and what is left of the prose is
+        // the one number worth knowing, which is how often a triple lands.
         void drawPaytable(Renderer& r) const
         {
-            Rect panel { 1220.0f, 100.0f, 640.0f, 800.0f };
-            r.roundRect(panel, theme::r4, theme::bg1);
-            r.strokeRect(panel, theme::r4, theme::stroke, theme::stroke2);
-            Rect inner = panel.inset(theme::s6, theme::s6);
+            Rect panel { 1420.0f, 150.0f, 380.0f, 450.0f };
+            r.roundRect(panel, theme::r3, theme::bg1);
+            r.strokeRect(panel, theme::r3, theme::stroke, theme::stroke2);
+            Rect inner = panel.inset(theme::s5, theme::s5);
             float y = inner.y;
 
-            ui::eyebrow(r, Rect { inner.x, y, inner.w, 30.0f }, "what it pays");
-            y += 44.0f;
+            ui::eyebrow(r, Rect { inner.x, y, inner.w, 28.0f }, "what it pays");
+            y += 40.0f;
 
             int n = symbols();
             TextStyle amount;
@@ -577,6 +583,8 @@ namespace {
             amount.color = theme::fg1;
 
             // Three of a kind, best first.
+            constexpr float kMark = 40.0f;
+            constexpr float kRow = 48.0f;
             int order[Sym_Count] = { Sym_Seven, Sym_Bar, Sym_Bell, Sym_Sun, Sym_Moon };
             for (int slot = 0; slot < Sym_Count; slot++) {
                 int sym = order[slot];
@@ -587,43 +595,40 @@ namespace {
                     continue;
 
                 for (int i = 0; i < 3; i++) {
-                    Rect box { inner.x + float(i) * 62.0f, y, 56.0f, 56.0f };
+                    Rect box { inner.x + float(i) * (kMark + 6.0f), y, kMark, kMark };
                     drawSymbol(r, box, sym, theme::fg2, theme::bg1);
                 }
-                r.text(Rect { inner.x, y, inner.w, 56.0f },
-                    format("%u", unsigned(pays)), amount, Align::Right, VAlign::Middle);
-                y += 66.0f;
+                r.text(Rect { inner.x, y, inner.w, kMark }, format("%u", unsigned(pays)),
+                    amount, Align::Right, VAlign::Middle);
+                y += kRow;
             }
 
-            y += theme::s4;
+            y += theme::s3;
             ui::divider(r, inner.x, y, inner.w);
-            y += theme::s4;
+            y += theme::s3;
 
             TextStyle line;
-            line.size = theme::textBase;
+            line.size = theme::textSm;
             line.color = theme::fg2;
             if (m_five) {
                 r.text(inner.x, y, "Two sevens", line);
                 r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
                     format("%u", unsigned(kTwoSevens)), amount, Align::Right,
                     VAlign::Top);
-                y += line.size * theme::leadingNormal + 8.0f;
+                y += line.size * theme::leadingNormal + 6.0f;
             }
             r.text(inner.x, y, "Any two the same", line);
             r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
                 format("%u", unsigned(kPair)), amount, Align::Right, VAlign::Top);
-            y += line.size * theme::leadingNormal + theme::s5;
+            y += line.size * theme::leadingNormal + theme::s3;
 
             TextStyle note;
-            note.size = theme::textSm;
-            note.color = theme::fg3;
-            note.leading = theme::leadingNormal;
-            r.textWrapped(Rect { inner.x, y, inner.w, 160.0f },
-                m_five ? "Three reels, five symbols: three of a kind about once in "
-                         "twenty-five spins, and something back about half the time."
-                       : "Three reels, three symbols: three of a kind about once in "
-                         "nine spins, and something back four times in five.",
-                note, 4);
+            note.size = theme::textXs;
+            note.color = theme::fg4;
+            note.tracking = theme::trackingWide;
+            r.text(inner.x, y,
+                m_five ? "a triple about every 25 spins" : "a triple about every 9",
+                note);
         }
 
         Rect plate(float width, float height) const
