@@ -18,6 +18,12 @@ namespace {
 
     constexpr float kTau = 6.2831853f;
 
+    // The clown's own two colours. Hardcoded for the same reason the dice are
+    // ivory: a face that changed with the theme would stop reading as a face,
+    // and paint does not follow the light.
+    const Color kGreasepaint = Color::hex(0xF6EFE3);
+    const Color kInk = Color::hex(0x33302B);
+
     uint32_t randomBelow(uint32_t n)
     {
         uint32_t bits = 0;
@@ -117,6 +123,7 @@ namespace {
             ui::plazaBackdrop(r, 0.0f, kHorizon, 0.0f);
             ui::plazaGround(r, 0.0f, kHorizon);
             drawTent(r);
+            drawClown(r);
             drawStand(r);
 
             drawRing(r);
@@ -217,6 +224,80 @@ namespace {
             }
         }
 
+        // Somebody working the stall, over on the right.
+        //
+        // Built the way the Mii figures are - trapezoids for anything that
+        // tapers, circles for anything round, bands for the arms - and dressed
+        // in the app's own two colours rather than circus red and green, which
+        // would be the only red and green in the whole interface.
+        void drawClown(Renderer& r) const
+        {
+            constexpr float x = 1560.0f;
+            constexpr float kFeet = 660.0f;
+
+            r.ellipse(x, kFeet + 8.0f, 74.0f, 13.0f, theme::bg0.scaleAlpha(0.28f),
+                0.0f);
+
+            // Boots, which on a clown are the widest thing about him.
+            r.ellipse(x - 36.0f, kFeet - 6.0f, 48.0f, 15.0f, kInk, 0.0f);
+            r.ellipse(x + 36.0f, kFeet - 6.0f, 48.0f, 15.0f, kInk, 0.0f);
+
+            // Trousers: wider at the ankle than the hip, which is the whole
+            // silhouette.
+            r.trapezoid(560.0f, x - 42.0f, x - 6.0f, kFeet - 12.0f, x - 62.0f,
+                x - 12.0f, theme::teal);
+            r.trapezoid(560.0f, x + 6.0f, x + 42.0f, kFeet - 12.0f, x + 12.0f,
+                x + 62.0f, theme::teal);
+
+            // Body, narrow at the shoulders and wide at the hips.
+            r.trapezoid(470.0f, x - 34.0f, x + 34.0f, 562.0f, x - 52.0f, x + 52.0f,
+                theme::teal);
+            r.circle(x, 498.0f, 8.0f, theme::accent);
+            r.circle(x, 528.0f, 8.0f, theme::accent);
+
+            // Arms: one up, one down, as bands with a disc at each end - the
+            // same way the runner icon is drawn.
+            arm(r, x - 32.0f, 486.0f, x - 100.0f, 446.0f);
+            arm(r, x + 32.0f, 486.0f, x + 96.0f, 516.0f);
+
+            // A collar of pompoms, then the head over the top of it.
+            for (int i = -2; i <= 2; i++)
+                r.circle(x + float(i) * 21.0f, 466.0f, 13.0f, theme::accent);
+
+            r.circle(x, 430.0f, 35.0f, kGreasepaint);
+            r.circle(x - 40.0f, 426.0f, 16.0f, theme::teal);
+            r.circle(x + 40.0f, 426.0f, 16.0f, theme::teal);
+            r.circle(x - 13.0f, 422.0f, 4.5f, kInk);
+            r.circle(x + 13.0f, 422.0f, 4.5f, kInk);
+            r.circle(x, 440.0f, 10.0f, theme::accent);
+            // A grin, as three discs along an arc rather than a curve the
+            // renderer cannot draw.
+            r.circle(x - 11.0f, 452.0f, 3.5f, kInk);
+            r.circle(x, 456.0f, 3.5f, kInk);
+            r.circle(x + 11.0f, 452.0f, 3.5f, kInk);
+
+            // Cone hat and its pompom.
+            r.trapezoid(352.0f, x - 4.0f, x + 4.0f, 404.0f, x - 32.0f, x + 32.0f,
+                theme::accent);
+            r.circle(x, 348.0f, 11.0f, theme::teal);
+        }
+
+        static void arm(Renderer& r, float x1, float y1, float x2, float y2)
+        {
+            float dx = x2 - x1;
+            float dy = y2 - y1;
+            float len = std::sqrt(dx * dx + dy * dy);
+            if (len < 1e-4f)
+                return;
+            float nx = -dy / len * 7.0f;
+            float ny = dx / len * 7.0f;
+            const float corners[8] = { x1 + nx, y1 + ny, x2 + nx, y2 + ny, x2 - nx,
+                y2 - ny, x1 - nx, y1 - ny };
+            r.band(corners, theme::teal);
+            r.circle(x1, y1, 7.0f, theme::teal);
+            r.circle(x2, y2, 9.0f, kGreasepaint);
+        }
+
         // What the wheel is mounted on, so it is standing at a stall rather
         // than hanging in the air.
         void drawStand(Renderer& r) const
@@ -285,6 +366,12 @@ namespace {
             m_phase = Phase_Done;
             if (m_landed < 0)
                 return;
+
+            // Where it stopped, which is what the needle points at from now
+            // on. Without this, needleAngle() fell back to m_angle - still the
+            // angle it was resting at before the spin - and the needle snapped
+            // back to the top the instant the result appeared.
+            m_angle = lanternAngle(m_landed);
 
             // Watched for nothing: the needle still lands somewhere and the
             // plate still says where, but nothing is handed over. A free spin
