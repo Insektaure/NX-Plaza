@@ -236,6 +236,10 @@ public:
     // True when this beat what was there, which is what a screen wants to
     // know to say "a new best".
     bool noteBestScore(const std::string& game, uint32_t score);
+    // Sets it outright, for the numbers that are not records: a counter that
+    // goes up by one, or a streak that goes back to nothing on a loss. Zero
+    // simply drops the entry, and reads back as zero.
+    void setScore(const std::string& game, uint32_t score);
 
     // Favourites. A favourite is kept when the collection prunes at its cap,
     // which is the point of it: the people worth keeping are the ones you said

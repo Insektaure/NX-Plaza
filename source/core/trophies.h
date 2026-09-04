@@ -64,11 +64,17 @@ struct TrophyFacts {
     uint32_t daysCheckedIn = 0; // from the wallet: ten coins a day
     uint32_t coinsSpent = 0;
     uint32_t balance = 0;
-    // Coins won at the races. The one thing a race writes down, and the only
-    // reason there can be trophies for it at all: a free race leaves no trace
-    // anywhere, so anything about races run would have to be counted rather
-    // than derived.
+    // Coins won at the games that pay - the race and the dice duel share the
+    // one total, so a trophy about winnings must not name one of them.
     uint32_t coinsWon = 0;
+    // The dice duel keeps three things, for the same reason and on the same
+    // terms as the distance below: duels won, the best run of wins, and
+    // whether both dice have ever come up six - one duel in thirty-six, and a
+    // draw, so it is a trophy for the coincidence and not for the outcome.
+    uint32_t diceWins = 0;
+    uint32_t diceStreakBest = 0;
+    bool diceSixAll = false;
+
     // Furthest run in the plaza dash, in metres.
     //
     // The one fact here that the app counted rather than worked out. A score

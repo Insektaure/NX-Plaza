@@ -15,6 +15,37 @@ namespace nxp {
 
 namespace {
 
+    // The shelf, in one place.
+    struct Game {
+        ui::Icon icon;
+        const char* name;
+        const char* body;
+        std::unique_ptr<Scene> (*open)();
+        const char* score; // key into the best-score table, or null
+    };
+
+    const Game kShelf[] = {
+        { ui::Icon::Flag, "The Mii race",
+            "Three of the people you have crossed, against your own Mii, and "
+            "nobody is faster than anybody.\n"
+            "Watch for nothing, bet a coin for three back, or call first and "
+            "second for eleven.",
+            &makeMiiRaceScene, nullptr },
+        { ui::Icon::Dice, "The dice duel",
+            "One roll each against somebody you have crossed, and the highest "
+            "takes it.\n"
+            "Roll for nothing, or bet two coins for three back - and a draw "
+            "hands your two back.",
+            &makeDiceDuelScene, nullptr },
+        { ui::Icon::Runner, "Plaza dash",
+            "Your own Mii running through the plaza, jumping what the market "
+            "leaves in the way.\n"
+            "It gets quicker. Nothing staked, nothing won - only how far you "
+            "got.",
+            &makePlazaDashScene, "dash" },
+    };
+    constexpr int kGames = int(sizeof(kShelf) / sizeof(kShelf[0]));
+
     // Things to play with.
     class GamesScene final : public Scene {
     public:
@@ -96,16 +127,13 @@ namespace {
         }
 
     private:
-        static constexpr int kGames = 2;
         static constexpr float kRowHeight = 148.0f;
         static constexpr float kIconBox = 76.0f;
 
         void open(App& app, int index)
         {
-            if (index == 0)
-                app.pushOverlay(makeMiiRaceScene());
-            else if (index == 1)
-                app.pushOverlay(makePlazaDashScene());
+            if (index >= 0 && index < kGames)
+                app.pushOverlay(kShelf[size_t(index)].open());
         }
 
         void drawRow(App& app, Renderer& r, const Rect& box, int index)
@@ -117,28 +145,7 @@ namespace {
                 : 0.0f;
             ui::card(r, box, focus, focused ? theme::bg2 : theme::bg1, theme::r3);
 
-            struct Entry {
-                ui::Icon icon;
-                const char* name;
-                const char* body;
-            };
-            // The \n is honoured: layoutWrapped turns it into a line break and
-            // counts it against the two lines a row has. What each game *is*
-            // goes on the first line, what you *do* on the second, so the two
-            // rows read down the same way.
-            const Entry kEntries[kGames] = {
-                { ui::Icon::Flag, "The Mii race",
-                    "Three of the people you have crossed, against your own Mii, "
-                    "and nobody is faster than anybody.\n"
-                    "Watch for nothing, bet a coin for three back, or call first "
-                    "and second for eleven." },
-                { ui::Icon::Runner, "Plaza dash",
-                    "Your own Mii running through the plaza, jumping what the "
-                    "market leaves in the way.\n"
-                    "It gets quicker. Nothing staked, nothing won - only how far "
-                    "you got." },
-            };
-            const Entry& entry = kEntries[size_t(index)];
+            const Game& entry = kShelf[size_t(index)];
 
             Rect inner = box.inset(theme::s6, theme::s5);
             Rect icon { inner.x, inner.centerY() - kIconBox * 0.5f, kIconBox, kIconBox };
@@ -157,7 +164,7 @@ namespace {
             r.text(textX, inner.y, entry.name, name);
 
             // The record, opposite the name, for a game that keeps one.
-            uint32_t best = index == 1 ? app.store().bestScore("dash") : 0u;
+            uint32_t best = entry.score ? app.store().bestScore(entry.score) : 0u;
             if (best > 0) {
                 TextStyle meta;
                 meta.size = theme::textSm;

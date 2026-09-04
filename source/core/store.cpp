@@ -870,11 +870,16 @@ TrophyFacts Store::trophyFacts() const
         }
     }
 
-    // The lock is recursive, so the accessor would work here too - read
-    // straight from the map rather than take it twice.
-    auto dash = m_bestScores.find("dash");
-    if (dash != m_bestScores.end())
-        f.dashBest = dash->second;
+    // The lock is recursive, so the accessors would work here too - read
+    // straight from the map rather than take it a dozen times.
+    auto score = [this](const char* key) -> uint32_t {
+        auto it = m_bestScores.find(key);
+        return it == m_bestScores.end() ? 0u : it->second;
+    };
+    f.dashBest = score("dash");
+    f.diceWins = score("dice_wins");
+    f.diceStreakBest = score("dice_streak_best");
+    f.diceSixAll = score("dice_six_all") != 0;
     // What makes a pass worth crossing: a name, something to say, and
     // something to hand over.
     f.carrying = static_cast<uint32_t>(m_pass.carrying.size());
@@ -908,6 +913,21 @@ bool Store::noteBestScore(const std::string& game, uint32_t score)
     m_profileDirty = true;
     LOG("scores: %s best is %u", game.c_str(), unsigned(score));
     return true;
+}
+
+void Store::setScore(const std::string& game, uint32_t score)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (game.empty())
+        return;
+    auto it = m_bestScores.find(game);
+    if (it != m_bestScores.end() && it->second == score)
+        return;
+    if (score == 0)
+        m_bestScores.erase(game);
+    else
+        m_bestScores[game] = score;
+    m_profileDirty = true;
 }
 
 uint64_t Store::trophyDate(const std::string& id) const

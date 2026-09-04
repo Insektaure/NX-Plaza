@@ -68,6 +68,8 @@ std::unique_ptr<Scene> makeGamesScene();
 std::unique_ptr<Scene> makeMiiRaceScene();
 // Your own Mii, running, jumping what the market leaves in the way.
 std::unique_ptr<Scene> makePlazaDashScene();
+// One die each against somebody you have crossed, highest roll takes it.
+std::unique_ptr<Scene> makeDiceDuelScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

@@ -43,8 +43,17 @@ namespace {
             "Buy something in the shop.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.coinsSpent >= 50; } },
         { "first_winnings", "Beginner's luck",
-            "Win a bet at the Mii race.", Tier::Bronze,
+            "Win a bet in the games tab.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.coinsWon >= 3; } },
+        { "dice_first_win", "First blood",
+            "Win a duel at the dice.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.diceWins >= 1; } },
+        // One duel in thirty-six, and the least consequential thing that can
+        // happen in one: two sixes, a draw, and your stake handed back. Worth
+        // marking for the coincidence rather than the outcome.
+        { "dice_six_all", "Six all",
+            "Roll a six against a six.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.diceSixAll; } },
         { "dash_hundred", "Off the mark",
             "Run a hundred metres in the plaza dash.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.dashBest >= 100; } },
@@ -137,8 +146,13 @@ namespace {
         { "saving_up", "Saving up",
             "Have five hundred coins at once.", Tier::Silver,
             [](const TrophyFacts& f) { return f.balance >= 500; } },
-        { "good_day_racing", "A good day at the races",
-            "Win fifty coins at the Mii race.", Tier::Silver,
+        // Five wins on the trot is a little over one per cent, so this is
+        // eighty duels or so of asking.
+        { "dice_run_five", "On a run",
+            "Win five duels at the dice in a row.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.diceStreakBest >= 5; } },
+        { "good_day_racing", "A good day at the tables",
+            "Win fifty coins betting in the games tab.", Tier::Silver,
             [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
         // Half a kilometre is a little over half a minute of running and about
         // twenty-three things jumped, at a pace that never stops climbing.
@@ -192,11 +206,16 @@ namespace {
         { "dash_kilometre", "A kilometre of plaza",
             "Run a thousand metres in the plaza dash.", Tier::Gold,
             [](const TrophyFacts& f) { return f.dashBest >= 1000; } },
+        // Seven is three in a thousand: hundreds of duels, and the streak is
+        // kept across visits so it can be built over weeks.
+        { "dice_run_seven", "Seven in a row",
+            "Win seven duels at the dice in a row.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.diceStreakBest >= 7; } },
         // Two hundred won means about two hundred and seventy raced, since the
         // odds are against the player - which is twenty-seven days of coins
         // spent at the track.
         { "bookmakers_problem", "The bookmaker's problem",
-            "Win two hundred coins at the Mii race.", Tier::Gold,
+            "Win two hundred coins betting in the games tab.", Tier::Gold,
             [](const TrophyFacts& f) { return f.coinsWon >= 200; } },
         { "fifty_donors", "Fifty contributors",
             "Take pieces from fifty different people.", Tier::Gold,

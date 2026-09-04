@@ -64,9 +64,14 @@ drawn before the countdown ends. Watching costs nothing; a coin on your own Mii
 gets 3 back, and calling first and second in order gets 11. The odds are honest and they are against you, so the
 races are a way to spend coins and not a way to make them.
 
-The second is Plaza dash: your own Mii runs through the same plaza, **A**
-jumps, and it gets quicker until you hit something. Nothing is staked and
-nothing is won - it keeps a best distance and that is all.
+The dice duel is one roll each against somebody you have crossed: the dice fly
+in and bounce, faces flickering, and the highest takes it. Roll for nothing, or
+bet two coins for three back - a draw hands your two straight back.
+
+Plaza dash is the third: your own Mii runs through the same plaza, **A** jumps
+and holding it jumps higher, and it gets quicker until you hit something.
+Nothing is staked and nothing is won - it keeps a best distance and that is
+all.
 
 |                                                                            | |
 |----------------------------------------------------------------------------| --- |
@@ -81,7 +86,7 @@ Spending works offline; the totals are checksummed against your console's plaza 
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
-**Trophies.** What this console has done: 56 of them, in bronze, silver,
+**Trophies.** What this console has done: 60 of them, in bronze, silver,
 gold and one platinum for the lot.
 
 Some are meant to be tripped over in the first hour - cross a pass with 
@@ -324,13 +329,13 @@ setting, re-read whenever the app regains focus). The choice is saved in
 
 ## Trophies
 
-All 56 of them, as the app lists them. Nearly every one is worked out from
+All 60 of them, as the app lists them. Nearly every one is worked out from
 your collection, your puzzles and your wallet at the moment the screen draws,
 so it cannot disagree with what actually happened; the three about the plaza
-dash read the best distance that game keeps.\
-None of them pays a coin, and none unlocks anything.
+dash read the best distance that game keeps. None of them pays a coin, and
+none unlocks anything.
 
-### Bronze (17)
+### Bronze (19)
 
 | | |
 | --- | --- |
@@ -343,7 +348,9 @@ None of them pays a coin, and none unlocks anything.
 | **A week of it** | Open the app on seven different days. |
 | **Two down** | Finish two puzzles. |
 | **First purchase** | Buy something in the shop. |
-| **Beginner's luck** | Win a bet at the Mii race. |
+| **Beginner's luck** | Win a bet in the games tab. |
+| **First blood** | Win a duel at the dice. |
+| **Six all** | Roll a six against a six. |
 | **Off the mark** | Run a hundred metres in the plaza dash. |
 | **Your own face** | Make a face of your own in the Mii maker. |
 | **Redecorated** | Give your card a look of your own. |
@@ -352,7 +359,7 @@ None of them pays a coin, and none unlocks anything.
 | **Same taste** | Cross somebody carrying something you carry too. |
 | **The strong silent type** | Cross a pass with nothing written on it. |
 
-### Silver (23)
+### Silver (24)
 
 | | |
 | --- | --- |
@@ -377,10 +384,11 @@ None of them pays a coin, and none unlocks anything.
 | **Somebody with a life** | Cross a pass carrying a thousand hours in one title. |
 | **The shop's best customer** | Spend five hundred coins. |
 | **Saving up** | Have five hundred coins at once. |
-| **A good day at the races** | Win fifty coins at the Mii race. |
+| **On a run** | Win five duels at the dice in a row. |
+| **A good day at the tables** | Win fifty coins betting in the games tab. |
 | **A good run** | Run five hundred metres in the plaza dash. |
 
-### Gold (15)
+### Gold (16)
 
 | | |
 | --- | --- |
@@ -397,7 +405,8 @@ None of them pays a coin, and none unlocks anything.
 | **Every picture** | Finish every puzzle. |
 | **By hand alone** | Finish a puzzle without buying a single piece. |
 | **A kilometre of plaza** | Run a thousand metres in the plaza dash. |
-| **The bookmaker's problem** | Win two hundred coins at the Mii race. |
+| **Seven in a row** | Win seven duels at the dice in a row. |
+| **The bookmaker's problem** | Win two hundred coins betting in the games tab. |
 | **Fifty contributors** | Take pieces from fifty different people. |
 
 ### Platinum (1)
