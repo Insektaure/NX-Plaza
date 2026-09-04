@@ -325,13 +325,15 @@ namespace {
             float h = height(t);
             int face = faceAt(t, settled);
 
-            // Flies in from off to the right and eases into place, so the dice
-            // arrive rather than appearing.
+            // Thrown from whoever owns it: yours comes from your own Mii on
+            // the left and theirs from theirs on the right, so the two dice
+            // converge on the middle.
             float x = restX;
             if (m_phase == Phase_Roll && t < kFlyIn) {
                 float u = std::max(t, 0.0f) / kFlyIn;
                 float ease = 1.0f - (1.0f - u) * (1.0f - u) * (1.0f - u);
-                x = restX + 520.0f * (1.0f - ease);
+                float hand = mine ? kMyX : kTheirX;
+                x = restX + (hand - restX) * (1.0f - ease);
             }
 
             // Squashed flat on contact, stretched at the top of a hop: the
