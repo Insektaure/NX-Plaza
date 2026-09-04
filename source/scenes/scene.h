@@ -74,6 +74,8 @@ std::unique_ptr<Scene> makeDiceDuelScene();
 std::unique_ptr<Scene> makeMiiTowerScene();
 // Twelve lanterns, a needle, and two of them are a puzzle piece.
 std::unique_ptr<Scene> makeLanternWheelScene();
+// Three reels, in a three symbol machine and a five symbol one.
+std::unique_ptr<Scene> makeSlotsScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

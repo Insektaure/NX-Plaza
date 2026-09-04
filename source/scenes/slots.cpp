@@ -1,0 +1,704 @@
+#include "app.h"
+#include "core/store.h"
+#include "core/util.h"
+#include "core/wallet.h"
+#include "scenes/scene.h"
+#include "ui/theme.h"
+#include "ui/widgets.h"
+
+#include <algorithm>
+#include <cmath>
+#include <string>
+
+namespace nxp {
+
+namespace {
+
+    // One thick stroke at any angle: a band with a disc at each end, the way
+    // the star and the runner icons are built.
+    void stroke(Renderer& r, float x1, float y1, float x2, float y2, float thick,
+        Color ink)
+    {
+        float dx = x2 - x1;
+        float dy = y2 - y1;
+        float len = std::sqrt(dx * dx + dy * dy);
+        if (len < 1e-4f)
+            return;
+        float nx = -dy / len * thick * 0.5f;
+        float ny = dx / len * thick * 0.5f;
+        const float corners[8] = { x1 + nx, y1 + ny, x2 + nx, y2 + ny, x2 - nx,
+            y2 - ny, x1 - nx, y1 - ny };
+        r.band(corners, ink);
+        r.circle(x1, y1, thick * 0.5f, ink);
+        r.circle(x2, y2, thick * 0.5f, ink);
+    }
+
+    uint32_t randomBelow(uint32_t n)
+    {
+        uint32_t bits = 0;
+        randomBytes(&bits, sizeof(bits));
+        return n == 0 ? 0 : bits % n;
+    }
+
+    // A one armed bandit, in two machines.
+    //
+    // Three reels either way. The three symbol machine pays small and often -
+    // a triple every ninth spin - and the five symbol one pays rarely and big,
+    // a triple every twenty-fifth. Same five coin stake for both, so the choice
+    // is what kind of evening you want rather than what you can afford:
+    //
+    //     three symbols: (40 + 25 + 15 + 18*2) / 27  = 4.30 against 5
+    //     five symbols:  (120 + 80 + 50 + 30 + 30
+    //                     + 12*10 + 48*2) / 125      = 4.21 against 5
+    //
+    // which is fourteen and sixteen per cent to the plaza. The paytable down
+    // the right is drawn from the very arrays the payout is read out of, so the
+    // board on the wall cannot promise something the machine does not pay.
+    //
+    // As everywhere else, the reels are decided before they move: three numbers
+    // out of randomBytes, and the spin is played backwards from them.
+    class SlotsScene final : public Scene {
+    public:
+        enum Zone : int {
+            Zone_Spin = Touch_SceneBase,
+            Zone_Stake,
+            Zone_Machine,
+            Zone_Back,
+        };
+
+        bool coversChrome() const override { return true; }
+
+        // Two and a bit seconds with coins already in the slot.
+        bool blocksExit() const override { return m_phase == Phase_Spin; }
+
+        void onEnter(App& app) override
+        {
+            (void)app;
+            m_phase = Phase_Ready;
+            m_five = false;
+            m_staked = false;
+            m_paid = 0;
+            m_button = 0;
+            m_clock = 0.0f;
+            for (int i = 0; i < kReels; i++) {
+                m_reel[i] = int(randomBelow(uint32_t(symbols())));
+                m_pos[i] = float(m_reel[i]);
+                m_from[i] = m_pos[i];
+                m_sweep[i] = 0.0f;
+            }
+        }
+
+        void update(App& app, const Input& input, float dt) override
+        {
+            m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
+            m_clock += dt;
+
+            if (m_phase == Phase_Spin) {
+                for (int i = 0; i < kReels; i++) {
+                    float u = std::min(m_clock / stopAt(i), 1.0f);
+                    float back = 1.0f - u;
+                    m_pos[i] = m_from[i] + m_sweep[i] * (1.0f - back * back * back);
+                }
+                if (m_clock >= stopAt(kReels - 1) + kHold)
+                    settle(app);
+                return;
+            }
+
+            if (Wallet::get().balance() < kStake)
+                m_button = 0;
+
+            TouchTarget tap;
+            if (app.takeTap(tap)) {
+                if (tap.is(Zone_Back)) {
+                    app.popOverlay();
+                    return;
+                }
+                if (tap.is(Zone_Machine)) {
+                    switchMachine();
+                } else if (tap.is(Zone_Spin)) {
+                    m_button = 0;
+                    begin(app, false);
+                } else if (tap.is(Zone_Stake)) {
+                    m_button = 1;
+                    begin(app, true);
+                }
+                return;
+            }
+            if (input.back()) {
+                app.popOverlay();
+                return;
+            }
+            if (input.pressed(HidNpadButton_X)) {
+                switchMachine();
+                return;
+            }
+            if (input.navLeft)
+                m_button = 0;
+            if (input.navRight && Wallet::get().balance() >= kStake)
+                m_button = 1;
+            if (input.accept())
+                begin(app, m_button == 1);
+        }
+
+        void draw(App& app, Renderer& r) override
+        {
+            r.clear(theme::bg0);
+            drawRoom(r);
+            drawCabinet(app, r);
+            drawPaytable(r);
+
+            switch (m_phase) {
+            case Phase_Ready:
+                drawReady(app, r);
+                break;
+            case Phase_Spin:
+                app.hint("B", "-");
+                break;
+            case Phase_Done:
+                drawResult(app, r);
+                break;
+            }
+        }
+
+    private:
+        enum Phase : int {
+            Phase_Ready = 0,
+            Phase_Spin,
+            Phase_Done,
+        };
+
+        // Reel order, and the order the paytable lists them in.
+        enum Symbol : int {
+            Sym_Sun = 0,
+            Sym_Moon,
+            Sym_Bell,
+            Sym_Seven,
+            Sym_Bar,
+            Sym_Count,
+        };
+
+        static constexpr int kReels = 3;
+        static constexpr uint32_t kStake = 5;
+        // What three of a kind pays, per symbol, per machine. The three symbol
+        // machine only ever uses the first three.
+        static constexpr uint32_t kTripleThree[Sym_Count] = { 40, 25, 15, 0, 0 };
+        static constexpr uint32_t kTripleFive[Sym_Count] = { 30, 30, 50, 120, 80 };
+        static constexpr uint32_t kPair = 2;
+        // Two sevens and nothing else: the near miss with its own line, and the
+        // detail that makes a five symbol machine feel like a machine.
+        static constexpr uint32_t kTwoSevens = 10;
+
+        // Reels stop left to right, a third of a second apart.
+        static constexpr float kStop = 1.0f;
+        static constexpr float kStagger = 0.35f;
+        static constexpr float kHold = 0.6f;
+        static constexpr float kTurns = 6.0f; // whole times round before it lands
+
+        // The cabinet stands on the floor line at 700 rather than hovering
+        // above it: 180 + 520 is exactly 700.
+        static constexpr float kCabX = 380.0f;
+        static constexpr float kCabY = 180.0f;
+        static constexpr float kCabW = 660.0f;
+        static constexpr float kCabH = 520.0f;
+        static constexpr float kCell = 176.0f; // one symbol's slot on a reel
+        static constexpr float kWinY = 360.0f; // the window's top
+        static constexpr float kWinH = 180.0f;
+
+        int symbols() const { return m_five ? Sym_Count : 3; }
+
+        const uint32_t* triples() const
+        {
+            return m_five ? kTripleFive : kTripleThree;
+        }
+
+        float stopAt(int reel) const { return kStop + kStagger * float(reel); }
+
+        void switchMachine()
+        {
+            m_five = !m_five;
+            m_phase = Phase_Ready;
+            m_paid = 0;
+            m_staked = false;
+            // The old reels may name symbols this machine does not have.
+            for (int i = 0; i < kReels; i++) {
+                m_reel[i] = int(randomBelow(uint32_t(symbols())));
+                m_pos[i] = float(m_reel[i]);
+                m_from[i] = m_pos[i];
+            }
+        }
+
+        // What a line pays, gross. The only place the rules live.
+        uint32_t payout(int a, int b, int c) const
+        {
+            if (a == b && b == c)
+                return triples()[size_t(a)];
+            if (m_five) {
+                int sevens = (a == Sym_Seven) + (b == Sym_Seven) + (c == Sym_Seven);
+                if (sevens == 2)
+                    return kTwoSevens;
+            }
+            if (a == b || b == c || a == c)
+                return kPair;
+            return 0;
+        }
+
+        uint32_t landedPayout() const
+        {
+            return payout(m_reel[0], m_reel[1], m_reel[2]);
+        }
+
+        void begin(App& app, bool staked)
+        {
+            Wallet& wallet = Wallet::get();
+            if (staked) {
+                if (!wallet.spend(kStake)) {
+                    app.toast(format("%u coins a spin", unsigned(kStake)),
+                        "Ten arrive on each new day you open the app.");
+                    return;
+                }
+                // On the card before the reels move, so walking out on a bad
+                // spin still costs the stake.
+                wallet.flush();
+            }
+            m_staked = staked;
+            m_paid = 0;
+            m_button = 0;
+
+            int n = symbols();
+            for (int i = 0; i < kReels; i++) {
+                m_reel[i] = int(randomBelow(uint32_t(n)));
+                m_from[i] = m_pos[i];
+                // Six times round, then however far on this reel has to travel
+                // to bring its own symbol to the window.
+                float target = float(m_reel[i]);
+                float delta = std::fmod(target - m_from[i], float(n));
+                if (delta < 0.0f)
+                    delta += float(n);
+                m_sweep[i] = kTurns * float(n) + delta;
+            }
+            m_phase = Phase_Spin;
+            m_clock = 0.0f;
+        }
+
+        void settle(App& app)
+        {
+            m_phase = Phase_Done;
+            for (int i = 0; i < kReels; i++)
+                m_pos[i] = float(m_reel[i]);
+
+            if (!m_staked)
+                return;
+            uint32_t won = landedPayout();
+            if (won == 0)
+                return;
+            Wallet& wallet = Wallet::get();
+            wallet.award(won);
+            wallet.flush();
+            m_paid = won;
+            (void)app;
+        }
+
+        // ----------------------------------------------------------- symbols
+
+        // Drawn here rather than as icons because the moon is a crescent, and a
+        // crescent is a disc with a bite taken out of it in whatever colour is
+        // behind it - which only the caller knows.
+        void drawSymbol(Renderer& r, const Rect& box, int symbol, Color ink,
+            Color behind) const
+        {
+            switch (symbol) {
+            case Sym_Sun:
+                ui::icon(r, box, ui::Icon::Sun, ink, 3.0f);
+                break;
+            case Sym_Moon: {
+                float radius = std::min(box.w, box.h) * 0.34f;
+                r.circle(box.centerX(), box.centerY(), radius, ink);
+                r.circle(box.centerX() + radius * 0.46f,
+                    box.centerY() - radius * 0.16f, radius * 0.82f, behind);
+                break;
+            }
+            case Sym_Bell:
+                ui::icon(r, box, ui::Icon::Bell, ink, 3.0f);
+                break;
+            case Sym_Seven: {
+                // Drawn, not typed: a slot seven is a shape - a thick top rail
+                // and a diagonal falling off it - and a letter set in the
+                // interface font would be the one symbol on the reel that came
+                // from a different world than the others.
+                float s = std::min(box.w, box.h);
+                float cx = box.centerX();
+                float cy = box.centerY();
+                float thick = s * 0.15f;
+                stroke(r, cx - s * 0.24f, cy - s * 0.28f, cx + s * 0.26f,
+                    cy - s * 0.28f, thick, ink);
+                stroke(r, cx + s * 0.24f, cy - s * 0.26f, cx - s * 0.04f,
+                    cy + s * 0.32f, thick, ink);
+                break;
+            }
+            case Sym_Bar:
+            default: {
+                // The triple bar, which is what a bar is on a reel.
+                float s = std::min(box.w, box.h);
+                float w = s * 0.62f;
+                float h = s * 0.15f;
+                float gap = s * 0.07f;
+                for (int i = -1; i <= 1; i++) {
+                    r.roundRect(Rect { box.centerX() - w * 0.5f,
+                                   box.centerY() + float(i) * (h + gap) - h * 0.5f, w,
+                                   h },
+                        h * 0.34f, ink);
+                }
+                break;
+            }
+            }
+        }
+
+        static const char* symbolName(int symbol)
+        {
+            switch (symbol) {
+            case Sym_Sun:
+                return "suns";
+            case Sym_Moon:
+                return "moons";
+            case Sym_Bell:
+                return "bells";
+            case Sym_Seven:
+                return "sevens";
+            default:
+                return "bars";
+            }
+        }
+
+        // ---------------------------------------------------------- painting
+
+        void drawRoom(Renderer& r) const
+        {
+            // A room rather than a plaza: a warm wall, a dado, and a patterned
+            // floor. Nothing here is art, and the palette does the work so it
+            // follows the theme like everything else.
+            r.gradientRect(Rect { 0.0f, 0.0f, Renderer::DesignWidth, 700.0f },
+                theme::bg1, theme::bg0);
+            r.rect(Rect { 0.0f, 694.0f, Renderer::DesignWidth, 6.0f }, theme::accentTint);
+            r.gradientRect(Rect { 0.0f, 700.0f, Renderer::DesignWidth,
+                               Renderer::DesignHeight - 700.0f },
+                theme::bg2, theme::bg1);
+
+            for (int row = 0; row < 3; row++) {
+                float y = 760.0f + float(row) * 92.0f;
+                for (int i = 0; i < 14; i++) {
+                    float x = 60.0f + float(i) * 140.0f + (row % 2 ? 70.0f : 0.0f);
+                    r.ellipse(x, y, 26.0f, 12.0f, theme::bg3.scaleAlpha(0.7f), 0.0f);
+                }
+            }
+
+            // And the light above the machine.
+            r.glow(Rect { kCabX + kCabW * 0.5f - 420.0f, -140.0f, 840.0f, 700.0f },
+                theme::accentGlow.scaleAlpha(0.18f), 2.0f);
+        }
+
+        void drawCabinet(App& app, Renderer& r)
+        {
+            Rect cab { kCabX, kCabY, kCabW, kCabH };
+            r.roundRect(cab, theme::r5, theme::bg2);
+            r.strokeRect(cab, theme::r5, theme::stroke, theme::stroke3);
+            app.touchZone(Rect { cab.x, cab.y, cab.w, 110.0f }, Zone_Machine);
+
+            // The marquee, which is also where the machine says which one it is.
+            Rect sign { cab.x + 40.0f, cab.y + 26.0f, cab.w - 80.0f, 82.0f };
+            r.roundRect(sign, theme::r3, theme::bg0);
+            TextStyle name;
+            name.size = theme::textLg;
+            name.weight = FontWeight::Bold;
+            name.color = theme::accent;
+            name.tracking = theme::trackingWide;
+            r.text(sign, m_five ? "FIVE SYMBOLS" : "THREE SYMBOLS", name, Align::Center,
+                VAlign::Middle);
+
+            // The window, and the three reels turning behind it.
+            Rect glass { cab.x + 46.0f, kWinY, cab.w - 92.0f, kWinH };
+            r.roundRect(glass, theme::r2, theme::bg0);
+            float cell = (glass.w - 24.0f) / 3.0f;
+            for (int i = 0; i < kReels; i++) {
+                Rect slot { glass.x + 12.0f + float(i) * cell, glass.y, cell - 8.0f,
+                    glass.h };
+                drawReel(r, slot, i);
+            }
+            r.strokeRect(glass, theme::r2, 3.0f, theme::accentTint);
+
+            // A coin tray, and the lever down the side.
+            r.roundRect(Rect { cab.x + 120.0f, cab.y + kCabH - 96.0f, cab.w - 240.0f,
+                           54.0f },
+                theme::r2, theme::bg0.scaleAlpha(0.6f));
+            drawLever(r, cab);
+        }
+
+        void drawReel(Renderer& r, const Rect& slot, int reel) const
+        {
+            int n = symbols();
+            float p = m_pos[reel];
+            int base = int(std::floor(p));
+            float frac = p - float(base);
+
+            r.pushClipVertical(slot);
+            for (int k = -2; k <= 2; k++) {
+                int idx = ((base + k) % n + n) % n;
+                float y = slot.centerY() + (float(k) - frac) * kCell;
+                Rect box { slot.x, y - 60.0f, slot.w, 120.0f };
+                if (box.bottom() < slot.y || box.y > slot.bottom())
+                    continue;
+                bool centre = k == 0 && frac < 0.5f;
+                drawSymbol(r, box, idx,
+                    centre && m_phase == Phase_Done ? theme::accent : theme::fg1,
+                    theme::bg0);
+            }
+            r.popClip();
+
+            // The line the machine is read along.
+            r.rect(Rect { slot.x, slot.centerY() - 1.0f, slot.w, 2.0f },
+                theme::accentTint.scaleAlpha(0.5f));
+        }
+
+        void drawLever(Renderer& r, const Rect& cab) const
+        {
+            // Pulled while the reels are turning, back up when they stop: the
+            // one moving part a bandit is named for.
+            float u = m_phase == Phase_Spin ? std::min(m_clock / 0.22f, 1.0f) : 0.0f;
+            float angle = -1.15f + u * 1.9f;
+            float px = cab.right() + 16.0f;
+            float py = cab.y + 190.0f;
+            float len = 128.0f;
+            float tx = px + std::sin(angle) * len * 0.55f;
+            float ty = py + std::cos(angle) * len;
+
+            float dx = tx - px;
+            float dy = ty - py;
+            float length = std::sqrt(dx * dx + dy * dy);
+            if (length > 1e-4f) {
+                float nx = -dy / length * 7.0f;
+                float ny = dx / length * 7.0f;
+                const float corners[8] = { px + nx, py + ny, tx + nx, ty + ny,
+                    tx - nx, ty - ny, px - nx, py - ny };
+                r.band(corners, theme::bg3);
+            }
+            r.circle(px, py, 12.0f, theme::bg3);
+            r.circle(tx, ty, 22.0f, theme::accent);
+        }
+
+        // Every line the machine pays, from the same arrays payout() reads.
+        void drawPaytable(Renderer& r) const
+        {
+            Rect panel { 1220.0f, 100.0f, 640.0f, 800.0f };
+            r.roundRect(panel, theme::r4, theme::bg1);
+            r.strokeRect(panel, theme::r4, theme::stroke, theme::stroke2);
+            Rect inner = panel.inset(theme::s6, theme::s6);
+            float y = inner.y;
+
+            ui::eyebrow(r, Rect { inner.x, y, inner.w, 30.0f }, "what it pays");
+            y += 44.0f;
+
+            int n = symbols();
+            TextStyle amount;
+            amount.size = theme::textBase;
+            amount.weight = FontWeight::Bold;
+            amount.color = theme::fg1;
+
+            // Three of a kind, best first.
+            int order[Sym_Count] = { Sym_Seven, Sym_Bar, Sym_Bell, Sym_Sun, Sym_Moon };
+            for (int slot = 0; slot < Sym_Count; slot++) {
+                int sym = order[slot];
+                if (sym >= n)
+                    continue;
+                uint32_t pays = triples()[size_t(sym)];
+                if (pays == 0)
+                    continue;
+
+                for (int i = 0; i < 3; i++) {
+                    Rect box { inner.x + float(i) * 62.0f, y, 56.0f, 56.0f };
+                    drawSymbol(r, box, sym, theme::fg2, theme::bg1);
+                }
+                r.text(Rect { inner.x, y, inner.w, 56.0f },
+                    format("%u", unsigned(pays)), amount, Align::Right, VAlign::Middle);
+                y += 66.0f;
+            }
+
+            y += theme::s4;
+            ui::divider(r, inner.x, y, inner.w);
+            y += theme::s4;
+
+            TextStyle line;
+            line.size = theme::textBase;
+            line.color = theme::fg2;
+            if (m_five) {
+                r.text(inner.x, y, "Two sevens", line);
+                r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
+                    format("%u", unsigned(kTwoSevens)), amount, Align::Right,
+                    VAlign::Top);
+                y += line.size * theme::leadingNormal + 8.0f;
+            }
+            r.text(inner.x, y, "Any two the same", line);
+            r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
+                format("%u", unsigned(kPair)), amount, Align::Right, VAlign::Top);
+            y += line.size * theme::leadingNormal + theme::s5;
+
+            TextStyle note;
+            note.size = theme::textSm;
+            note.color = theme::fg3;
+            note.leading = theme::leadingNormal;
+            r.textWrapped(Rect { inner.x, y, inner.w, 160.0f },
+                m_five ? "Three reels, five symbols: three of a kind about once in "
+                         "twenty-five spins, and something back about half the time."
+                       : "Three reels, three symbols: three of a kind about once in "
+                         "nine spins, and something back four times in five.",
+                note, 4);
+        }
+
+        Rect plate(float width, float height) const
+        {
+            // On the floor in front of the machine, clear of its base at 700
+            // and of the hint strip at 992.
+            return Rect { 300.0f, Renderer::DesignHeight - 120.0f - height, width,
+                height };
+        }
+
+        void drawReady(App& app, Renderer& r)
+        {
+            uint32_t coins = Wallet::get().balance();
+            app.hint("A", "spin");
+            app.hint("X", m_five ? "three symbols" : "five symbols");
+            app.hint("B", "back");
+
+            Rect box = plate(820.0f, 250.0f);
+            r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s6, theme::s5);
+            float y = inner.y;
+
+            TextStyle title;
+            title.size = theme::textXl;
+            title.weight = FontWeight::Bold;
+            title.color = theme::fg1;
+            title.tracking = theme::trackingTight;
+            title.leading = theme::leadingSnug;
+            r.text(inner.x, y, "The bandit", title);
+            y += title.size * theme::leadingSnug + 4.0f;
+
+            TextStyle body;
+            body.size = theme::textBase;
+            body.color = theme::fg3;
+            body.leading = theme::leadingNormal;
+            y += r.textWrapped(Rect { inner.x, y, inner.w, 80.0f },
+                format("%u coins a spin, and %u to spend. X changes machines.",
+                    unsigned(kStake), unsigned(coins)),
+                body, 2);
+
+            drawButtons(app, r,
+                Rect { inner.x, std::max(inner.bottom() - kButton, y + theme::s4),
+                    inner.w, kButton },
+                "Spin for nothing", coins >= kStake);
+            drawBack(app, r, box);
+        }
+
+        void drawResult(App& app, Renderer& r)
+        {
+            app.hint("A", "spin");
+            app.hint("X", m_five ? "three symbols" : "five symbols");
+            app.hint("B", "back");
+
+            Rect box = plate(820.0f, 250.0f);
+            r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s6, theme::s5);
+            float y = inner.y;
+
+            uint32_t would = landedPayout();
+            bool triple = m_reel[0] == m_reel[1] && m_reel[1] == m_reel[2];
+
+            TextStyle title;
+            title.size = theme::textXl;
+            title.weight = FontWeight::Bold;
+            title.color = would > 0 ? theme::accent : theme::fg1;
+            title.tracking = theme::trackingTight;
+            title.leading = theme::leadingSnug;
+            std::string headline;
+            if (triple)
+                headline = format("Three %s", symbolName(m_reel[0]));
+            else if (would > 0)
+                headline = "A pair";
+            else
+                headline = "Nothing";
+            r.text(inner.x, y, headline, title);
+            y += title.size * theme::leadingSnug + 4.0f;
+
+            TextStyle body;
+            body.size = theme::textBase;
+            body.color = theme::fg3;
+            body.leading = theme::leadingNormal;
+            std::string line;
+            if (m_staked) {
+                line = m_paid > 0
+                    ? format("%u coins, and %u to spend.", unsigned(m_paid),
+                          unsigned(Wallet::get().balance()))
+                    : format("Five gone. %u left.", unsigned(Wallet::get().balance()));
+            } else {
+                line = would > 0
+                    ? format("Nothing staked, so nothing won - it would have paid %u.",
+                          unsigned(would))
+                    : "Nothing staked, and nothing to stake it on.";
+            }
+            y += r.textWrapped(Rect { inner.x, y, inner.w, 80.0f }, line, body, 2);
+
+            drawButtons(app, r,
+                Rect { inner.x, std::max(inner.bottom() - kButton, y + theme::s4),
+                    inner.w, kButton },
+                "Spin again", Wallet::get().balance() >= kStake);
+            drawBack(app, r, box);
+        }
+
+        void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
+            bool canStake)
+        {
+            std::string staked = format("Bet %u coins", unsigned(kStake));
+            Rect plain { row.x, row.y, ui::actionButtonWidth(r, plainLabel), row.h };
+            Rect stake { plain.right() + theme::s4, row.y,
+                ui::actionButtonWidth(r, staked), row.h };
+
+            app.touchZone(plain, Zone_Spin);
+            if (canStake)
+                app.touchZone(stake, Zone_Stake);
+
+            float pulse = 0.7f + 0.3f * m_pulse;
+            bool onStake = m_button == 1 && canStake;
+            ui::actionButton(r, plain, plainLabel, !onStake,
+                app.touchHeld(Zone_Spin) ? 1.0f : (onStake ? 0.0f : pulse));
+            ui::actionButton(r, stake, staked, onStake,
+                canStake && app.touchHeld(Zone_Stake) ? 1.0f
+                                                      : (onStake ? pulse : 0.0f));
+        }
+
+        void drawBack(App& app, Renderer& r, const Rect& box)
+        {
+            Rect back { box.right() - 60.0f, box.y + 18.0f, 42.0f, 42.0f };
+            app.touchZone(back.inset(-theme::s3, -theme::s3), Zone_Back);
+            ui::icon(r, back, ui::Icon::ArrowLeft, theme::fg3, 3.0f);
+        }
+
+        static constexpr float kButton = 76.0f;
+
+        int m_phase = Phase_Ready;
+        bool m_five = false;
+        float m_clock = 0.0f;
+        float m_pulse = 0.0f;
+        int m_button = 0;
+        bool m_staked = false;
+        uint32_t m_paid = 0;
+
+        int m_reel[kReels] = { 0, 0, 0 };
+        float m_pos[kReels] = { 0.0f, 0.0f, 0.0f };
+        float m_from[kReels] = { 0.0f, 0.0f, 0.0f };
+        float m_sweep[kReels] = { 0.0f, 0.0f, 0.0f };
+    };
+}
+
+std::unique_ptr<Scene> makeSlotsScene() { return std::make_unique<SlotsScene>(); }
+
+} // namespace nxp
