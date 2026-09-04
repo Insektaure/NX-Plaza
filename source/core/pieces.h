@@ -17,10 +17,21 @@ namespace nxp {
 // and takes nothing away, so meeting somebody with an empty collection is worth
 // exactly as much as meeting a completist.
 
-// What the shop records itself as in a piece's provenance. Written by the
-// store when a piece is bought and read by the trophies that ask how a puzzle
-// was filled, so it lives here rather than as a literal in both.
+// What the app records itself as in a piece's provenance, when a piece did not
+// come from a person. Written by the store and read by the trophies that ask
+// how a puzzle was filled, so they live here rather than as literals in both.
 inline constexpr const char* kShopSource = "the shop";
+inline constexpr const char* kWheelSource = "the wheel";
+
+// True when a piece was paid for rather than handed over. The trophies care
+// about the distinction twice: "by hand alone" wants a puzzle with none of
+// these in it, and the donor counts must not mistake a machine for a person -
+// without this the wheel would appear in "pieces from ten different people"
+// as one of the ten.
+inline bool pieceWasPaidFor(const std::string& who)
+{
+    return who == kShopSource || who == kWheelSource;
+}
 
 struct PieceSet {
     const char* name;

@@ -848,7 +848,7 @@ TrophyFacts Store::trophyFacts() const
     std::set<std::string> donors;
     std::vector<uint8_t> bought(pieceSets().size(), 0);
     for (const PieceSource& src : m_pieces.sources) {
-        if (src.who == kShopSource) {
+        if (pieceWasPaidFor(src.who)) {
             int set = pieceSetIndex(src.picture);
             if (set >= 0 && size_t(set) < bought.size())
                 bought[size_t(set)] = 1;
@@ -1034,7 +1034,7 @@ void Store::noteTitleCount(const std::string& crossingId, const Pass& pass)
     m_extras.setU32(crossingId, extras::TitleCount, pass.titles);
 }
 
-Store::PiecePurchase Store::buyPiece(bool activeOnly)
+Store::PiecePurchase Store::buyPiece(bool activeOnly, const char* who)
 {
     std::lock_guard<std::recursive_mutex> lock(m_mutex);
     const std::vector<PieceSet>& sets = pieceSets();
@@ -1066,7 +1066,8 @@ Store::PiecePurchase Store::buyPiece(bool activeOnly)
 
     // "the shop" rather than an empty name, so the provenance panel says where
     // it came from instead of falling back to "someone".
-    m_pieces.noteSource(bought.set, uint8_t(bought.piece), kShopSource, nowUnix());
+    m_pieces.noteSource(bought.set, uint8_t(bought.piece),
+        who ? who : kShopSource, nowUnix());
     m_profileDirty = true;
     LOG("pieces: bought piece %u of %s", unsigned(bought.piece + 1),
         sets[size_t(bought.set)].name);

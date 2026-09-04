@@ -41,6 +41,12 @@ namespace {
             "Roll for nothing, or bet two coins for three back - and a draw "
             "hands your two back.",
             &makeDiceDuelScene, nullptr, nullptr },
+        { ui::Icon::Sun, "The lantern wheel",
+            "Twelve lanterns and a needle, and one of the lanterns is a puzzle "
+            "piece.\n"
+            "Ten coins a spin, and every lantern pays something - two coins, five, "
+            "eight, or the piece.",
+            &makeLanternWheelScene, nullptr, nullptr },
         { ui::Icon::Stack, "The Mii tower",
             "Stack the people you have crossed, one drop at a time.\n"
             "Miss the shoulders below and they fall; drift too far from the base "
@@ -66,15 +72,31 @@ namespace {
         {
             (void)app;
             m_row = 0;
+            m_scroll.stop();
         }
 
         void update(App& app, const Input& input, float dt) override
         {
-            (void)dt;
             m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
 
+            // Four rows fit and there are more than four games, so the shelf
+            // scrolls the way the puzzles and the trophies do: a finger drags
+            // it, a cursor move recentres it.
+            const Touch& touch = input.touch;
+            if (touch.pressed)
+                m_brakedTap = m_scroll.absorbPress();
+            if (touch.down && touch.dragged
+                && m_listArea.contains(touch.startX, touch.startY)) {
+                m_scroll.drag(-touch.dy, dt);
+                m_dragging = true;
+            } else if (m_dragging && !touch.down) {
+                m_scroll.release();
+                m_dragging = false;
+            }
+            m_scroll.update(dt);
+
             TouchTarget tap;
-            if (app.takeTap(tap)) {
+            if (!m_brakedTap && app.takeTap(tap)) {
                 if (tap.is(Zone_Row) && tap.index >= 0 && tap.index < kGames) {
                     m_row = tap.index;
                     open(app, tap.index);
@@ -82,10 +104,16 @@ namespace {
                 return;
             }
 
+            int was = m_row;
             if (input.navDown)
                 m_row = (m_row + 1) % kGames;
             if (input.navUp)
                 m_row = (m_row - 1 + kGames) % kGames;
+            if (m_row != was) {
+                m_scroll.stop();
+                m_scroll.centerOn(float(m_row) * (kRowHeight + theme::s3)
+                    + kRowHeight * 0.5f);
+            }
             if (input.accept())
                 open(app, m_row);
         }
@@ -129,14 +157,33 @@ namespace {
                 sub);
             y += sub.size * theme::leadingNormal + theme::s6;
 
+            Rect list { content.x, y, content.w, content.bottom() - y };
+            m_listArea = list;
+            float total = float(kGames) * (kRowHeight + theme::s3) - theme::s3;
+            m_scroll.setBounds(list.h, std::max(0.0f, total));
+
+            r.pushClipVertical(list.inset(0.0f, -theme::focusRoom));
+            float rowY = list.y - m_scroll.offset();
             for (int i = 0; i < kGames; i++) {
-                drawRow(app, r, Rect { content.x, y, content.w, kRowHeight }, i);
-                y += kRowHeight + theme::s3;
+                Rect row { list.x, rowY, list.w - kScrollGutter, kRowHeight };
+                // Only what is on screen, so a row scrolled away leaves no
+                // touch zone behind where nothing is drawn.
+                if (row.bottom() >= list.y - theme::focusRoom
+                    && row.y <= list.bottom() + theme::focusRoom)
+                    drawRow(app, r, row, i);
+                rowY += kRowHeight + theme::s3;
+            }
+            r.popClip();
+
+            if (m_scroll.scrollable()) {
+                ui::scrollbar(r, Rect { list.right() - 8.0f, list.y, 8.0f, list.h },
+                    m_scroll.progress(), m_scroll.visibleFraction());
             }
         }
 
     private:
         static constexpr float kRowHeight = 148.0f;
+        static constexpr float kScrollGutter = 24.0f;
         static constexpr float kIconBox = 76.0f;
 
         void open(App& app, int index)
@@ -196,6 +243,11 @@ namespace {
 
         int m_row = 0;
         float m_pulse = 0.0f;
+
+        ui::ScrollView m_scroll;
+        Rect m_listArea {};
+        bool m_dragging = false;
+        bool m_brakedTap = false;
     };
 }
 

@@ -182,7 +182,11 @@ public:
     // Missing rather than random: a crossing can hand you a piece twice
     // because meeting somebody twice is its own reward, but paying coins for
     // one you already had would just be a fine.
-    PiecePurchase buyPiece(bool activeOnly);
+    //
+    // `who` is what the provenance panel will say brought it. It defaults to
+    // the shop because that is where pieces are bought, but a piece won on the
+    // lantern wheel should not claim to have been paid for over a counter.
+    PiecePurchase buyPiece(bool activeOnly, const char* who = kShopSource);
 
     // Grants the piece this crossing is worth, into the active set. Returns
     // true only when it was one the owner did not already hold, so a caller can
