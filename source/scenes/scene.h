@@ -70,6 +70,8 @@ std::unique_ptr<Scene> makeMiiRaceScene();
 std::unique_ptr<Scene> makePlazaDashScene();
 // One die each against somebody you have crossed, highest roll takes it.
 std::unique_ptr<Scene> makeDiceDuelScene();
+// A tower built out of the people you have crossed, one drop at a time.
+std::unique_ptr<Scene> makeMiiTowerScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,

@@ -114,6 +114,21 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.strokeRect(body, s * 0.07f, weight, color);
         break;
     }
+    case Icon::Stack: {
+        // Three slabs stacked, each offset a little further than the last: a
+        // tower with a lean in it, which is the whole subject.
+        // The leans straddle nothing rather than growing from it, so the glyph
+        // sits centred in its box while still reading as a lean.
+        constexpr float kLean[3] = { -0.07f, -0.01f, 0.07f };
+        float w = s * 0.46f;
+        float h = s * 0.15f;
+        for (int i = 0; i < 3; i++) {
+            float y = cy + s * 0.27f - float(i) * (h + s * 0.045f);
+            r.strokeRect(Rect { cx - w * 0.5f + kLean[i] * s, y - h, w, h }, s * 0.03f,
+                weight, color);
+        }
+        break;
+    }
     case Icon::Runner: {
         // A figure at a dead run: head, a torso leaning into it, two legs mid
         // stride and two arms counterbalancing them.

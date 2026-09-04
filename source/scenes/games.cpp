@@ -37,6 +37,11 @@ namespace {
             "Roll for nothing, or bet two coins for three back - and a draw "
             "hands your two back.",
             &makeDiceDuelScene, nullptr },
+        { ui::Icon::Stack, "The Mii tower",
+            "Stack the people you have crossed, one drop at a time.\n"
+            "Miss the shoulders below and they fall; drift too far from the base "
+            "and the lot goes over.",
+            &makeMiiTowerScene, "tower" },
         { ui::Icon::Runner, "Plaza dash",
             "Your own Mii running through the plaza, jumping what the market "
             "leaves in the way.\n"

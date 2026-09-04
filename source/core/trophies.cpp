@@ -54,6 +54,12 @@ namespace {
         { "dice_six_all", "Six all",
             "Roll a six against a six.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.diceSixAll; } },
+        { "tower_ten", "Ten storeys",
+            "Stack ten floors in the Mii tower.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.towerBest >= 10; } },
+        { "tower_centred", "Dead centre",
+            "Land a floor within six pixels of the one below.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.towerCentred; } },
         { "dash_hundred", "Off the mark",
             "Run a hundred metres in the plaza dash.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.dashBest >= 100; } },
@@ -154,6 +160,15 @@ namespace {
         { "good_day_racing", "A good day at the tables",
             "Win fifty coins betting in the games tab.", Tier::Silver,
             [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
+        { "tower_twenty", "Twenty up",
+            "Stack twenty floors in the Mii tower.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.towerBest >= 20; } },
+        // The signed lean is what makes the tower a game rather than a timing
+        // test, and this is the only thing that rewards noticing it.
+        { "tower_recovered", "Talked it down",
+            "Lean a tower to the edge of going over, and bring it back.",
+            Tier::Silver,
+            [](const TrophyFacts& f) { return f.towerRecovered; } },
         // Half a kilometre is a little over half a minute of running and about
         // twenty-three things jumped, at a pace that never stops climbing.
         { "dash_five_hundred", "A good run",
@@ -200,6 +215,11 @@ namespace {
         { "by_hand", "By hand alone",
             "Finish a puzzle without buying a single piece.", Tier::Gold,
             [](const TrophyFacts& f) { return f.puzzleByHand; } },
+        // Thirty floors is a catch window of about four frames, with the swing
+        // near its cap. Forty would be frame-perfect.
+        { "tower_thirty", "Thirty storeys",
+            "Stack thirty floors in the Mii tower.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.towerBest >= 30; } },
         // A kilometre takes about fifty-five seconds, which is past the point
         // where the plaza stops getting quicker - so it is roughly forty
         // hazards, the last dozen of them at full speed.

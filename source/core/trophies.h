@@ -75,6 +75,14 @@ struct TrophyFacts {
     uint32_t diceStreakBest = 0;
     bool diceSixAll = false;
 
+    // The Mii tower keeps a height and two flags: whether a floor has ever
+    // been landed dead centre, and whether a tower has ever been leaned to
+    // within a whisker of going over and brought back. Both are "you did this
+    // once" and never reset.
+    uint32_t towerBest = 0;
+    bool towerCentred = false;
+    bool towerRecovered = false;
+
     // Furthest run in the plaza dash, in metres.
     //
     // The one fact here that the app counted rather than worked out. A score

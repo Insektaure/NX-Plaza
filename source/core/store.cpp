@@ -877,6 +877,9 @@ TrophyFacts Store::trophyFacts() const
         return it == m_bestScores.end() ? 0u : it->second;
     };
     f.dashBest = score("dash");
+    f.towerBest = score("tower");
+    f.towerCentred = score("tower_centred") != 0;
+    f.towerRecovered = score("tower_recovered") != 0;
     f.diceWins = score("dice_wins");
     f.diceStreakBest = score("dice_streak_best");
     f.diceSixAll = score("dice_six_all") != 0;
