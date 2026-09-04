@@ -194,15 +194,17 @@ namespace {
         static constexpr float kHold = 0.6f;
         static constexpr float kTurns = 6.0f; // whole times round before it lands
 
-        // The cabinet stands on the floor line at 700 rather than hovering
-        // above it: 180 + 520 is exactly 700.
+        // The cabinet on its pedestal: body 180 to 620, stand 620 to the floor
+        // line at 700, so the machine is standing on something rather than
+        // resting on the carpet like a crate.
         static constexpr float kCabX = 380.0f;
         static constexpr float kCabY = 180.0f;
         static constexpr float kCabW = 660.0f;
-        static constexpr float kCabH = 520.0f;
-        static constexpr float kCell = 176.0f; // one symbol's slot on a reel
-        static constexpr float kWinY = 360.0f; // the window's top
-        static constexpr float kWinH = 180.0f;
+        static constexpr float kCabH = 440.0f;
+        static constexpr float kFloorLine = 700.0f;
+        static constexpr float kCell = 170.0f; // one symbol's slot on a reel
+        static constexpr float kWinY = 300.0f; // the window's top
+        static constexpr float kWinH = 170.0f;
 
         int symbols() const { return m_five ? Sym_Count : 3; }
 
@@ -473,23 +475,51 @@ namespace {
         void drawCabinet(App& app, Renderer& r)
         {
             Rect cab { kCabX, kCabY, kCabW, kCabH };
-            r.roundRect(cab, theme::r5, theme::bg2);
-            r.strokeRect(cab, theme::r5, theme::stroke, theme::stroke3);
-            app.touchZone(Rect { cab.x, cab.y, cab.w, 110.0f }, Zone_Machine);
 
-            // The marquee, which is also where the machine says which one it is.
-            Rect sign { cab.x + 40.0f, cab.y + 26.0f, cab.w - 80.0f, 82.0f };
-            r.roundRect(sign, theme::r3, theme::bg0);
+            // The stand first, so the body sits on top of it. Tapered, with a
+            // plate on the carpet and a shadow under that.
+            r.ellipse(cab.centerX(), kFloorLine + 10.0f, 210.0f, 26.0f,
+                theme::bg0.scaleAlpha(0.34f), 0.0f);
+            r.trapezoid(cab.bottom() - 6.0f, cab.centerX() - 120.0f,
+                cab.centerX() + 120.0f, kFloorLine - 18.0f, cab.centerX() - 72.0f,
+                cab.centerX() + 72.0f, theme::bg3);
+            r.roundRect(Rect { cab.centerX() - 168.0f, kFloorLine - 22.0f, 336.0f,
+                           28.0f },
+                10.0f, theme::bg2);
+            r.roundRect(Rect { cab.centerX() - 186.0f, kFloorLine - 6.0f, 372.0f,
+                           16.0f },
+                8.0f, theme::bg3);
+
+            // Body: lit from above, with a chrome rail down each side.
+            r.gradientRect(cab, theme::bg2, theme::bg1, theme::r5, theme::r4);
+            r.strokeRect(cab, theme::r5, 3.0f, theme::stroke3);
+            for (int side = 0; side < 2; side++) {
+                float x = side == 0 ? cab.x + 14.0f : cab.right() - 32.0f;
+                r.roundRect(Rect { x, cab.y + 26.0f, 18.0f, cab.h - 52.0f }, 9.0f,
+                    theme::bg3.scaleAlpha(0.8f));
+            }
+            app.touchZone(Rect { cab.x, cab.y, cab.w, 108.0f }, Zone_Machine);
+
+            // Marquee, with a row of bulbs over it - which is the detail that
+            // makes a cabinet look like a cabinet.
+            Rect sign { cab.x + 66.0f, cab.y + 34.0f, cab.w - 132.0f, 68.0f };
+            r.roundRect(sign, theme::r2, theme::bg0);
+            r.strokeRect(sign, theme::r2, theme::stroke, theme::accentTint);
+            for (int i = 0; i < 9; i++) {
+                float x = sign.x + 22.0f + float(i) * ((sign.w - 44.0f) / 8.0f);
+                r.circle(x, sign.y - 12.0f, 5.0f, theme::mark);
+            }
             TextStyle name;
-            name.size = theme::textLg;
+            name.size = theme::textMd;
             name.weight = FontWeight::Bold;
             name.color = theme::accent;
             name.tracking = theme::trackingWide;
             r.text(sign, m_five ? "FIVE SYMBOLS" : "THREE SYMBOLS", name, Align::Center,
                 VAlign::Middle);
 
-            // The window, and the three reels turning behind it.
-            Rect glass { cab.x + 46.0f, kWinY, cab.w - 92.0f, kWinH };
+            // The window, its reels, and a double bezel.
+            Rect glass { cab.x + 58.0f, kWinY, cab.w - 116.0f, kWinH };
+            r.roundRect(glass.inset(-8.0f, -8.0f), theme::r3, theme::bg3);
             r.roundRect(glass, theme::r2, theme::bg0);
             float cell = (glass.w - 24.0f) / 3.0f;
             for (int i = 0; i < kReels; i++) {
@@ -497,12 +527,31 @@ namespace {
                     glass.h };
                 drawReel(r, slot, i);
             }
+            // Sheen across the glass: one flat band at a low alpha, so it
+            // reads as a pane without hiding what is behind it.
+            const float sheen[8] = { glass.x, glass.bottom(), glass.x + glass.w * 0.42f,
+                glass.y, glass.x + glass.w * 0.62f, glass.y, glass.x + glass.w * 0.2f,
+                glass.bottom() };
+            r.band(sheen, theme::fg1.scaleAlpha(0.05f));
             r.strokeRect(glass, theme::r2, 3.0f, theme::accentTint);
 
-            // A coin tray, and the lever down the side.
-            r.roundRect(Rect { cab.x + 120.0f, cab.y + kCabH - 96.0f, cab.w - 240.0f,
-                           54.0f },
-                theme::r2, theme::bg0.scaleAlpha(0.6f));
+            // Payline arrows, pointing at the row that counts.
+            for (int side = 0; side < 2; side++) {
+                float tip = side == 0 ? glass.x - 12.0f : glass.right() + 12.0f;
+                float back = side == 0 ? tip - 20.0f : tip + 20.0f;
+                r.trapezoid(glass.centerY() - 13.0f, back, back, glass.centerY() + 13.0f,
+                    tip, tip, theme::accent);
+            }
+
+            // A coin slot, and the tray it pays into.
+            r.roundRect(Rect { cab.centerX() - 46.0f, cab.y + cab.h - 118.0f, 92.0f,
+                           14.0f },
+                7.0f, theme::bg0);
+            Rect tray { cab.x + 132.0f, cab.y + cab.h - 88.0f, cab.w - 264.0f, 52.0f };
+            r.roundRect(tray, theme::r2, theme::bg0.scaleAlpha(0.65f));
+            r.rect(Rect { tray.x + 12.0f, tray.y + 8.0f, tray.w - 24.0f, 3.0f },
+                theme::bg3.scaleAlpha(0.7f));
+
             drawLever(r, cab);
         }
 
@@ -633,10 +682,11 @@ namespace {
 
         Rect plate(float width, float height) const
         {
-            // On the floor in front of the machine, clear of its base at 700
-            // and of the hint strip at 992.
-            return Rect { 300.0f, Renderer::DesignHeight - 120.0f - height, width,
-                height };
+            // On the right, under the board on the wall: the machine keeps the
+            // middle of the room and the words that go with it stand beside
+            // it, rather than across its feet.
+            return Rect { 1860.0f - width, Renderer::DesignHeight - 140.0f - height,
+                width, height };
         }
 
         void drawReady(App& app, Renderer& r)
@@ -646,7 +696,7 @@ namespace {
             app.hint("X", m_five ? "three symbols" : "five symbols");
             app.hint("B", "back");
 
-            Rect box = plate(820.0f, 250.0f);
+            Rect box = plate(720.0f, 250.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s6, theme::s5);
@@ -683,7 +733,7 @@ namespace {
             app.hint("X", m_five ? "three symbols" : "five symbols");
             app.hint("B", "back");
 
-            Rect box = plate(820.0f, 250.0f);
+            Rect box = plate(720.0f, 250.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s6, theme::s5);
