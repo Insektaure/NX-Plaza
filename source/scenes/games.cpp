@@ -71,8 +71,15 @@ namespace {
         void onEnter(App& app) override
         {
             (void)app;
-            m_row = 0;
+            // Keep the cursor where it was. onEnter runs when the tab is opened
+            // *and* every time an overlay above it closes, so resetting to the
+            // first row here meant coming out of a game landed back at the
+            // top of the shelf instead of on the game had just left.
+            m_row = std::min(std::max(m_row, 0), kGames - 1);
             m_scroll.stop();
+            // The offset is set on the first draw, once the row geometry is
+            // known - the same way the puzzles list recentres itself.
+            m_recentre = true;
         }
 
         void update(App& app, const Input& input, float dt) override
@@ -161,6 +168,11 @@ namespace {
             m_listArea = list;
             float total = float(kGames) * (kRowHeight + theme::s3) - theme::s3;
             m_scroll.setBounds(list.h, std::max(0.0f, total));
+            if (m_recentre) {
+                m_scroll.centerOn(float(m_row) * (kRowHeight + theme::s3)
+                    + kRowHeight * 0.5f);
+                m_recentre = false;
+            }
 
             r.pushClipVertical(list.inset(0.0f, -theme::focusRoom));
             float rowY = list.y - m_scroll.offset();
@@ -248,6 +260,7 @@ namespace {
         Rect m_listArea {};
         bool m_dragging = false;
         bool m_brakedTap = false;
+        bool m_recentre = false;
     };
 }
 
