@@ -96,7 +96,7 @@ Spending works offline; the totals are checksummed against your console's plaza 
 
 ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
 
-**Trophies.** What this console has done: 65 of them, in bronze, silver,
+**Trophies.** What this console has done: 68 of them, in bronze, silver,
 gold and one platinum for the lot.
 
 Some are meant to be tripped over in the first hour - cross a pass with 
@@ -339,13 +339,13 @@ setting, re-read whenever the app regains focus). The choice is saved in
 
 ## Trophies
 
-All 65 of them, as the app lists them. Nearly every one is worked out from
+All 68 of them, as the app lists them. Nearly every one is worked out from
 your collection, your puzzles and your wallet at the moment the screen draws,
 so it cannot disagree with what actually happened; the three about the plaza
 dash read the best distance that game keeps. None of them pays a coin, and
 none unlocks anything.
 
-### Bronze (21)
+### Bronze (22)
 
 | | |
 | --- | --- |
@@ -361,6 +361,7 @@ none unlocks anything.
 | **Beginner's luck** | Win a bet in the games tab. |
 | **First blood** | Win a duel at the dice. |
 | **Six all** | Roll a six against a six. |
+| **The wheel's own** | Win a puzzle piece on the lantern wheel. |
 | **Ten storeys** | Stack ten floors in the Mii tower. |
 | **Dead centre** | Land a floor within six pixels of the one below. |
 | **Off the mark** | Run a hundred metres in the plaza dash. |
@@ -371,7 +372,7 @@ none unlocks anything.
 | **Same taste** | Cross somebody carrying something you carry too. |
 | **The strong silent type** | Cross a pass with nothing written on it. |
 
-### Silver (26)
+### Silver (27)
 
 | | |
 | --- | --- |
@@ -398,11 +399,12 @@ none unlocks anything.
 | **Saving up** | Have five hundred coins at once. |
 | **On a run** | Win five duels at the dice in a row. |
 | **A good day at the tables** | Win fifty coins betting in the games tab. |
+| **Twice lucky** | Win two puzzle pieces on the lantern wheel. |
 | **Twenty up** | Stack twenty floors in the Mii tower. |
 | **Talked it down** | Lean a tower to the edge of going over, and bring it back. |
 | **A good run** | Run five hundred metres in the plaza dash. |
 
-### Gold (17)
+### Gold (18)
 
 | | |
 | --- | --- |
@@ -418,6 +420,7 @@ none unlocks anything.
 | **Known you for a year** | Keep a card for a year. |
 | **Every picture** | Finish every puzzle. |
 | **By hand alone** | Finish a puzzle without buying a single piece. |
+| **Five from the wheel** | Win five puzzle pieces on the lantern wheel. |
 | **Thirty storeys** | Stack thirty floors in the Mii tower. |
 | **A kilometre of plaza** | Run a thousand metres in the plaza dash. |
 | **Seven in a row** | Win seven duels at the dice in a row. |

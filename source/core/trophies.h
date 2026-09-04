@@ -75,6 +75,11 @@ struct TrophyFacts {
     uint32_t diceStreakBest = 0;
     bool diceSixAll = false;
 
+    // Pieces won on the lantern wheel. A spin leaves nothing else behind -
+    // a free go writes nothing at all, and a coin prize is indistinguishable
+    // from the race's or the dice's once it is in the wallet.
+    uint32_t wheelPieces = 0;
+
     // The Mii tower keeps a height and two flags: whether a floor has ever
     // been landed dead centre, and whether a tower has ever been leaned to
     // within a whisker of going over and brought back. Both are "you did this

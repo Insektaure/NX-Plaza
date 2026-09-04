@@ -317,8 +317,16 @@ namespace {
             // the wheel is nearer the camera than the tent is, so its feet
             // belong lower on the screen.
             constexpr float kFloor = 955.0f;
-            float top = kCentreY + kRadius - 20.0f;
-            r.rect(Rect { kCentreX - 11.0f, top, 22.0f, kFloor - top }, theme::bg2);
+
+            // From the hub, not from the bottom of the ring. It used to start
+            // at the rim, which left the axle - and the needle turning on it -
+            // attached to nothing. The ring and its lanterns are drawn after
+            // this, so the pole passes behind them.
+            //
+            // Tapered, because a post holding a wheel this size wants a wider
+            // foot than neck.
+            r.trapezoid(kCentreY, kCentreX - 13.0f, kCentreX + 13.0f, kFloor,
+                kCentreX - 26.0f, kCentreX + 26.0f, theme::bg3);
             r.ellipse(kCentreX, kFloor + 6.0f, 96.0f, 16.0f,
                 theme::bg0.scaleAlpha(0.30f), 0.0f);
             r.roundRect(Rect { kCentreX - 84.0f, kFloor - 16.0f, 168.0f, 26.0f }, 8.0f,
@@ -394,6 +402,13 @@ namespace {
             if (piecePays(m_landed)) {
                 Store::PiecePurchase got = app.store().buyPiece(false, kWheelSource);
                 if (got.set >= 0) {
+                    // The only thing a spin leaves behind, and so the only
+                    // thing its own trophies can be about: a free go writes
+                    // nothing, and a coin prize is indistinguishable from the
+                    // race's or the dice's once it is in the wallet.
+                    Store& store = app.store();
+                    store.setScore("wheel_pieces",
+                        store.bestScore("wheel_pieces") + 1);
                     m_piece = true;
                     m_pieceName = pieceSets()[size_t(got.set)].name;
                     m_pieceIndex = got.piece;

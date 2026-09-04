@@ -877,6 +877,7 @@ TrophyFacts Store::trophyFacts() const
         return it == m_bestScores.end() ? 0u : it->second;
     };
     f.dashBest = score("dash");
+    f.wheelPieces = score("wheel_pieces");
     f.towerBest = score("tower");
     f.towerCentred = score("tower_centred") != 0;
     f.towerRecovered = score("tower_recovered") != 0;

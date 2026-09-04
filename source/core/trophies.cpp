@@ -54,6 +54,9 @@ namespace {
         { "dice_six_all", "Six all",
             "Roll a six against a six.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.diceSixAll; } },
+        { "wheel_piece", "The wheel's own",
+            "Win a puzzle piece on the lantern wheel.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.wheelPieces >= 1; } },
         { "tower_ten", "Ten storeys",
             "Stack ten floors in the Mii tower.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.towerBest >= 10; } },
@@ -160,6 +163,11 @@ namespace {
         { "good_day_racing", "A good day at the tables",
             "Win fifty coins betting in the games tab.", Tier::Silver,
             [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
+        // Two pieces is about a dozen spins, which is a hundred and twenty
+        // coins put through the wheel.
+        { "wheel_twice", "Twice lucky",
+            "Win two puzzle pieces on the lantern wheel.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.wheelPieces >= 2; } },
         { "tower_twenty", "Twenty up",
             "Stack twenty floors in the Mii tower.", Tier::Silver,
             [](const TrophyFacts& f) { return f.towerBest >= 20; } },
@@ -215,6 +223,11 @@ namespace {
         { "by_hand", "By hand alone",
             "Finish a puzzle without buying a single piece.", Tier::Gold,
             [](const TrophyFacts& f) { return f.puzzleByHand; } },
+        // Five is thirty spins on average - three hundred coins, a month of
+        // showing up, fed to a wheel one spin at a time.
+        { "wheel_five", "Five from the wheel",
+            "Win five puzzle pieces on the lantern wheel.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.wheelPieces >= 5; } },
         // Thirty floors is a catch window of about four frames, with the swing
         // near its cap. Forty would be frame-perfect.
         { "tower_thirty", "Thirty storeys",
