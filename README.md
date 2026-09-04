@@ -69,9 +69,9 @@ in and bounce, faces flickering, and the highest takes it. Roll for nothing, or
 bet two coins for three back - a draw hands your two straight back.
 
 The lantern wheel is the plaza's own gamble: twelve lanterns and a needle.
-Watch it spin for nothing, or put ten coins on it - every lantern gives a coin
-back and two of the twelve give a puzzle piece, so it is a piece lottery with a
-consolation rather than a coin game.
+Watch it spin for nothing, or put ten coins on it - every lantern pays
+something and two of the twelve pay a puzzle piece, so it is a piece lottery at
+one chance in six with coins as the consolation.
 
 The Mii tower stacks them instead: one swings above the tower, **A** drops it,
 and the tower is drawn from where every floor actually landed - so the lean you

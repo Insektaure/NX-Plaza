@@ -43,8 +43,8 @@ namespace {
             &makeDiceDuelScene, nullptr, nullptr },
         { ui::Icon::Sun, "The lantern wheel",
             "Twelve lanterns and a needle, and two of them are a puzzle piece.\n"
-            "Watch it for nothing, or ten coins a spin - a coin back from every "
-            "lantern, and one in six is a piece.",
+            "Watch it for nothing, or ten coins a spin - every lantern pays "
+            "something, and one in six is a piece.",
             &makeLanternWheelScene, nullptr, nullptr },
         { ui::Icon::Stack, "The Mii tower",
             "Stack the people you have crossed, one drop at a time.\n"

@@ -33,12 +33,16 @@ namespace {
 
     // Twelve lanterns and a needle.
     //
-    // Every lantern pays something: ten give a coin back and two give a puzzle
-    // piece. That makes it a piece lottery with a consolation rather than a
-    // coin game, which is the honest shape for a wheel whose prize is worth
-    // fifty. Against a ten coin stake:
+    // Every lantern pays something, and two of the twelve pay a puzzle piece.
+    // That is what the wheel is for: one chance in six at the thing worth
+    // wanting, with coins as the consolation. Against a ten coin stake:
     //
-    //     (10*1 + 2*50) / 12 = 9.17
+    //     (8*1 + 2*3 + 2*50) / 12 = 9.50
+    //
+    // taking a piece at the fifty the shop charges for one. Half a coin a spin
+    // to the plaza, and a piece off the wheel costs six spins on average -
+    // sixty coins, less the consolations - against the shop's fifty, so the
+    // shop stays the sensible way to buy one and this is the romantic way.
     //
     // The landing is chosen before the needle moves and the spin is solved
     // backwards from it, so no amount of dropped frames can change the prize.
@@ -147,10 +151,17 @@ namespace {
         static constexpr uint32_t kStake = 10;
         // The board, in the order the lanterns are drawn. A zero means a
         // puzzle piece.
-        // Paying two a lantern instead would be exactly even money, and a
-        // wheel with no edge stops draining coins.
+        //
+        // Two pieces, opposite each other, and coins in two sizes so the ring
+        // is not twelve of the same thing. The coin budget is the whole
+        // constraint: at the fifty the shop charges for a piece, two in twelve
+        // is 8.33 of value before a single coin is added, so a ten coin spin
+        // has about a coin and a half of room left for the other ten lanterns.
+        // Eight ones and two threes spends fourteen of it and leaves the plaza
+        // half a coin a spin; ten twos instead would be exactly even money,
+        // and a wheel with no edge stops draining coins at all.
         static constexpr uint32_t kPrize[kLanterns] = {
-            1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1,
+            1, 1, 3, 0, 1, 1, 1, 3, 1, 0, 1, 1,
         };
 
         static bool piecePays(int index)
