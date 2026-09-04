@@ -194,17 +194,18 @@ namespace {
         static constexpr float kHold = 0.6f;
         static constexpr float kTurns = 6.0f; // whole times round before it lands
 
-        // The cabinet on its pedestal: body 180 to 620, stand 620 to the floor
-        // line at 700, so the machine is standing on something rather than
-        // resting on the carpet like a crate.
+        // The cabinet on its pedestal: body 160 to 560, then a 210px stand down
+        // to a base plate at 770 - which is well onto the carpet that starts at
+        // 700, so the machine is planted on the floor rather than perched at
+        // the line where the wall meets it.
         static constexpr float kCabX = 380.0f;
-        static constexpr float kCabY = 180.0f;
+        static constexpr float kCabY = 160.0f;
         static constexpr float kCabW = 660.0f;
-        static constexpr float kCabH = 440.0f;
-        static constexpr float kFloorLine = 700.0f;
-        static constexpr float kCell = 170.0f; // one symbol's slot on a reel
-        static constexpr float kWinY = 300.0f; // the window's top
-        static constexpr float kWinH = 170.0f;
+        static constexpr float kCabH = 400.0f;
+        static constexpr float kBaseY = 770.0f; // where the foot meets the floor
+        static constexpr float kCell = 170.0f;  // one symbol's slot on a reel
+        static constexpr float kWinY = 282.0f;  // the window's top
+        static constexpr float kWinH = 168.0f;
 
         int symbols() const { return m_five ? Sym_Count : 3; }
 
@@ -476,19 +477,23 @@ namespace {
         {
             Rect cab { kCabX, kCabY, kCabW, kCabH };
 
-            // The stand first, so the body sits on top of it. Tapered, with a
-            // plate on the carpet and a shadow under that.
-            r.ellipse(cab.centerX(), kFloorLine + 10.0f, 210.0f, 26.0f,
-                theme::bg0.scaleAlpha(0.34f), 0.0f);
-            r.trapezoid(cab.bottom() - 6.0f, cab.centerX() - 120.0f,
-                cab.centerX() + 120.0f, kFloorLine - 18.0f, cab.centerX() - 72.0f,
-                cab.centerX() + 72.0f, theme::bg3);
-            r.roundRect(Rect { cab.centerX() - 168.0f, kFloorLine - 22.0f, 336.0f,
-                           28.0f },
-                10.0f, theme::bg2);
-            r.roundRect(Rect { cab.centerX() - 186.0f, kFloorLine - 6.0f, 372.0f,
-                           16.0f },
-                8.0f, theme::bg3);
+            // The stand first, so the body sits on top of it: a waisted column
+            // from the cabinet down to a plinth on the carpet, with the shadow
+            // under that.
+            float cx = cab.centerX();
+            r.ellipse(cx, kBaseY + 24.0f, 230.0f, 28.0f, theme::bg0.scaleAlpha(0.34f),
+                0.0f);
+            // Narrow at the waist, flaring at both ends - two trapezoids doing
+            // the work of a turned column.
+            float waist = (cab.bottom() + kBaseY) * 0.5f;
+            r.trapezoid(cab.bottom() - 8.0f, cx - 132.0f, cx + 132.0f, waist,
+                cx - 62.0f, cx + 62.0f, theme::bg3);
+            r.trapezoid(waist, cx - 62.0f, cx + 62.0f, kBaseY - 18.0f, cx - 120.0f,
+                cx + 120.0f, theme::bg3);
+            r.roundRect(Rect { cx - 150.0f, kBaseY - 22.0f, 300.0f, 26.0f }, 10.0f,
+                theme::bg2);
+            r.roundRect(Rect { cx - 176.0f, kBaseY - 2.0f, 352.0f, 20.0f }, 9.0f,
+                theme::bg3);
 
             // Body: lit from above, with a chrome rail down each side.
             r.gradientRect(cab, theme::bg2, theme::bg1, theme::r5, theme::r4);
@@ -544,10 +549,9 @@ namespace {
             }
 
             // A coin slot, and the tray it pays into.
-            r.roundRect(Rect { cab.centerX() - 46.0f, cab.y + cab.h - 118.0f, 92.0f,
-                           14.0f },
+            r.roundRect(Rect { cx - 46.0f, kWinY + kWinH + 22.0f, 92.0f, 14.0f },
                 7.0f, theme::bg0);
-            Rect tray { cab.x + 132.0f, cab.y + cab.h - 88.0f, cab.w - 264.0f, 52.0f };
+            Rect tray { cab.x + 132.0f, kWinY + kWinH + 48.0f, cab.w - 264.0f, 50.0f };
             r.roundRect(tray, theme::r2, theme::bg0.scaleAlpha(0.65f));
             r.rect(Rect { tray.x + 12.0f, tray.y + 8.0f, tray.w - 24.0f, 3.0f },
                 theme::bg3.scaleAlpha(0.7f));
@@ -696,7 +700,7 @@ namespace {
             app.hint("X", m_five ? "three symbols" : "five symbols");
             app.hint("B", "back");
 
-            Rect box = plate(720.0f, 250.0f);
+            Rect box = plate(800.0f, 250.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s6, theme::s5);
@@ -723,7 +727,7 @@ namespace {
             drawButtons(app, r,
                 Rect { inner.x, std::max(inner.bottom() - kButton, y + theme::s4),
                     inner.w, kButton },
-                "Spin for nothing", coins >= kStake);
+                "Spin for free", coins >= kStake);
             drawBack(app, r, box);
         }
 
@@ -733,7 +737,7 @@ namespace {
             app.hint("X", m_five ? "three symbols" : "five symbols");
             app.hint("B", "back");
 
-            Rect box = plate(720.0f, 250.0f);
+            Rect box = plate(800.0f, 250.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s6, theme::s5);
@@ -787,9 +791,12 @@ namespace {
             bool canStake)
         {
             std::string staked = format("Bet %u coins", unsigned(kStake));
-            Rect plain { row.x, row.y, ui::actionButtonWidth(r, plainLabel), row.h };
-            Rect stake { plain.right() + theme::s4, row.y,
-                ui::actionButtonWidth(r, staked), row.h };
+            float plainW = ui::actionButtonWidth(r, plainLabel);
+            float stakeW = ui::actionButtonWidth(r, staked);
+
+            Rect plain { row.x, row.y, plainW, row.h };
+            Rect stake { std::max(plain.right() + theme::s4, row.right() - stakeW),
+                row.y, stakeW, row.h };
 
             app.touchZone(plain, Zone_Spin);
             if (canStake)
