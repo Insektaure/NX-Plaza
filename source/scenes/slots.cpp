@@ -42,16 +42,16 @@ namespace {
 
     // A one armed bandit, in two machines.
     //
-    // Three reels either way. The three symbol machine pays small and often -
-    // a triple every ninth spin - and the five symbol one pays rarely and big,
-    // a triple every twenty-fifth. Same five coin stake for both, so the choice
+    // Three reels either way. The three symbol machine hits a triple every
+    // ninth spin for five to ten coins; the five symbol one hits one every
+    // twenty-fifth and pays up to forty. A coin a spin for both, so the choice
     // is what kind of evening you want rather than what you can afford:
     //
-    //     three symbols: (40 + 25 + 15 + 18*2) / 27  = 4.30 against 5
-    //     five symbols:  (120 + 80 + 50 + 30 + 30
-    //                     + 12*10 + 48*2) / 125      = 4.21 against 5
+    //     three symbols: (10 + 8 + 5) / 27          = 0.85 against 1
+    //     five symbols:  (40 + 25 + 15 + 7 + 7
+    //                     + 12*1) / 125             = 0.85 against 1
     //
-    // which is fourteen and sixteen per cent to the plaza. The paytable down
+    // which is fifteen per cent to the plaza either way. The paytable down
     // the right is drawn from the very arrays the payout is read out of, so the
     // board on the wall cannot promise something the machine does not pay.
     //
@@ -178,15 +178,21 @@ namespace {
         };
 
         static constexpr int kReels = 3;
-        static constexpr uint32_t kStake = 5;
+        // A coin a spin, so ten a day is ten goes rather than two.
+        static constexpr uint32_t kStake = 1;
         // What three of a kind pays, per symbol, per machine. The three symbol
         // machine only ever uses the first three.
-        static constexpr uint32_t kTripleThree[Sym_Count] = { 40, 25, 15, 0, 0 };
-        static constexpr uint32_t kTripleFive[Sym_Count] = { 30, 30, 50, 120, 80 };
-        static constexpr uint32_t kPair = 2;
-        // Two sevens and nothing else: the near miss with its own line, and the
-        // detail that makes a five symbol machine feel like a machine.
-        static constexpr uint32_t kTwoSevens = 10;
+        static constexpr uint32_t kTripleThree[Sym_Count] = { 10, 8, 5, 0, 0 };
+        static constexpr uint32_t kTripleFive[Sym_Count] = { 7, 7, 15, 40, 25 };
+        // Nothing for a pair, and it cannot be otherwise at this price: two of
+        // a kind lands on eighteen of the twenty seven lines, so paying even a
+        // single coin for it is two thirds of a coin a spin - the whole budget,
+        // with nothing left for the triples. So the prizes are multiples of the
+        // stake instead, which is how a machine is meant to read.
+        static constexpr uint32_t kPair = 0;
+        // Two sevens gives the stake back: the near miss with its own line, and
+        // the detail that makes a five symbol machine feel like a machine.
+        static constexpr uint32_t kTwoSevens = 1;
 
         // Reels stop left to right, a third of a second apart.
         static constexpr float kStop = 1.0f;
@@ -261,7 +267,7 @@ namespace {
             Wallet& wallet = Wallet::get();
             if (staked) {
                 if (!wallet.spend(kStake)) {
-                    app.toast(format("%u coins a spin", unsigned(kStake)),
+                    app.toast("A coin a spin",
                         "Ten arrive on each new day you open the app.");
                     return;
                 }
@@ -679,17 +685,20 @@ namespace {
                     VAlign::Top);
                 y += line.size * theme::leadingNormal + 6.0f;
             }
-            r.text(inner.x, y, "Any two the same", line);
-            r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
-                format("%u", unsigned(kPair)), amount, Align::Right, VAlign::Top);
-            y += line.size * theme::leadingNormal + theme::s3;
+            if (kPair > 0) {
+                r.text(inner.x, y, "Any two the same", line);
+                r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
+                    format("%u", unsigned(kPair)), amount, Align::Right, VAlign::Top);
+                y += line.size * theme::leadingNormal;
+            }
+            y += theme::s3;
 
             TextStyle note;
             note.size = theme::textXs;
             note.color = theme::fg4;
             note.tracking = theme::trackingWide;
             r.text(inner.x, y,
-                m_five ? "a triple about every 25 spins" : "a triple about every 9",
+                m_five ? "a line about every 7 spins" : "a triple about every 9",
                 note);
         }
 
@@ -729,8 +738,8 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 80.0f },
-                format("%u coins a spin, and %u to spend. X changes machines.",
-                    unsigned(kStake), unsigned(coins)),
+                format("A coin a spin, and %u to spend. X changes machines.",
+                    unsigned(coins)),
                 body, 2);
 
             drawButtons(app, r,
@@ -765,7 +774,7 @@ namespace {
             if (triple)
                 headline = format("Three %s", symbolName(m_reel[0]));
             else if (would > 0)
-                headline = "A pair";
+                headline = "Two sevens";
             else
                 headline = "Nothing";
             r.text(inner.x, y, headline, title);
@@ -780,7 +789,8 @@ namespace {
                 line = m_paid > 0
                     ? format("%u coins, and %u to spend.", unsigned(m_paid),
                           unsigned(Wallet::get().balance()))
-                    : format("Five gone. %u left.", unsigned(Wallet::get().balance()));
+                    : format("That coin is gone. %u left.",
+                          unsigned(Wallet::get().balance()));
             } else {
                 line = would > 0
                     ? format("Nothing staked, so nothing won - it would have paid %u.",
@@ -799,7 +809,7 @@ namespace {
         void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
             bool canStake)
         {
-            std::string staked = format("Bet %u coins", unsigned(kStake));
+            std::string staked = format("Bet %u coin", unsigned(kStake));
             float plainW = ui::actionButtonWidth(r, plainLabel);
             float stakeW = ui::actionButtonWidth(r, staked);
 

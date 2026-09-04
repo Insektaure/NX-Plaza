@@ -49,8 +49,8 @@ namespace {
         { ui::Icon::Bell, "The bandit",
             "Three reels, and two machines: three symbols that pay small and "
             "often, or five that pay rarely and big.\n"
-            "Five coins a spin, or spin for nothing - the board on the wall "
-            "lists every line it pays.",
+            "A coin a spin, or spin for nothing - the board on the wall lists "
+            "every line it pays.",
             &makeSlotsScene, nullptr, nullptr },
         { ui::Icon::Stack, "The Mii tower",
             "Stack the people you have crossed, one drop at a time.\n"
