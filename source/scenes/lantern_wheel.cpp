@@ -33,18 +33,12 @@ namespace {
 
     // Twelve lanterns and a needle.
     //
-    // Every lantern pays something. Five give two coins back, four give five,
-    // two give eight and one gives a puzzle piece, so a spin is a question of
-    // how much rather than whether - which is the only version of this worth
-    // having. Against a ten coin stake that is eight coins of expected value:
+    // Every lantern pays something: ten give a coin back and two give a puzzle
+    // piece. That makes it a piece lottery with a consolation rather than a
+    // coin game, which is the honest shape for a wheel whose prize is worth
+    // fifty. Against a ten coin stake:
     //
-    //     (5*2 + 4*5 + 2*8 + 50) / 12 = 8.0
-    //
-    // taking the piece at the fifty the shop charges for one. A fifth of the
-    // stake to the plaza, and a piece off the wheel costs twelve spins on
-    // average - a hundred and twenty coins against the shop's fifty. That is
-    // deliberate: the wheel is the romantic way to get a piece and the shop is
-    // the sensible one, so neither undercuts the other.
+    //     (10*1 + 2*50) / 12 = 9.17
     //
     // The landing is chosen before the needle moves and the spin is solved
     // backwards from it, so no amount of dropped frames can change the prize.
@@ -151,12 +145,18 @@ namespace {
 
         static constexpr int kLanterns = 12;
         static constexpr uint32_t kStake = 10;
-        // The board, in the order the lanterns are drawn. Every one pays.
-        // A zero here means the piece, which is worth more than any of them.
+        // The board, in the order the lanterns are drawn. A zero means a
+        // puzzle piece.
+        // Paying two a lantern instead would be exactly even money, and a
+        // wheel with no edge stops draining coins.
         static constexpr uint32_t kPrize[kLanterns] = {
-            2, 5, 2, 8, 2, 5, 0, 5, 2, 8, 2, 5,
+            1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1,
         };
-        static constexpr int kPieceLantern = 6;
+
+        static bool piecePays(int index)
+        {
+            return kPrize[size_t(index)] == 0;
+        }
         // What the piece lantern pays when every puzzle is already finished
         // and there is no piece left to hand over.
         static constexpr uint32_t kInsteadOfPiece = 25;
@@ -380,7 +380,7 @@ namespace {
             if (!m_staked)
                 return;
 
-            if (m_landed == kPieceLantern) {
+            if (piecePays(m_landed)) {
                 Store::PiecePurchase got = app.store().buyPiece(false, kWheelSource);
                 if (got.set >= 0) {
                     m_piece = true;
@@ -443,18 +443,40 @@ namespace {
                 r.circle(x - kLampR * 0.22f, y - kLampR * 0.26f, kLampR * 0.4f,
                     under || won ? theme::accentSoft : theme::bg3);
 
-                // What it pays, under the lantern. Readable before you spin,
-                // which is the difference between a wheel and a slot machine.
+                // What it pays.
                 TextStyle label;
                 label.size = theme::textSm;
                 label.weight = FontWeight::Bold;
                 label.color = under || won ? theme::accent : theme::fg3;
-                std::string what = i == kPieceLantern
-                    ? std::string("piece")
-                    : format("%u", unsigned(kPrize[size_t(i)]));
-                float lift = std::sin(a) < -0.3f ? -kLampR - 34.0f : kLampR + 12.0f;
-                r.text(Rect { x - 70.0f, y + lift, 140.0f, 26.0f }, what, label,
-                    Align::Center, VAlign::Top);
+                float out = kRadius + kLampR + 26.0f;
+                float lx = kCentreX + std::cos(a) * out;
+                float ly = kCentreY + std::sin(a) * out;
+
+                // Placed by its own width, so a label to the right of the ring
+                // starts at the ring and one to the left ends there, instead of
+                // being centred on a point that leaves it half over the
+                // lanterns.
+                float cosA = std::cos(a);
+                auto placeX = [cosA, lx](float w) {
+                    if (cosA > 0.35f)
+                        return lx;
+                    if (cosA < -0.35f)
+                        return lx - w;
+                    return lx - w * 0.5f;
+                };
+
+                if (piecePays(i)) {
+                    // The puzzle's own icon rather than the word.
+                    constexpr float kMark = 36.0f;
+                    ui::icon(r,
+                        Rect { placeX(kMark), ly - kMark * 0.5f, kMark, kMark },
+                        ui::Icon::Puzzle, label.color, 2.5f);
+                } else {
+                    std::string what = format("%u", unsigned(kPrize[size_t(i)]));
+                    float w = r.measure(what, label);
+                    r.text(Rect { placeX(w), ly - 13.0f, w, 26.0f }, what, label,
+                        Align::Left, VAlign::Middle);
+                }
             }
         }
 
@@ -540,7 +562,7 @@ namespace {
             Rect inner = box.inset(theme::s7, theme::s5);
             float y = inner.y;
 
-            bool onPiece = m_landed == kPieceLantern;
+            bool onPiece = piecePays(m_landed);
 
             TextStyle title;
             title.size = theme::textXl;

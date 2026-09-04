@@ -72,7 +72,7 @@ std::unique_ptr<Scene> makePlazaDashScene();
 std::unique_ptr<Scene> makeDiceDuelScene();
 // A tower built out of the people you have crossed, one drop at a time.
 std::unique_ptr<Scene> makeMiiTowerScene();
-// Twelve lanterns, a needle, and one of them is a puzzle piece.
+// Twelve lanterns, a needle, and two of them are a puzzle piece.
 std::unique_ptr<Scene> makeLanternWheelScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeSettingsScene();
