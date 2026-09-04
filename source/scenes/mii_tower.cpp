@@ -110,6 +110,7 @@ namespace {
             r.clear(theme::bg0);
             float horizon = kGroundY + lift() + m_slide;
             ui::plazaBackdrop(r, 0.0f, horizon);
+            drawClouds(r);
             if (horizon < Renderer::DesignHeight)
                 ui::plazaGround(r, 0.0f, horizon);
 
@@ -169,6 +170,10 @@ namespace {
         static constexpr float kLeanMax = 168.0f;
         static constexpr float kDeadCentre = 6.0f;
         static constexpr float kGravity = 2600.0f;
+        static constexpr float kCloudGap = 420.0f; // one band of sky to the next
+        // Half the storey gone in 50ms, settled by 350: quick enough to keep
+        // up with a fast stacker, soft enough not to jolt.
+        static constexpr float kCameraRate = 14.0f;
 
         // How far the world has risen. Nothing until the tower outgrows the
         // room above it, then one storey per floor.
@@ -283,9 +288,19 @@ namespace {
             }
 
             if (m_slide < 0.0f) {
-                // The world catching up after a landing: 108px in about a
-                // fifth of a second, then it stops dead.
-                m_slide = std::min(m_slide + kFloor * dt / 0.18f, 0.0f);
+                // The world catching up after a landing.
+                //
+                // An exponential approach rather than a constant crawl: it
+                // covers most of the storey in the first few frames and eases
+                // into place over about a third of a second, where the old
+                // version slid at a flat 600 pixels a second and then stopped
+                // dead on arrival. Same idiom the nav rail's highlight uses.
+                m_slide += -m_slide * std::min(1.0f, dt * kCameraRate);
+                // An exponential never quite arrives, and m_slide feeds the
+                // landing height for the next drop, so it is snapped rather
+                // than left a fraction of a pixel out forever.
+                if (m_slide > -0.5f)
+                    m_slide = 0.0f;
             }
 
             if (!m_dropping) {
@@ -396,6 +411,54 @@ namespace {
                 return;
             Rect box { f.x - kFigure * 0.42f, feet - kFigure, kFigure * 0.84f, kFigure };
             ui::miiFigure(r, box, f.mii, fade);
+        }
+
+        // Clouds, so the sky is not a flat gradient once the tower has climbed
+        // above the hills.
+        //
+        // Procedural and unstored: a band every 420 world pixels, its x and its
+        // size hashed from the band's own index, drawn through the same
+        // transform the floors use - so they come down past you as the world
+        // rises and a band keeps its place when it leaves the screen and comes
+        // back. Only the two or three bands on screen are drawn.
+        void drawClouds(Renderer& r) const
+        {
+            // Lighter than the sky in daylight, a pale wisp against it at
+            // night. No single palette colour is lighter than that gradient in
+            // both themes, so this is one of the few places worth asking which
+            // one is in force.
+            Color puff = theme::resolvedMode() == theme::Mode::Dark
+                ? theme::fg1.scaleAlpha(0.10f)
+                : theme::bg1.scaleAlpha(0.85f);
+
+            float base = kGroundY - 260.0f + lift() + m_slide;
+            int first = int(std::floor((base - Renderer::DesignHeight - 200.0f)
+                / kCloudGap));
+            for (int k = std::max(first, 0); k < first + 8; k++) {
+                float y = base - float(k) * kCloudGap;
+                if (y < -200.0f || y > Renderer::DesignHeight + 200.0f)
+                    continue;
+
+                uint32_t h = uint32_t(k) * 2654435761u;
+                float x = 120.0f + float(h % 1600u);
+                float scale = 0.7f + float((h >> 9) % 70u) * 0.01f;
+                drawCloud(r, x, y, scale, puff);
+            }
+        }
+
+        static void drawCloud(Renderer& r, float x, float y, float scale, Color puff)
+        {
+            // Five overlapping ellipses: three humps on a long flat base, which
+            // is the fewest that stops reading as a row of circles.
+            r.ellipse(x, y + 14.0f * scale, 132.0f * scale, 26.0f * scale, puff, 0.0f);
+            r.ellipse(x - 54.0f * scale, y + 4.0f * scale, 52.0f * scale,
+                34.0f * scale, puff, 0.0f);
+            r.ellipse(x + 8.0f * scale, y - 14.0f * scale, 66.0f * scale,
+                46.0f * scale, puff, 0.0f);
+            r.ellipse(x + 66.0f * scale, y + 2.0f * scale, 44.0f * scale,
+                30.0f * scale, puff, 0.0f);
+            r.ellipse(x + 24.0f * scale, y + 10.0f * scale, 60.0f * scale,
+                30.0f * scale, puff, 0.0f);
         }
 
         void drawTower(Renderer& r) const
