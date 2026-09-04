@@ -22,6 +22,10 @@ namespace {
         const char* body;
         std::unique_ptr<Scene> (*open)();
         const char* score; // key into the best-score table, or null
+        // What that score is counted in. The row used to say metres for
+        // whatever it found, which turned the tower's eleven floors into
+        // eleven metres.
+        const char* unit;
     };
 
     const Game kShelf[] = {
@@ -30,24 +34,24 @@ namespace {
             "nobody is faster than anybody.\n"
             "Watch for nothing, bet a coin for three back, or call first and "
             "second for eleven.",
-            &makeMiiRaceScene, nullptr },
+            &makeMiiRaceScene, nullptr, nullptr },
         { ui::Icon::Dice, "The dice duel",
             "One roll each against somebody you have crossed, and the highest "
             "takes it.\n"
             "Roll for nothing, or bet two coins for three back - and a draw "
             "hands your two back.",
-            &makeDiceDuelScene, nullptr },
+            &makeDiceDuelScene, nullptr, nullptr },
         { ui::Icon::Stack, "The Mii tower",
             "Stack the people you have crossed, one drop at a time.\n"
             "Miss the shoulders below and they fall; drift too far from the base "
             "and the lot goes over.",
-            &makeMiiTowerScene, "tower" },
+            &makeMiiTowerScene, "tower", "floors" },
         { ui::Icon::Runner, "Plaza dash",
             "Your own Mii running through the plaza, jumping what the market "
             "leaves in the way.\n"
             "It gets quicker. Nothing staked, nothing won - only how far you "
             "got.",
-            &makePlazaDashScene, "dash" },
+            &makePlazaDashScene, "dash", "m" },
     };
     constexpr int kGames = int(sizeof(kShelf) / sizeof(kShelf[0]));
 
@@ -176,7 +180,8 @@ namespace {
                 meta.color = theme::fg3;
                 meta.tracking = theme::trackingWide;
                 r.text(Rect { textX, inner.y, textW, name.size * theme::leadingSnug },
-                    format("best %u m", unsigned(best)), meta, Align::Right,
+                    format("best %u %s", unsigned(best), entry.unit), meta,
+                    Align::Right,
                     VAlign::Top);
             }
 
