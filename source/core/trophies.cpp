@@ -54,6 +54,9 @@ namespace {
         { "dice_six_all", "Six all",
             "Roll a six against a six.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.diceSixAll; } },
+        { "slots_lined", "Lined up",
+            "Line up three of a kind at the bandit.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.slotsLined != 0; } },
         { "wheel_piece", "The wheel's own",
             "Win a puzzle piece on the lantern wheel.", Tier::Bronze,
             [](const TrophyFacts& f) { return f.wheelPieces >= 1; } },
@@ -165,6 +168,11 @@ namespace {
             [](const TrophyFacts& f) { return f.coinsWon >= 50; } },
         // Two pieces is about a dozen spins, which is a hundred and twenty
         // coins put through the wheel.
+        { "slots_sevens", "Sevens",
+            "Line up three sevens at the bandit.", Tier::Silver,
+            [](const TrophyFacts& f) {
+                return (f.slotsLined & TrophyFacts::kSlotsSeven) != 0;
+            } },
         { "wheel_twice", "Twice lucky",
             "Win two puzzle pieces on the lantern wheel.", Tier::Silver,
             [](const TrophyFacts& f) { return f.wheelPieces >= 2; } },
@@ -229,6 +237,15 @@ namespace {
         { "by_hand", "By hand alone",
             "Finish a puzzle without buying a single piece.", Tier::Gold,
             [](const TrophyFacts& f) { return f.puzzleByHand; } },
+        // Sun, moon and bell come cheaply off the three symbol machine at one
+        // in nine each. The seven and the bar only exist on the five symbol
+        // one at one in a hundred and twenty five, so the last two are the
+        // wall - and going after them means deliberately changing machines.
+        { "slots_full_set", "The full set",
+            "Line up three of a kind of every symbol the bandit has.", Tier::Gold,
+            [](const TrophyFacts& f) {
+                return (f.slotsLined & TrophyFacts::kSlotsAll) == TrophyFacts::kSlotsAll;
+            } },
         // Five is thirty spins on average - three hundred coins, a month of
         // showing up, fed to a wheel one spin at a time.
         { "wheel_five", "Five from the wheel",

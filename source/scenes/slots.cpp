@@ -193,6 +193,7 @@ namespace {
         // Two sevens gives the stake back: the near miss with its own line, and
         // the detail that makes a five symbol machine feel like a machine.
         static constexpr uint32_t kTwoSevens = 1;
+        static constexpr const char* kMaskKey = "slots_lined";
 
         // Reels stop left to right, a third of a second apart.
         static constexpr float kStop = 1.0f;
@@ -300,6 +301,21 @@ namespace {
             m_phase = Phase_Done;
             for (int i = 0; i < kReels; i++)
                 m_pos[i] = float(m_reel[i]);
+
+            // Which symbols have ever come up three of a kind, as five bits in
+            // one number. It answers three questions at once - have you ever
+            // lined anything up, have you had the sevens, and have you had all
+            // five - so the machine records one fact rather than three.
+            //
+            // Recorded on a free spin as well: nothing is paid out for it, but
+            // the reels did what they did, and a trophy that ignored a free
+            // seven would be a trophy about money rather than about luck.
+            if (m_reel[0] == m_reel[1] && m_reel[1] == m_reel[2]) {
+                Store& store = app.store();
+                uint32_t mask = store.bestScore(kMaskKey)
+                    | (1u << uint32_t(m_reel[0]));
+                store.setScore(kMaskKey, mask);
+            }
 
             if (!m_staked)
                 return;

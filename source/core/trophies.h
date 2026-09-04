@@ -75,6 +75,13 @@ struct TrophyFacts {
     uint32_t diceStreakBest = 0;
     bool diceSixAll = false;
 
+    // Which of the bandit's symbols have come up three of a kind, one bit
+    // each: sun, moon, bell, seven, bar. One number for three trophies - any
+    // line at all, the sevens, and the whole set.
+    uint32_t slotsLined = 0;
+    static constexpr uint32_t kSlotsSeven = 1u << 3;
+    static constexpr uint32_t kSlotsAll = 0x1Fu;
+
     // Pieces won on the lantern wheel. A spin leaves nothing else behind -
     // a free go writes nothing at all, and a coin prize is indistinguishable
     // from the race's or the dice's once it is in the wallet.
