@@ -373,27 +373,101 @@ namespace {
 
         void drawRoom(Renderer& r) const
         {
-            // A room rather than a plaza: a warm wall, a dado, and a patterned
-            // floor. Nothing here is art, and the palette does the work so it
-            // follows the theme like everything else.
-            r.gradientRect(Rect { 0.0f, 0.0f, Renderer::DesignWidth, 700.0f },
-                theme::bg1, theme::bg0);
-            r.rect(Rect { 0.0f, 694.0f, Renderer::DesignWidth, 6.0f }, theme::accentTint);
-            r.gradientRect(Rect { 0.0f, 700.0f, Renderer::DesignWidth,
-                               Renderer::DesignHeight - 700.0f },
-                theme::bg2, theme::bg1);
+            // A room rather than a gradient: papered wall, a dado rail with
+            // panelling under it, sconces either side, a rail of bulbs along
+            // the ceiling and a patterned carpet. Every colour is a palette
+            // colour, so it follows the theme, and all of it is kept at low
+            // contrast - the reels and the board on the wall are what the eye
+            // is supposed to find.
+            constexpr float kFloorY = 700.0f;
+            constexpr float kDado = 560.0f;
 
+            r.gradientRect(Rect { 0.0f, 0.0f, Renderer::DesignWidth, kFloorY },
+                theme::bg1, theme::bg0);
+
+            // Harlequin paper: two sets of diagonals crossing, clipped to the
+            // wall above the dado.
+            //
+            // Bands with no discs on the ends: stroke() would put a cap at
+            // each end of all fifty-six lines, and every one of those ends is
+            // outside the clip anyway. That is a hundred and twelve draws the
+            // wall does not need.
+            r.pushClipVertical(Rect { 0.0f, 0.0f, Renderer::DesignWidth, kDado });
+            Color paper = theme::bg2.scaleAlpha(0.5f);
+            for (int lean = 0; lean < 2; lean++) {
+                float slope = lean == 0 ? 1.0f : -1.0f;
+                for (int i = -6; i < 22; i++) {
+                    float x = float(i) * 150.0f;
+                    float x2 = x + slope * (kDado + 80.0f);
+                    const float line[8] = { x - 1.0f, -40.0f, x2 - 1.0f, kDado + 40.0f,
+                        x2 + 1.0f, kDado + 40.0f, x + 1.0f, -40.0f };
+                    r.band(line, paper);
+                }
+            }
+            r.popClip();
+
+            // The rail, and the panelling below it.
+            r.rect(Rect { 0.0f, kDado, Renderer::DesignWidth, 10.0f },
+                theme::accentTint);
+            r.rect(Rect { 0.0f, kDado + 10.0f, Renderer::DesignWidth, 3.0f },
+                theme::bg3);
+            for (int i = 0; i < 8; i++) {
+                Rect panel { 24.0f + float(i) * 240.0f, kDado + 34.0f, 196.0f,
+                    kFloorY - kDado - 60.0f };
+                r.roundRect(panel, theme::r2, theme::bg1);
+                r.strokeRect(panel, theme::r2, theme::stroke, theme::bg3);
+            }
+
+            // Bulbs along the ceiling, which is the cheapest thing that says
+            // this is not a plaza. One wide glow behind the row rather than a
+            // glow each: a radial falloff is the most expensive call here, and
+            // fifteen of them across the top looks the same as one.
+            r.glow(Rect { -40.0f, -30.0f, Renderer::DesignWidth + 80.0f, 200.0f },
+                theme::accentGlow.scaleAlpha(0.20f), 1.6f);
+            for (int i = 0; i < 15; i++)
+                r.circle(60.0f + float(i) * 128.0f, 64.0f, 9.0f, theme::mark);
+
+            // A sconce on either side of the machine: bracket, shade, light.
+            drawSconce(r, 180.0f);
+            drawSconce(r, 1130.0f);
+
+            // Carpet: diamonds in two tones, which is what a casino floor is.
+            r.gradientRect(Rect { 0.0f, kFloorY, Renderer::DesignWidth,
+                               Renderer::DesignHeight - kFloorY },
+                theme::bg2, theme::bg1);
             for (int row = 0; row < 3; row++) {
-                float y = 760.0f + float(row) * 92.0f;
-                for (int i = 0; i < 14; i++) {
-                    float x = 60.0f + float(i) * 140.0f + (row % 2 ? 70.0f : 0.0f);
-                    r.ellipse(x, y, 26.0f, 12.0f, theme::bg3.scaleAlpha(0.7f), 0.0f);
+                float cy = kFloorY + 60.0f + float(row) * 120.0f;
+                for (int i = 0; i < 9; i++) {
+                    float cx = 40.0f + float(i) * 230.0f + (row % 2 ? 115.0f : 0.0f);
+                    diamond(r, cx, cy, 86.0f, 52.0f,
+                        theme::bg3.scaleAlpha((row + i) % 2 ? 0.55f : 0.28f));
                 }
             }
 
-            // And the light above the machine.
-            r.glow(Rect { kCabX + kCabW * 0.5f - 420.0f, -140.0f, 840.0f, 700.0f },
-                theme::accentGlow.scaleAlpha(0.18f), 2.0f);
+            // And the light hanging over the machine.
+            r.glow(Rect { kCabX + kCabW * 0.5f - 420.0f, -120.0f, 840.0f, 700.0f },
+                theme::accentGlow.scaleAlpha(0.16f), 2.0f);
+        }
+
+        // Two trapezoids back to back: the renderer has no rotated rectangle,
+        // and a diamond is the one shape that does not need one.
+        static void diamond(Renderer& r, float cx, float cy, float w, float h,
+            Color ink)
+        {
+            r.trapezoid(cy - h * 0.5f, cx, cx, cy, cx - w * 0.5f, cx + w * 0.5f, ink);
+            r.trapezoid(cy, cx - w * 0.5f, cx + w * 0.5f, cy + h * 0.5f, cx, cx, ink);
+        }
+
+        static void drawSconce(Renderer& r, float x)
+        {
+            constexpr float kY = 360.0f;
+            r.rect(Rect { x - 4.0f, kY, 8.0f, 46.0f }, theme::bg3);
+            // The shade, wider at the bottom, with the light inside it.
+            r.trapezoid(kY + 40.0f, x - 20.0f, x + 20.0f, kY + 96.0f, x - 46.0f,
+                x + 46.0f, theme::bg2);
+            r.glow(Rect { x - 110.0f, kY + 20.0f, 220.0f, 220.0f },
+                theme::accentGlow.scaleAlpha(0.28f), 1.9f);
+            r.circle(x, kY + 96.0f, 13.0f, theme::mark);
         }
 
         void drawCabinet(App& app, Renderer& r)
