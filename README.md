@@ -68,10 +68,9 @@ The dice duel is one roll each against somebody you have crossed: the dice fly
 in and bounce, faces flickering, and the highest takes it. Roll for nothing, or
 bet two coins for three back - a draw hands your two straight back.
 
-The lantern wheel is the plaza's own gamble: twelve lanterns, a needle, ten
-coins a spin, and every lantern pays something - two coins, five, eight, or a
-puzzle piece. A piece takes twelve spins on average, against fifty coins in the
-shop, so the wheel is the romantic way to get one rather than the sensible one.
+The lantern wheel is the plaza's own gamble: twelve lanterns and a needle.
+Watch it spin for nothing, or put ten coins on it, in which case every lantern
+pays something - two coins, five, eight, or a puzzle piece.
 
 The Mii tower stacks them instead: one swings above the tower, **A** drops it,
 and the tower is drawn from where every floor actually landed - so the lean you

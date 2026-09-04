@@ -46,6 +46,7 @@ namespace {
     public:
         enum Zone : int {
             Zone_Spin = Touch_SceneBase,
+            Zone_Stake,
             Zone_Back,
         };
 
@@ -62,6 +63,8 @@ namespace {
             m_landed = -1;
             m_paid = 0;
             m_piece = false;
+            m_staked = false;
+            m_button = 0;
             m_clock = 0.0f;
         }
 
@@ -76,22 +79,34 @@ namespace {
                 return;
             }
 
+            if (Wallet::get().balance() < kStake)
+                m_button = 0;
+
             TouchTarget tap;
             if (app.takeTap(tap)) {
                 if (tap.is(Zone_Back)) {
                     app.popOverlay();
                     return;
                 }
-                if (tap.is(Zone_Spin))
-                    begin(app);
+                if (tap.is(Zone_Spin)) {
+                    m_button = 0;
+                    begin(app, false);
+                } else if (tap.is(Zone_Stake)) {
+                    m_button = 1;
+                    begin(app, true);
+                }
                 return;
             }
             if (input.back()) {
                 app.popOverlay();
                 return;
             }
+            if (input.navLeft)
+                m_button = 0;
+            if (input.navRight && Wallet::get().balance() >= kStake)
+                m_button = 1;
             if (input.accept())
-                begin(app);
+                begin(app, m_button == 1);
         }
 
         void draw(App& app, Renderer& r) override
@@ -135,11 +150,17 @@ namespace {
         // and there is no piece left to hand over.
         static constexpr uint32_t kInsteadOfPiece = 25;
 
-        static constexpr float kHorizon = 760.0f;
+        // The ring sits above the plate and the plate above the hint strip.
+        // 330 +/- 240 is 90 to 570, and a label hangs 46 below that, which
+        // clears the plate at 672. It used to be a 260px ring centred at 470,
+        // whose labels ran 36px into the plate.
+        static constexpr float kHorizon = 640.0f;
         static constexpr float kCentreX = 960.0f;
-        static constexpr float kCentreY = 470.0f;
-        static constexpr float kRadius = 260.0f;
+        static constexpr float kCentreY = 330.0f;
+        static constexpr float kRadius = 240.0f;
         static constexpr float kLampR = 34.0f;
+        static constexpr float kHintRoom = 108.0f; // the strip, plus a gap
+        static constexpr float kButton = 76.0f;
 
         // Two and a half seconds of slowing down, then a moment on the answer.
         static constexpr float kSpin = 2.5f;
@@ -152,17 +173,21 @@ namespace {
             return -kTau * 0.25f + kTau * float(index) / float(kLanterns);
         }
 
-        void begin(App& app)
+        void begin(App& app, bool staked)
         {
             Wallet& wallet = Wallet::get();
-            if (!wallet.spend(kStake)) {
-                app.toast(format("%u coins for a spin", unsigned(kStake)),
-                    "Ten arrive on each new day you open the app.");
-                return;
+            if (staked) {
+                if (!wallet.spend(kStake)) {
+                    app.toast(format("%u coins for a spin", unsigned(kStake)),
+                        "Ten arrive on each new day you open the app.");
+                    return;
+                }
+                // Written before the needle moves, so leaving mid-spin still
+                // costs the stake.
+                wallet.flush();
             }
-            // Written before the needle moves, so leaving mid-spin still costs
-            // the stake.
-            wallet.flush();
+            m_staked = staked;
+            m_button = 0;
 
             m_landed = int(randomBelow(kLanterns));
             m_from = m_angle;
@@ -193,6 +218,13 @@ namespace {
         {
             m_phase = Phase_Done;
             if (m_landed < 0)
+                return;
+
+            // Watched for nothing: the needle still lands somewhere and the
+            // plate still says where, but nothing is handed over. A free spin
+            // that paid would make the wheel a coin printer - eight coins a
+            // go, for nothing - which is the one thing it must not be.
+            if (!m_staked)
                 return;
 
             if (m_landed == kPieceLantern) {
@@ -300,87 +332,132 @@ namespace {
         Rect plate(float width, float height) const
         {
             return Rect { Renderer::DesignWidth * 0.5f - width * 0.5f,
-                Renderer::DesignHeight - height - 130.0f, width, height };
+                Renderer::DesignHeight - kHintRoom - height, width, height };
         }
 
         void drawReady(App& app, Renderer& r)
         {
             uint32_t coins = Wallet::get().balance();
-            app.hint("A", coins >= kStake ? "spin" : "not enough");
+            app.hint("A", "spin");
             app.hint("B", "back");
 
-            Rect box = plate(1100.0f, 210.0f);
+            // 57 of title, two 36px lines of body, a gap and a 76px button
+            // row: 230 of interior, which 300 provides. The old plate was 210
+            // and drew its body straight through the button.
+            Rect box = plate(1100.0f, 300.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.94f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s5);
+            float y = inner.y;
 
             TextStyle title;
             title.size = theme::textXl;
             title.weight = FontWeight::Bold;
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
-            r.text(inner.x, inner.y, "The lantern wheel", title);
+            title.leading = theme::leadingSnug;
+            r.text(inner.x, y, "The lantern wheel", title);
+            y += title.size * theme::leadingSnug + 6.0f;
 
             TextStyle body;
             body.size = theme::textBase;
             body.color = theme::fg3;
-            r.text(inner.x, inner.y + title.size * theme::leadingSnug + 6.0f,
-                format("%u coins a spin. Every lantern pays something, and one of "
-                       "them is a puzzle piece. You have %u.",
+            body.leading = theme::leadingNormal;
+            y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
+                format("Watch it for nothing, or put %u coins on it. Every lantern "
+                       "pays something and one of them is a piece. You have %u.",
                     unsigned(kStake), unsigned(coins)),
-                body);
+                body, 2);
 
-            Rect go { inner.right() - ui::actionButtonWidth(r, "Spin"),
-                inner.bottom() - 76.0f, ui::actionButtonWidth(r, "Spin"), 76.0f };
-            if (coins >= kStake)
-                app.touchZone(go, Zone_Spin);
-            ui::actionButton(r, go, "Spin", coins >= kStake,
-                coins < kStake ? 0.0f
-                               : (app.touchHeld(Zone_Spin) ? 1.0f
-                                                           : 0.7f + 0.3f * m_pulse));
+            drawButtons(app, r,
+                Rect { inner.x, std::max(inner.bottom() - kButton, y + theme::s4),
+                    inner.w, kButton },
+                "Spin for nothing", coins >= kStake);
             drawBack(app, r, box);
         }
 
         void drawResult(App& app, Renderer& r)
         {
-            app.hint("A", "again");
+            app.hint("A", "spin");
             app.hint("B", "back");
 
-            Rect box = plate(1100.0f, 210.0f);
+            Rect box = plate(1100.0f, 300.0f);
             r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s5);
+            float y = inner.y;
+
+            bool onPiece = m_landed == kPieceLantern;
 
             TextStyle title;
             title.size = theme::textXl;
             title.weight = FontWeight::Bold;
             title.color = m_piece ? theme::accent : theme::fg1;
             title.tracking = theme::trackingTight;
-            std::string headline = m_piece
-                ? format("A piece of %s", m_pieceName.c_str())
-                : format("%u coins", unsigned(m_paid));
-            r.text(inner.x, inner.y, headline, title);
+            title.leading = theme::leadingSnug;
+            std::string headline;
+            if (m_piece)
+                headline = format("A piece of %s", m_pieceName.c_str());
+            else if (m_staked)
+                headline = format("%u coins", unsigned(m_paid));
+            else
+                headline = onPiece ? std::string("The piece lantern")
+                                   : format("The %u lantern",
+                                         unsigned(kPrize[size_t(m_landed)]));
+            r.text(inner.x, y, r.ellipsize(headline, title, inner.w), title);
+            y += title.size * theme::leadingSnug + 6.0f;
 
             TextStyle body;
             body.size = theme::textBase;
             body.color = theme::fg3;
-            std::string line = m_piece
-                ? format("Piece %d, and it will say the wheel brought it.",
-                      m_pieceIndex + 1)
-                : format("%u coins to spend. A spin costs %u.",
-                      unsigned(Wallet::get().balance()), unsigned(kStake));
-            r.text(inner.x, inner.y + title.size * theme::leadingSnug + 6.0f, line,
-                body);
+            body.leading = theme::leadingNormal;
+            std::string line;
+            if (m_piece) {
+                line = format("Piece %d, and the panel will say the wheel brought "
+                              "it. %u coins left.",
+                    m_pieceIndex + 1, unsigned(Wallet::get().balance()));
+            } else if (m_staked) {
+                line = format("%u coins to spend. A spin costs %u.",
+                    unsigned(Wallet::get().balance()), unsigned(kStake));
+            } else {
+                // The honest version of a free spin: it says what it landed on
+                // and that nothing was on it.
+                line = onPiece
+                    ? "Nothing was on it - that one only pays when you have staked."
+                    : format("Nothing staked, so nothing won. It would have paid %u.",
+                          unsigned(kPrize[size_t(m_landed)]));
+            }
+            y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f }, line, body, 2);
 
-            Rect go { inner.right() - ui::actionButtonWidth(r, "Again"),
-                inner.bottom() - 76.0f, ui::actionButtonWidth(r, "Again"), 76.0f };
-            bool can = Wallet::get().balance() >= kStake;
-            if (can)
-                app.touchZone(go, Zone_Spin);
-            ui::actionButton(r, go, "Again", can,
-                can ? (app.touchHeld(Zone_Spin) ? 1.0f : 0.7f + 0.3f * m_pulse)
-                    : 0.0f);
+            drawButtons(app, r,
+                Rect { inner.x, std::max(inner.bottom() - kButton, y + theme::s4),
+                    inner.w, kButton },
+                "Spin again", Wallet::get().balance() >= kStake);
             drawBack(app, r, box);
+        }
+
+        // Watch it, or put coins on it. The cursor starts on the free one
+        // every spin and there is no shortcut into the stake, the way the race
+        // and the dice do it.
+        void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
+            bool canStake)
+        {
+            std::string staked = format("Bet %u coins", unsigned(kStake));
+            Rect plain { row.x, row.y, ui::actionButtonWidth(r, plainLabel), row.h };
+            Rect stake { plain.right() + theme::s4, row.y,
+                ui::actionButtonWidth(r, staked), row.h };
+
+            app.touchZone(plain, Zone_Spin);
+            if (canStake)
+                app.touchZone(stake, Zone_Stake);
+
+            float pulse = 0.7f + 0.3f * m_pulse;
+            bool onStake = m_button == 1 && canStake;
+            ui::actionButton(r, plain, plainLabel, !onStake,
+                app.touchHeld(Zone_Spin) ? 1.0f : (onStake ? 0.0f : pulse));
+            ui::actionButton(r, stake, staked, onStake,
+                canStake && app.touchHeld(Zone_Stake) ? 1.0f
+                                                      : (onStake ? pulse : 0.0f));
         }
 
         void drawBack(App& app, Renderer& r, const Rect& box)
@@ -397,6 +474,8 @@ namespace {
         float m_from = 0.0f;  // where this spin started
         float m_sweep = 0.0f; // how far it turns
         int m_landed = -1;
+        bool m_staked = false;
+        int m_button = 0; // 0 = watch it, 1 = ten coins on it
         uint32_t m_paid = 0;
         bool m_piece = false;
         std::string m_pieceName;
