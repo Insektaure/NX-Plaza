@@ -676,10 +676,20 @@ namespace {
             amount.weight = FontWeight::Bold;
             amount.color = theme::fg1;
 
-            // Three of a kind, best first.
+            // Three of a kind, best first - sorted by what it pays rather
+            // than listed in a fixed symbol order.
             constexpr float kMark = 40.0f;
             constexpr float kRow = 48.0f;
             int order[Sym_Count] = { Sym_Seven, Sym_Bar, Sym_Bell, Sym_Sun, Sym_Moon };
+            for (int i = 1; i < Sym_Count; i++) {
+                int sym = order[i];
+                int j = i - 1;
+                while (j >= 0 && triples()[size_t(order[j])] < triples()[size_t(sym)]) {
+                    order[j + 1] = order[j];
+                    j--;
+                }
+                order[j + 1] = sym;
+            }
             for (int slot = 0; slot < Sym_Count; slot++) {
                 int sym = order[slot];
                 if (sym >= n)

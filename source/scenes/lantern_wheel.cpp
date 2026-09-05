@@ -168,6 +168,15 @@ namespace {
         {
             return kPrize[size_t(index)] == 0;
         }
+        // Counted off the board rather than written out, so the words on the
+        // plate cannot say one piece while the ring hands out two.
+        static constexpr int pieceLanterns()
+        {
+            int n = 0;
+            for (uint32_t prize : kPrize)
+                n += prize == 0 ? 1 : 0;
+            return n;
+        }
         // What the piece lantern pays when every puzzle is already finished
         // and there is no piece left to hand over.
         static constexpr uint32_t kInsteadOfPiece = 25;
@@ -566,8 +575,9 @@ namespace {
             body.leading = theme::leadingNormal;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
                 format("Watch it for nothing, or put %u coins on it. Every lantern "
-                       "pays something and one of them is a piece. You have %u.",
-                    unsigned(kStake), unsigned(coins)),
+                       "pays something and %d of the %d are a puzzle piece. You "
+                       "have %u.",
+                    unsigned(kStake), pieceLanterns(), kLanterns, unsigned(coins)),
                 body, 2);
 
             drawButtons(app, r,
