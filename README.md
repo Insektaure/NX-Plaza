@@ -57,44 +57,37 @@ on. Finish one and **A** puts the picture on the screen on its own.
 
 ![A puzzle board with two pieces found, and the panel naming the piece under the cursor](screenshots/014.jpg)
 
-**Games.** Things to play with the people you have crossed. The first is the
-Mii race: 3 of them against your own Mii in four lanes, a countdown, a
-parallax run and a finish line. Nobody is faster than anybody - every result is
-drawn before the countdown ends. Watching costs nothing; a coin on your own Mii
-gets 3 back, and calling first and second in order gets 11. The odds are honest and they are against you, so the
-races are a way to spend coins and not a way to make them.
+**Games.** Six things to play with the people you have crossed. All of them
+can be played for nothing; where there is a bet it is optional, and the odds
+are honest and against you, so the games are a way to spend coins rather than a
+way to make them.
 
-The dice duel is one roll each against somebody you have crossed: the dice fly
-in and bounce, faces flickering, and the highest takes it. Roll for nothing, or
-bet two coins for three back - a draw hands your two straight back.
-
-The lantern wheel is the plaza's own gamble: twelve lanterns and a needle.
-Watch it spin for nothing, or put ten coins on it - every lantern pays
-something and two of the twelve pay a puzzle piece, so it is a piece lottery at
-one chance in six with coins as the consolation.
-
-The bandit is a slot machine in a casino room, in two machines: three symbols
-that hit a triple about every ninth spin for five to ten coins, or five symbols
-that hit about every seventh and pay up to forty. **X** switches between them, a
-spin is one coin or free, and the board on the wall lists every line either
-machine pays.
-
-The Mii tower stacks them instead: one swings above the tower, **A** drops it,
-and the tower is drawn from where every floor actually landed - so the lean you
-have to correct is the one you can see. Miss the shoulders below and that floor
-falls; drift too far from the base and the lot goes over.
-
-Plaza dash is the last of the six: your own Mii runs through the same plaza,
-**A** jumps and holding it jumps higher, and it gets quicker until you hit
-something. Nothing is staked and nothing is won - it keeps a best distance and
-that is all.
+- **The Mii race** - three people you have met against your own Mii, over four
+  lanes. Back your Mii for a coin, or call first and second for more.
+- **The dice duel** - one roll each against somebody you crossed, highest takes
+  it, a draw hands your bet back.
+- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
+  something and two of them pay a puzzle piece.
+- **The bandit** - a slot machine in a casino room, two sets of reels with
+  **X** to switch, and a board on the wall listing every line it pays.
+- **The Mii tower** - drop the people you have met on top of each other, one
+  floor at a time, and keep the tower standing.
+- **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
+  gets quicker until you hit something. Nothing staked and nothing won: it
+  keeps a best distance and that is all.
 
 |                                                                            | |
 |----------------------------------------------------------------------------| --- |
 | ![The games shelf, with the Mii race on it](screenshots/017.jpg)           | ![Four runners on the start line, and the three ways to play](screenshots/018.jpg) |
-| *The shelf - one game so far, and the coins you have.*                     | *Race for nothing, a coin on your own Mii, or call first and second.* |
+| *The shelf - what there is to play, and the coins you have.*               | *Race for nothing, a coin on your own Mii, or call first and second.* |
 | ![Mid-race, four Miis running between the lamp posts](screenshots/019.jpg) | ![The finishing order, with everybody's time](screenshots/20.jpg) |
 | *The run - a parallax race track, and who is in front.*                    | *The order at the line, to the hundredth of a second.* |
+| ![The dice duel, two Miis facing each other with a die in front of each](screenshots/21.jpg) | ![The lantern wheel under its big top, with what each lantern pays written beside it](screenshots/22.jpg) |
+| *The dice duel - roll for nothing, or two coins for three back.*            | *The wheel - what every lantern pays, written up before you spin.* |
+| ![The bandit's cabinet on its pedestal, with the paytable on the wall beside it](screenshots/23.jpg) | ![The Mii tower, somebody swinging above the base](screenshots/24.jpg) |
+| *The bandit - three symbols or five, and the board listing every line.*     | *The tower - whoever is swinging drops where you let go.* |
+| ![Plaza dash, your own Mii on the start of a run](screenshots/25.jpg)       | |
+| *Plaza dash - your own Mii, the market to jump, and a best distance.*       | |
 
 **The shop.** Ten coins for every new day you open the app, granted by the
 plaza's clock so the console's own cannot mint them.
