@@ -433,13 +433,11 @@ namespace {
         // back. Only the two or three bands on screen are drawn.
         void drawClouds(Renderer& r) const
         {
-            // Lighter than the sky in daylight, a pale wisp against it at
-            // night. No single palette colour is lighter than that gradient in
-            // both themes, so this is one of the few places worth asking which
-            // one is in force.
-            Color puff = theme::resolvedMode() == theme::Mode::Dark
-                ? theme::fg1.scaleAlpha(0.10f)
-                : theme::bg1.scaleAlpha(0.85f);
+            // Opaque, and that matters more than the colour: a cloud is five
+            // overlapping ellipses, so any alpha compounds where they cross and
+            // the thing comes out blotchy rather than translucent.
+            Color puff = theme::resolvedMode() == theme::Mode::Dark ? theme::fg4
+                                                                   : theme::bg2;
 
             float base = kGroundY - 260.0f + lift() + m_slide;
             int first = int(std::floor((base - Renderer::DesignHeight - 200.0f)
