@@ -43,15 +43,19 @@ namespace {
     // A one armed bandit, in two machines.
     //
     // Three reels either way. The three symbol machine hits a triple every
-    // ninth spin for five to ten coins; the five symbol one hits one every
-    // twenty-fifth and pays up to forty. A coin a spin for both, so the choice
-    // is what kind of evening you want rather than what you can afford:
+    // ninth spin for three to eight coins; the five symbol one hits one every
+    // twenty-fifth and pays up to thirty five. Both hand the coin straight
+    // back for two bells. A coin a spin for both, so the choice is what kind
+    // of evening you want rather than what you can afford:
     //
-    //     three symbols: (10 + 8 + 5) / 27          = 0.85 against 1
-    //     five symbols:  (40 + 25 + 15 + 7 + 7
-    //                     + 12*1) / 125             = 0.85 against 1
+    //     three symbols: (8 + 6 + 3 + 6*1) / 27     = 0.85 against 1
+    //     five symbols:  (35 + 22 + 13 + 6 + 6
+    //                     + 12*2 + 12*1) / 125      = 0.94 against 1
     //
-    // which is fifteen per cent to the plaza either way. The paytable down
+    // which is fifteen per cent to the plaza on the small machine and under
+    // six on the big one, where two sevens pay double on top of the bells:
+    // the five symbol board keeps less and pays more often, which is what
+    // makes it the harder one to get up from. The paytable down
     // the right is drawn from the very arrays the payout is read out of, so the
     // board on the wall cannot promise something the machine does not pay.
     //
@@ -182,17 +186,21 @@ namespace {
         static constexpr uint32_t kStake = 1;
         // What three of a kind pays, per symbol, per machine. The three symbol
         // machine only ever uses the first three.
-        static constexpr uint32_t kTripleThree[Sym_Count] = { 10, 8, 5, 0, 0 };
-        static constexpr uint32_t kTripleFive[Sym_Count] = { 7, 7, 15, 40, 25 };
-        // Nothing for a pair, and it cannot be otherwise at this price: two of
-        // a kind lands on eighteen of the twenty seven lines, so paying even a
-        // single coin for it is two thirds of a coin a spin - the whole budget,
-        // with nothing left for the triples. So the prizes are multiples of the
-        // stake instead, which is how a machine is meant to read.
+        static constexpr uint32_t kTripleThree[Sym_Count] = { 8, 6, 3, 0, 0 };
+        static constexpr uint32_t kTripleFive[Sym_Count] = { 6, 6, 13, 35, 22 };
+        // Nothing for just any pair, and it cannot be otherwise at this price:
+        // two of a kind lands on eighteen of the twenty seven lines, so paying
+        // even a single coin for it is two thirds of a coin a spin - the whole
+        // budget, with nothing left for the triples.
         static constexpr uint32_t kPair = 0;
-        // Two sevens gives the stake back: the near miss with its own line, and
-        // the detail that makes a five symbol machine feel like a machine.
-        static constexpr uint32_t kTwoSevens = 1;
+        // One named pair pays instead: two bells hand the stake back, on six
+        // lines in twenty seven and twelve in a hundred and twenty five. That
+        // is a third of the small machine's spins giving something back, which
+        // the triples above were trimmed from ten, eight and five to pay for.
+        static constexpr uint32_t kTwoBells = kStake;
+        // Two sevens pays double the stake: the near miss with its own line,
+        // and the detail that makes a five symbol machine feel like a machine.
+        static constexpr uint32_t kTwoSevens = 2;
         static constexpr const char* kMaskKey = "slots_lined";
 
         // Reels stop left to right, a third of a second apart.
@@ -215,7 +223,7 @@ namespace {
         static constexpr float kBoardX = 1420.0f;
         static constexpr float kBoardY = 150.0f;
         static constexpr float kBoardW = 380.0f;
-        static constexpr float kBoardH = 450.0f;
+        static constexpr float kBoardH = 480.0f; // two paid pair lines fit under the triples
         static constexpr float kCell = 170.0f;  // one symbol's slot on a reel
         static constexpr float kWinY = 282.0f;  // the window's top
         static constexpr float kWinH = 168.0f;
@@ -253,6 +261,8 @@ namespace {
                 if (sevens == 2)
                     return kTwoSevens;
             }
+            if (((a == Sym_Bell) + (b == Sym_Bell) + (c == Sym_Bell)) == 2)
+                return kTwoBells;
             if (a == b || b == c || a == c)
                 return kPair;
             return 0;
@@ -647,7 +657,7 @@ namespace {
         // A board on the wall, not a wall of board: this was 640 by 800 - a
         // third of the screen for seven lines - with 56px symbols and a
         // paragraph of prose under them. Forty pixel symbols on a 48px pitch
-        // say the same thing in 380 by 450, and what is left of the prose is
+        // say the same thing in 380 by 480, and what is left of the prose is
         // the one number worth knowing, which is how often a triple lands.
         void drawPaytable(Renderer& r) const
         {
@@ -701,6 +711,13 @@ namespace {
                     VAlign::Top);
                 y += line.size * theme::leadingNormal + 6.0f;
             }
+            if (kTwoBells > 0) {
+                r.text(inner.x, y, "Two bells", line);
+                r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
+                    format("%u", unsigned(kTwoBells)), amount, Align::Right,
+                    VAlign::Top);
+                y += line.size * theme::leadingNormal + 6.0f;
+            }
             if (kPair > 0) {
                 r.text(inner.x, y, "Any two the same", line);
                 r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
@@ -714,7 +731,7 @@ namespace {
             note.color = theme::fg4;
             note.tracking = theme::trackingWide;
             r.text(inner.x, y,
-                m_five ? "a line about every 7 spins" : "a triple about every 9",
+                m_five ? "a line about every 4 spins" : "a line about every 3 spins",
                 note);
         }
 
@@ -787,12 +804,20 @@ namespace {
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingSnug;
             std::string headline;
-            if (triple)
+            if (triple) {
                 headline = format("Three %s", symbolName(m_reel[0]));
-            else if (would > 0)
-                headline = "Two sevens";
-            else
+            } else if (would > 0) {
+                int sevens = 0, bells = 0;
+                for (int i = 0; i < kReels; i++) {
+                    sevens += m_reel[i] == Sym_Seven;
+                    bells += m_reel[i] == Sym_Bell;
+                }
+                headline = sevens == 2 ? "Two sevens"
+                    : bells == 2       ? "Two bells"
+                                       : "Two the same";
+            } else {
                 headline = "Nothing";
+            }
             r.text(inner.x, y, headline, title);
             y += title.size * theme::leadingSnug + 4.0f;
 
