@@ -21,6 +21,11 @@ namespace {
         { "pt", "Português", "Portuguese" },
         { "ru", "Русский", "Russian" },
         { "ja", "日本語", "Japanese" },
+        { "ko", "한국어", "Korean" },
+        // The codes the console's own language setting uses, so a build that
+        // ever follows it has nothing to translate between.
+        { "zh-Hans", "简体中文", "Chinese (simplified)" },
+        { "zh-Hant", "繁體中文", "Chinese (traditional)" },
     };
 
     Catalog catalogFor(Lang lang)
@@ -42,6 +47,12 @@ namespace {
             return russianCatalog();
         case Lang_Japanese:
             return japaneseCatalog();
+        case Lang_Korean:
+            return koreanCatalog();
+        case Lang_ChineseSimplified:
+            return chineseSimplifiedCatalog();
+        case Lang_ChineseTraditional:
+            return chineseTraditionalCatalog();
         default:
             return Catalog {};
         }

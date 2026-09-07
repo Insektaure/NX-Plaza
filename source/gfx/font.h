@@ -18,6 +18,21 @@ namespace nxp {
 // what the renderer uses it for.
 bool isCjk(uint32_t codepoint);
 
+// Which face to ask first for a Han character.
+//
+// Unicode gives one codepoint to characters the four scripts draw differently
+// - 直, 骨, 次 are not the same shape in Tokyo, Beijing and Taipei - and the
+// console ships a face per region. The fallback order alone would answer every
+// Han codepoint out of the Japanese face, because it is first and covers most
+// of them, so Chinese would be legible and subtly wrong.
+enum class Script : uint8_t {
+    Any = 0, // no preference: the fallback order decides
+    Japanese,
+    ChineseSimplified,
+    ChineseTraditional,
+    Korean,
+};
+
 enum class FontWeight : uint8_t {
     Regular = 0,
     Medium = 1, // lightly emboldened
@@ -60,6 +75,14 @@ public:
     // there is no replacement to draw.
     const Glyph* glyph(uint32_t codepoint, int pixelSize, FontWeight weight);
 
+    // Ask this face first for Han and hangul. Changing it throws away every
+    // glyph rasterised under the old preference - the atlas has no way to
+    // reclaim one glyph at a time - so it is called when the language changes
+    // and not otherwise. Latin is unaffected: all four faces draw it, and
+    // taking it from whichever face is preferred would change the shape of
+    // every letter on screen.
+    void preferScript(Script script);
+
     // Horizontal kerning between two glyphs of the same face, in pixels.
     float kerning(const Glyph& a, const Glyph& b, int pixelSize);
 
@@ -90,11 +113,15 @@ private:
     // grow first.
     static constexpr uint32_t kAtlasSize = 3072;
     static constexpr uint32_t kMaxFaces = 5;
+
+    // Which entry of m_faces to try first for CJK, or -1 for none.
+    int m_preferredFace = -1;
     static constexpr uint32_t kStagingPerFrame = 512 * 1024;
 
     struct Face {
         FT_Face face = nullptr;
         int loadedSize = -1;
+        int shared = -1; // which of kFontOrder this came from
     };
 
     bool setSize(int faceIndex, int pixelSize);

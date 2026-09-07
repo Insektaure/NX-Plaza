@@ -45,7 +45,8 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "source")
 CATALOGS = {
     code: os.path.join(SOURCE, "core", "lang_%s.cpp" % code)
-    for code in ("fr", "de", "es", "it", "nl", "pt", "ru", "ja")
+    for code in ("fr", "de", "es", "it", "nl", "pt", "ru", "ja", "ko",
+                 "zh_hans", "zh_hant")
 }
 
 # name -> which argument holds the label, zero based. A tuple takes several.

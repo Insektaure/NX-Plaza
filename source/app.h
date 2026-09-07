@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/store.h"
+#include "core/i18n.h"
 #include "gfx/font.h"
 #include "gfx/gpu.h"
 #include "gfx/renderer.h"
@@ -64,6 +65,11 @@ public:
 
     Renderer& renderer() { return m_renderer; }
     Font& font() { return m_font; }
+
+    // The one place a language is applied: it sets the catalogue tr() reads
+    // and the face the rasteriser asks first for Han and hangul, which have to
+    // agree or Chinese comes out in Japanese shapes.
+    void setLanguage(Lang lang);
     Store& store() { return Store::get(); }
     Sync& sync() { return m_sync; }
 

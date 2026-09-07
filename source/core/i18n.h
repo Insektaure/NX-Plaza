@@ -43,6 +43,9 @@ enum Lang : int {
     Lang_Portuguese,
     Lang_Russian,
     Lang_Japanese,
+    Lang_Korean,
+    Lang_ChineseSimplified,
+    Lang_ChineseTraditional,
     Lang_Count,
 };
 
@@ -97,5 +100,8 @@ Catalog dutchCatalog();
 Catalog portugueseCatalog();
 Catalog russianCatalog();
 Catalog japaneseCatalog();
+Catalog koreanCatalog();
+Catalog chineseSimplifiedCatalog();
+Catalog chineseTraditionalCatalog();
 
 } // namespace nxp

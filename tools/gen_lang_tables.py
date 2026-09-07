@@ -33,7 +33,7 @@ except (AttributeError, ValueError):
     pass
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lang_data import ORDER, ROWS  # noqa: E402
+from lang_data import LANGS, ORDER  # noqa: E402
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "source", "core")
@@ -47,6 +47,9 @@ NAMES = {
     "pt": ("Portuguese", "portugueseCatalog"),
     "ru": ("Russian", "russianCatalog"),
     "ja": ("Japanese", "japaneseCatalog"),
+    "ko": ("Korean", "koreanCatalog"),
+    "zh_hans": ("Chinese (simplified)", "chineseSimplifiedCatalog"),
+    "zh_hant": ("Chinese (traditional)", "chineseTraditionalCatalog"),
 }
 
 LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
@@ -168,14 +171,15 @@ def emit_row(source, target, width=88):
 def main():
     shape = read_template()
     keys = [key for kind, key in shape if kind == "row"]
-    unknown = [key for key in ROWS if key not in keys]
+    unknown = [key for table in LANGS.values() for key in table if key not in keys]
     if unknown:
         print("lang_data.py has %d rows the French file does not:" % len(unknown),
               file=sys.stderr)
         for key in sorted(unknown)[:10]:
             print("  %s" % escape(key), file=sys.stderr)
 
-    for index, code in enumerate(ORDER):
+    for code in ORDER:
+        table = LANGS.get(code, {})
         name, fn = NAMES[code]
         out = [HEADER % {"name": name, "code": code}]
         pending_comment = None
@@ -190,7 +194,7 @@ def main():
             if kind == "blank":
                 pending_blank = True
                 continue
-            target = ROWS.get(value, ("",) * len(ORDER))[index]
+            target = table.get(value, "")
             if not target:
                 continue
             if pending_comment is not None:
@@ -209,7 +213,7 @@ def main():
         out.append(FOOTER % {"fn": fn})
         path = os.path.join(SOURCE, "lang_%s.cpp" % code)
         io.open(path, "w", encoding="utf-8").write("\n".join(out))
-        done = sum(1 for key in keys if ROWS.get(key, ("",) * 7)[index])
+        done = sum(1 for key in keys if table.get(key))
         print("lang_%s.cpp: %d of %d" % (code, done, len(keys)))
     return 0
 

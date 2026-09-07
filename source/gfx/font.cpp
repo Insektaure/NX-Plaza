@@ -89,6 +89,7 @@ bool Font::init(Gpu& gpu)
             != 0) {
             continue;
         }
+        f.shared = static_cast<int>(type);
         m_faces.push_back(f);
         if (m_faces.size() >= kMaxFaces)
             break;
@@ -165,6 +166,19 @@ bool Font::setSize(int faceIndex, int pixelSize)
 
 int Font::faceForCodepoint(uint32_t codepoint, uint32_t& glyphIndexOut)
 {
+    // The preferred face first, and only for the scripts the preference is
+    // about: Latin lives in all of them, and drawing it from the Chinese face
+    // because the language is Chinese would change every letter on screen.
+    if (m_preferredFace >= 0 && size_t(m_preferredFace) < m_faces.size()
+        && isCjk(codepoint)) {
+        FT_UInt index = FT_Get_Char_Index(m_faces[size_t(m_preferredFace)].face,
+            codepoint);
+        if (index != 0) {
+            glyphIndexOut = index;
+            return m_preferredFace;
+        }
+    }
+
     for (size_t i = 0; i < m_faces.size(); i++) {
         FT_UInt index = FT_Get_Char_Index(m_faces[i].face, codepoint);
         if (index != 0) {
@@ -357,6 +371,55 @@ FontMetrics Font::metrics(int pixelSize)
 
     m_metrics.emplace(static_cast<uint32_t>(pixelSize), m);
     return m;
+}
+
+void Font::preferScript(Script script)
+{
+    PlSharedFontType wanted;
+    switch (script) {
+    case Script::Japanese:
+        wanted = PlSharedFontType_Standard;
+        break;
+    case Script::ChineseSimplified:
+        wanted = PlSharedFontType_ChineseSimplified;
+        break;
+    case Script::ChineseTraditional:
+        wanted = PlSharedFontType_ChineseTraditional;
+        break;
+    case Script::Korean:
+        wanted = PlSharedFontType_KO;
+        break;
+    case Script::Any:
+    default:
+        wanted = PlSharedFontType_Total; // matches nothing: no preference
+        break;
+    }
+
+    int found = -1;
+    for (size_t i = 0; i < m_faces.size(); i++) {
+        if (m_faces[i].shared == static_cast<int>(wanted)) {
+            found = static_cast<int>(i);
+            break;
+        }
+    }
+    if (found == m_preferredFace)
+        return;
+
+    m_preferredFace = found;
+
+    // Every cached CJK glyph was rasterised from the old preference, and the
+    // atlas is a shelf packer with no way to free one glyph. So the cache and
+    // the shelf go back to the start and the glyphs on screen are rasterised
+    // again over the next frame or two - which is affordable because this
+    // happens when somebody changes language, and not otherwise.
+    size_t dropped = m_cache.size();
+    m_cache.clear();
+    m_penX = kPadding;
+    m_penY = kPadding;
+    m_rowHeight = 0;
+    m_atlasFull = false;
+    LOG("font: shared font %d preferred for CJK; %zu cached glyphs dropped",
+        static_cast<int>(wanted), dropped);
 }
 
 bool isCjk(uint32_t codepoint)

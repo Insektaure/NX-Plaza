@@ -757,7 +757,7 @@ private:
             settings.language = langInfo(lang).code;
             app.store().setSettings(settings);
             app.store().flush();
-            setCurrentLang(lang);
+            app.setLanguage(lang);
             return;
         }
 

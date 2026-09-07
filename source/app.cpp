@@ -93,7 +93,7 @@ bool App::init()
     // Applied before the first frame, so nothing ever draws in the wrong
     // palette - or the wrong language.
     theme::setMode(static_cast<theme::Mode>(store().settings().themeMode));
-    setCurrentLang(langFromCode(store().settings().language.c_str()));
+    setLanguage(langFromCode(store().settings().language.c_str()));
 
     m_tabScenes[static_cast<int>(Tab::Plaza)] = makePlazaScene();
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();
@@ -297,6 +297,37 @@ bool App::textInput(const char* header, const std::string& initial, size_t maxCh
 
     out = clampUtf8(trim(buffer), maxChars);
     return true;
+}
+
+void App::setLanguage(Lang lang)
+{
+    setCurrentLang(lang);
+
+    // Which face draws a Han character. Unicode gives one codepoint to shapes
+    // that differ by region, and the console ships a face per region, so this
+    // has to follow the language rather than the fallback order - otherwise
+    // every Han character comes out of the Japanese face, which is first.
+    Script script = Script::Any;
+    switch (lang) {
+    case Lang_Japanese:
+        script = Script::Japanese;
+        break;
+    case Lang_Korean:
+        script = Script::Korean;
+        break;
+    case Lang_ChineseSimplified:
+        script = Script::ChineseSimplified;
+        break;
+    case Lang_ChineseTraditional:
+        script = Script::ChineseTraditional;
+        break;
+    default:
+        // A Latin language still shows CJK - a handle, a greeting, a place
+        // name off somebody else's pass - and has no opinion about whose
+        // shapes those should be, so the fallback order decides.
+        break;
+    }
+    m_font.preferScript(script);
 }
 
 void App::hint(const char* button, const std::string& label)
