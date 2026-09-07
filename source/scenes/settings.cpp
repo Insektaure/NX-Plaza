@@ -994,8 +994,14 @@ private:
         blurb.color = theme::fg2;
         blurb.leading = theme::leadingNormal;
         float blurbY = box.y + title.size * theme::leadingTight + theme::s3;
-        float blurbHeight = r.textWrapped(Rect { box.x, blurbY, std::min(box.w, 900.0f), 120.0f },
-            info.blurb, blurb, 2);
+        // Three lines at the pane's own width, not two at 900px: the shorter
+        // measure was chosen for English, and every other language says the
+        // same thing in more characters. textWrapped returns the height it
+        // actually used, so the rows below only move when a third line is
+        // really needed.
+        float blurbHeight
+            = r.textWrapped(Rect { box.x, blurbY, std::min(box.w, 1120.0f), 160.0f },
+                info.blurb, blurb, 3);
 
         Rect rows { box.x, blurbY + blurbHeight + theme::s6, box.w,
             box.bottom() - (blurbY + blurbHeight + theme::s6) };
@@ -1028,6 +1034,36 @@ private:
     // Ellipsis on an unfocused row is the right default.
     // The focused row is the one being read, and it is the only one whose whole
     // sentence matters.
+    // How much of a row is left for its words, once its control has taken
+    // what it needs.
+    //
+    // A flat 60% before this, which was mean on a toggle - 96px of switch was
+    // charging the words 40% of the row - and, in a language whose pills are
+    // wider than "Off | District | City", not mean enough.
+    static float wordRoom(Renderer& r, const Row& row, const Rect& inner)
+    {
+        float control = 0.0f;
+        switch (row.kind) {
+        case Kind::Toggle:
+            control = 96.0f; // the switch
+            break;
+        case Kind::Choice:
+            control = 40.0f; // the dot
+            break;
+        case Kind::Segmented:
+            for (int i = 0; i < row.optionCount; i++)
+                control += ui::segmentWidth(r, row.options[i]) + (i ? 10.0f : 0.0f);
+            break;
+        default:
+            // A value, which draws at up to 38% of the row.
+            control = inner.w * 0.38f;
+            break;
+        }
+        // Never less than a third of the row: a language with very wide pills
+        // should lose the pills' own room, not the sentence's.
+        return std::max(inner.w - control - theme::s6, inner.w * 0.34f);
+    }
+
     void drawHint(Renderer& r, const Rect& box, const std::string& text,
         const TextStyle& style, bool focused)
     {
@@ -1097,14 +1133,14 @@ private:
         // to read the hint saying why it will not work.
         label.color = !row.enabled ? theme::fg3
                                    : (danger ? theme::danger : theme::fg1);
-        r.text(inner.x, inner.y, r.ellipsize(row.label, label, inner.w * 0.6f), label);
+        float room = wordRoom(r, row, inner);
+        r.text(inner.x, inner.y, r.ellipsize(row.label, label, room), label);
 
         if (!row.hint.empty()) {
             TextStyle hint;
             hint.size = theme::textSm;
             hint.color = theme::fg3;
             float hintY = inner.y + label.size * theme::leadingSnug + 6.0f;
-            float room = inner.w * 0.6f;
             drawHint(r, Rect { inner.x, hintY, room, r.lineHeight(hint) }, row.hint, hint,
                 focused);
         }
