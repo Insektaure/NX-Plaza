@@ -71,10 +71,10 @@ public:
     // means the texture cache has to be invalidated before anything samples it.
     bool atlasDirty() const { return m_atlasDirty; }
 
-    // Diagnostics for the Settings > About panel.
+    // Diagnostics. Nothing on screen shows these
+    // (Settings > Data > Write a log file).
     size_t cachedGlyphs() const { return m_cache.size(); }
     float atlasFill() const;
-    bool atlasFull() const { return m_atlasFull; }
 
 private:
     // 3072 squared: the design's ramp runs from 18px to 88px, and

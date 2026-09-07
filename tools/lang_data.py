@@ -944,10 +944,3 @@ ROWS.update({
     "https://github.com/Insektaure/NX-Plaza": ("https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza", "https://github.com/Insektaure/NX-Plaza"),
 })
 
-# Chunk: the glyph atlas row in About.
-ROWS.update({
-    "%zu, %.0f%%": ("%zu, %.0f%%", "%zu, %.0f%%", "%zu, %.0f%%", "%zu, %.0f%%", "%zu, %.0f%%", "%zu, %.0f%%", "%zu, %.0f%%"),
-    "Glyphs drawn so far": ("Bisher gezeichnete Glyphen", "Glifos dibujados hasta ahora", "Glifi disegnati finora", "Tot nu getekende glyphs", "Glifos desenhados até agora", "Отрисовано глифов", "これまでに描いた文字数"),
-    "how much of the glyph atlas is in use": ("wie viel des Glyphen-Atlas belegt ist", "cuánto del atlas de glifos está en uso", "quanta parte dell'atlante dei glifi è in uso", "hoeveel van de glyph-atlas in gebruik is", "quanto do atlas de glifos está em uso", "какая часть атласа глифов занята", "文字アトラスの使用量"),
-    "the atlas is full - some text will be missing": ("der Atlas ist voll - Text wird teilweise fehlen", "el atlas está lleno - faltará algo de texto", "l'atlante è pieno - parte del testo mancherà", "de atlas is vol - er zal tekst ontbreken", "o atlas está cheio - vai faltar texto", "атлас заполнен - часть текста не отобразится", "アトラスが満杯です - 一部の文字が表示されません"),
-})

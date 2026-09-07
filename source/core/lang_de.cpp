@@ -224,11 +224,6 @@ namespace {
         { "Developed by Insektaure", "Entwickelt von Insektaure" },
         { "Find us on GitHub !", "Finde uns auf GitHub !" },
         { "This console's id", "Kennung dieser Konsole" },
-        { "Glyphs drawn so far", "Bisher gezeichnete Glyphen" },
-        { "how much of the glyph atlas is in use",
-            "wie viel des Glyphen-Atlas belegt ist" },
-        { "the atlas is full - some text will be missing",
-            "der Atlas ist voll - Text wird teilweise fehlen" },
 
         // -------------------------------------------------- settings: toasts
         { "Not connected to the plaza", "Keine Verbindung zum Plaza" },
@@ -1344,7 +1339,6 @@ namespace {
         { "m", "m" },
         { "-", "-" },
         { "%d", "%d" },
-        { "%zu, %.0f%%", "%zu, %.0f%%" },
         { "Notifications", "Mitteilungen" },
         { "Console", "Konsole" },
         { "nx-plaza ", "nx-plaza " },

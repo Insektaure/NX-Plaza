@@ -189,7 +189,11 @@ bool Font::packRect(uint32_t w, uint32_t h, uint32_t& x, uint32_t& y)
 
     if (m_penY + h + kPadding > kAtlasSize) {
         m_atlasFull = true;
-        LOG("font: glyph atlas is full after %zu glyphs", m_cache.size());
+        // The only report there is, so it says what would be needed: from here
+        // on every new glyph comes out as a space.
+        LOG("font: glyph atlas full after %zu glyphs at %u squared; new glyphs "
+            "will draw as spaces",
+            m_cache.size(), kAtlasSize);
         return false;
     }
 

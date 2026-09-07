@@ -195,10 +195,6 @@ namespace {
         { "Developed by Insektaure", "開発: Insektaure" },
         { "Find us on GitHub !", "GitHubで公開中！" },
         { "This console's id", "このコンソールのID" },
-        { "Glyphs drawn so far", "これまでに描いた文字数" },
-        { "how much of the glyph atlas is in use", "文字アトラスの使用量" },
-        { "the atlas is full - some text will be missing",
-            "アトラスが満杯です - 一部の文字が表示されません" },
 
         // -------------------------------------------------- settings: toasts
         { "Not connected to the plaza", "プラザに接続していません" },
@@ -1160,7 +1156,6 @@ namespace {
         { "m", "m" },
         { "-", "-" },
         { "%d", "%d" },
-        { "%zu, %.0f%%", "%zu, %.0f%%" },
         { "Notifications", "通知" },
         { "Console", "本体設定" },
         { "nx-plaza ", "nx-plaza " },
