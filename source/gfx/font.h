@@ -12,6 +12,12 @@
 
 namespace nxp {
 
+// Han, kana, hangul and the full-width forms: the writing systems whose glyphs
+// pack many strokes into one square em, and which therefore cannot take the
+// synthetic bolding below - or be broken between any two characters, which is
+// what the renderer uses it for.
+bool isCjk(uint32_t codepoint);
+
 enum class FontWeight : uint8_t {
     Regular = 0,
     Medium = 1, // lightly emboldened
@@ -68,11 +74,20 @@ public:
     // Diagnostics for the Settings > About panel.
     size_t cachedGlyphs() const { return m_cache.size(); }
     float atlasFill() const;
+    bool atlasFull() const { return m_atlasFull; }
 
 private:
-    // 3072 squared, not 2048: the design's ramp runs from 18px to 88px, and
+    // 3072 squared: the design's ramp runs from 18px to 88px, and
     // three weights of it in both dock modes needs about 5 M pixels. A 2048
     // atlas holds 4.19 M, and running out means text quietly stops appearing.
+    //
+    // 9.4 M still covers it with Japanese in the app: a session can ask for
+    // the five hundred odd kanji the interface uses, but only at the sizes it
+    // draws them, and CJK takes two weights rather than three (see
+    // emboldenStrength), which is about 1.4 M on top of the Latin ramp. Going
+    // to 4096 would want 16.8 M, and the image pool it comes out of is 12 MB -
+    // so if Settings > About ever reports this near full, that pool has to
+    // grow first.
     static constexpr uint32_t kAtlasSize = 3072;
     static constexpr uint32_t kMaxFaces = 5;
     static constexpr uint32_t kStagingPerFrame = 512 * 1024;

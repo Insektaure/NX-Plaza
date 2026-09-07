@@ -199,6 +199,10 @@ private:
     void quadRotated(const Rect& designRect, Color color, Mode mode, const float params[4],
         float radians, float fbPad);
 
+    // What to move the pen by for a glyph the atlas could not take this frame.
+    // A CJK character is one em wide, everything else about half of one.
+    static float fallbackAdvance(uint32_t codepoint, int pixelSize, FontWeight weight);
+
     float layoutWrapped(const Rect& box, const std::string& utf8, const TextStyle& style,
         int maxLines, Align align, bool emit);
 

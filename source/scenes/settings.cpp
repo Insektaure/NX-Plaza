@@ -220,6 +220,7 @@ private:
         Id_GetArt,
         Id_CheckUpdates,
         Id_AutoCheckUpdates,
+        Id_Atlas,
 
         // One row per language this build has words for, the same way the
         // block list works: a range rather than a name, because the list is
@@ -652,6 +653,20 @@ private:
                 Kind::Value);
             value(Id_Source, "Find us on GitHub !", "https://github.com/Insektaure/NX-Plaza", "", Kind::Value);
             value(Id_ConsoleId, "This console's id", identity().id, "", Kind::Value);
+            {
+                // The glyph atlas, because a full one is invisible from the
+                // outside: text simply stops appearing, or - before this was
+                // handled - piled up at one pen position and read as a black
+                // square. Written where a fault report can quote it.
+                Font& font = app.font();
+                value(Id_Atlas, "Glyphs drawn so far",
+                    font.atlasFull() ? tr("the atlas is full - some text will be "
+                                          "missing")
+                                     : tr("how much of the glyph atlas is in use"),
+                    format("%zu, %.0f%%", font.cachedGlyphs(),
+                        double(font.atlasFill() * 100.0f)),
+                    Kind::Value);
+            }
             break;
         }
 

@@ -338,23 +338,52 @@ setting, re-read whenever the app regains focus). The choice is saved in
 
 ## Languages
 
-The app is written in English and ships with **French** as well. *Settings →
-Languages* lists what this build has words for, named in itself - `English`,
-`Français` - and the choice takes effect on the next frame and is saved in
+The app is written in English and ships with eight languages: *Settings →
+Languages* lists them, each named in itself - `English`, `Français`,
+`Deutsch`, `Español`, `Italiano`, `Nederlands`, `Português`, `Русский`,
+`日本語` - and the choice takes effect on the next frame and is saved in
 `profile.json`.
 
+**All eight are complete** - every string the app says, in every language:
+856 keys each, 6,848 rows in all. `tools/i18n_scan.py --all` says so, and
+`--check` refuses a table that has gone stale, lists a key twice, or moves a
+format specifier.
+
+French covers **the whole app** - every screen, all 72 trophies, the dates it
+prints ("à l'instant", "il y a 3 jours", "14 mars"), the confirmations, the
+toasts, and what the sync and update threads report while they work. What stays
+in English on purpose is data rather than words: handles, greetings, place
+labels, the things a pass carries (they travel to other consoles and are
+compared between them), and the protocol diagnostics that exist to be pasted
+into a bug report.
+
 Anything a language has not been given stays in English rather than showing a
-key, so a partly translated language is usable rather than broken. Nothing
-about the drawing had to change to support this: the glyphs come from the
-console's own shared fonts, which cover Latin, Cyrillic, Japanese, both Chinese
-sets and Korean, and the renderer already measures, kerns, wraps and ellipsizes
-UTF-8.
+key, so a partly translated language is usable rather than broken.
+
+Nothing about the drawing had to change to support this: the glyphs come from
+the console's own shared fonts, which cover Latin, Cyrillic, Japanese, both
+Chinese sets and Korean, and the renderer already measures, kerns, wraps and
+ellipsizes UTF-8.
 
 Adding a language is a table of English-to-its-own in `source/core/lang_xx.cpp`
 and a line in the `Lang` enum; the settings list is built from the enum, so
-there is no screen to edit. `tools/i18n_scan.py` says what a language is
-missing, and - just as important - which of its entries name English that no
-longer exists in the code.
+there is no screen to edit. Those seven are generated from one side-by-side
+table in `tools/lang_data.py`, so a new string can be written into all of them
+at once and a word can be checked against its six neighbours; the French file
+is the template the generator follows, so the same string sits in the same
+place in all eight files.
+
+One rule for a translation: **keep the format specifiers, in the same order.**
+The line goes to `format()`, which is plain printf - it reads its arguments in
+the order the specifiers appear, so swapping `%d of %zu` round hands an `int`
+to a `%zu`, and an extra `%s` reads an argument nobody passed. `--check`
+refuses both. `tools/i18n_scan.py` says what a language is
+missing, which of its entries name English that no longer exists in the code,
+and - the one that matters at runtime - whether a translation's `%u`s still
+match its English, since `format()` reads the arguments the specifiers ask
+for. `--loose` adds a guess at literals that reach no sink it knows about,
+which is where the stragglers hide: a label parked in a local variable three
+lines above the row that draws it.
 
 ## Trophies
 

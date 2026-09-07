@@ -12,11 +12,50 @@ namespace nxp {
 namespace {
     constexpr uint32_t kPadding = 1;
 
+    // Below this, a CJK glyph is not emboldened at all: see emboldenStrength.
+    constexpr int kCjkBoldFrom = 32;
+
+    // Bold and Medium are one raster for CJK - see emboldenStrength - so they
+    // share a cache entry as well, which is a third of the atlas back on a
+    // screen full of Japanese.
+    FontWeight cacheWeight(uint32_t codepoint, FontWeight weight)
+    {
+        if (isCjk(codepoint) && weight == FontWeight::Bold)
+            return FontWeight::Medium;
+        return weight;
+    }
+
     uint64_t cacheKey(uint32_t codepoint, int pixelSize, FontWeight weight)
     {
         return static_cast<uint64_t>(codepoint)
             | (static_cast<uint64_t>(pixelSize & 0x3FF) << 32)
-            | (static_cast<uint64_t>(weight) << 44);
+            | (static_cast<uint64_t>(cacheWeight(codepoint, weight)) << 44);
+    }
+
+    // How much to thicken an outline, in 26.6 units.
+    //
+    // The console ships one weight, so bold is emboldened at rasterisation
+    // time. That is fine for an alphabet - a Latin glyph is a handful of
+    // strokes across an em - and it destroys a kanji, which packs up to
+    // eighteen into the same square. At the games shelf's 26px, bold adds
+    // 1.17px to every stroke of a character whose strokes are 2.6px apart:
+    // 鼻, 髪, 顔, 隔 and 縦 came out as solid black squares in the Mii editor,
+    // while 目 and 口 were fine.
+    //
+    // So CJK is left alone below 32px, and above it takes the Medium strength
+    // whether Medium or Bold was asked for. Japanese loses some emphasis at
+    // small sizes, which is what the console's own Japanese interface does
+    // anyway, and keeps its strokes.
+    FT_Pos emboldenStrength(uint32_t codepoint, int pixelSize, FontWeight weight)
+    {
+        if (weight == FontWeight::Regular)
+            return 0;
+        if (isCjk(codepoint)) {
+            if (pixelSize < kCjkBoldFrom)
+                return 0;
+            return (pixelSize * 64) / 40;
+        }
+        return (pixelSize * 64) / (weight == FontWeight::Bold ? 22 : 40);
     }
 
     // Fallback order. Standard already covers Latin, kana and most kanji; the
@@ -179,11 +218,10 @@ bool Font::rasterize(uint32_t codepoint, int pixelSize, FontWeight weight, Glyph
     if (FT_Load_Glyph(face, glyphIndex, FT_LOAD_DEFAULT) != 0)
         return false;
 
-    // The console ships a single weight, so heavier text is emboldened at
-    // rasterisation time rather than faked by overdrawing.
-    if (weight != FontWeight::Regular && face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
-        FT_Pos strength = (pixelSize * 64) / (weight == FontWeight::Bold ? 22 : 40);
-        FT_Outline_Embolden(&face->glyph->outline, strength);
+    if (face->glyph->format == FT_GLYPH_FORMAT_OUTLINE) {
+        FT_Pos strength = emboldenStrength(codepoint, pixelSize, weight);
+        if (strength > 0)
+            FT_Outline_Embolden(&face->glyph->outline, strength);
     }
 
     if (FT_Render_Glyph(face->glyph, FT_RENDER_MODE_NORMAL) != 0)
@@ -264,11 +302,13 @@ const Glyph* Font::glyph(uint32_t codepoint, int pixelSize, FontWeight weight)
         return &inserted.first->second;
     }
 
-    // No face has this codepoint: substitute a space so the line keeps its
-    // rhythm instead of collapsing. Any other failure (atlas or staging full)
-    // is transient and must not be cached.
+    // No face has this codepoint, or the atlas has no room left and never will
+    // again: substitute a space so the line keeps its rhythm instead of
+    // collapsing into a heap at one pen position. Running out of *staging* is
+    // the one transient failure, and it must not be cached - the glyph is
+    // rasterised on the next frame instead.
     uint32_t unused = 0;
-    if (codepoint != ' ' && faceForCodepoint(codepoint, unused) < 0)
+    if (codepoint != ' ' && (m_atlasFull || faceForCodepoint(codepoint, unused) < 0))
         return this->glyph(' ', pixelSize, weight);
 
     return nullptr;
@@ -313,6 +353,15 @@ FontMetrics Font::metrics(int pixelSize)
 
     m_metrics.emplace(static_cast<uint32_t>(pixelSize), m);
     return m;
+}
+
+bool isCjk(uint32_t codepoint)
+{
+    return (codepoint >= 0x1100 && codepoint <= 0x11FF)
+        || (codepoint >= 0x2E80 && codepoint <= 0xA4CF)
+        || (codepoint >= 0xAC00 && codepoint <= 0xD7AF)
+        || (codepoint >= 0xF900 && codepoint <= 0xFAFF)
+        || (codepoint >= 0xFF00 && codepoint <= 0xFF60);
 }
 
 float Font::atlasFill() const

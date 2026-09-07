@@ -77,12 +77,6 @@ namespace {
         return ok;
     }
 
-    bool isCjk(uint32_t cp)
-    {
-        return (cp >= 0x1100 && cp <= 0x11FF) || (cp >= 0x2E80 && cp <= 0xA4CF)
-            || (cp >= 0xAC00 && cp <= 0xD7AF) || (cp >= 0xF900 && cp <= 0xFAFF)
-            || (cp >= 0xFF00 && cp <= 0xFF60);
-    }
 }
 
 // The attribute table has to match Renderer::Vertex exactly; it lives here
@@ -634,8 +628,15 @@ float Renderer::text(float x, float yTop, const std::string& utf8, const TextSty
             cp = upperCodepoint(cp);
 
         const Glyph* glyph = m_font->glyph(cp, px, style.weight);
-        if (!glyph)
+        if (!glyph) {
+            // Only the transient failure gets here - the staging buffer filled
+            // up this frame, and the glyph is rasterised on the next one. Take
+            // a space's width for it rather than drawing the rest of the line
+            // on top of itself.
+            penX += fallbackAdvance(cp, px, style.weight) + tracking;
+            previous = nullptr;
             continue;
+        }
 
         if (previous)
             penX += m_font->kerning(*previous, *glyph, px);
@@ -659,6 +660,15 @@ float Renderer::text(float x, float yTop, const std::string& utf8, const TextSty
     return (penX - startX) / m_scale;
 }
 
+// A stand-in width, used for one frame while a glyph waits its turn at the
+// staging buffer. It only has to be close: measure() and text() both use it, so
+// the line stays put either way, and the character appears on the next frame.
+float Renderer::fallbackAdvance(uint32_t codepoint, int pixelSize, FontWeight)
+{
+    float em = static_cast<float>(pixelSize);
+    return isCjk(codepoint) ? em : em * 0.5f;
+}
+
 float Renderer::measure(const std::string& utf8, const TextStyle& style)
 {
     int px = static_cast<int>(style.size * m_scale + 0.5f);
@@ -677,8 +687,11 @@ float Renderer::measure(const std::string& utf8, const TextStyle& style)
             cp = upperCodepoint(cp);
 
         const Glyph* glyph = m_font->glyph(cp, px, style.weight);
-        if (!glyph)
+        if (!glyph) {
+            width += fallbackAdvance(cp, px, style.weight) + tracking;
+            previous = nullptr;
             continue;
+        }
         if (previous)
             width += m_font->kerning(*previous, *glyph, px);
         width += glyph->advance + tracking;
@@ -735,8 +748,8 @@ std::string Renderer::ellipsize(const std::string& utf8, const TextStyle& style,
         if (!utf8Next(p, end, cp))
             break;
         const Glyph* glyph = m_font->glyph(style.uppercase ? upperCodepoint(cp) : cp, px, style.weight);
-        if (glyph)
-            width += (glyph->advance + style.tracking * static_cast<float>(px)) / m_scale;
+        float advance = glyph ? glyph->advance : fallbackAdvance(cp, px, style.weight);
+        width += (advance + style.tracking * static_cast<float>(px)) / m_scale;
         if (width > budget) {
             lastGood = before;
             break;
