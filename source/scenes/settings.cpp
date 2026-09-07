@@ -40,6 +40,7 @@ public:
         // section, so A always means "open this one".
         m_inSidebar = true;
         m_scroll.stop();
+        m_scroll.centerOn(0.0f);
     }
 
     void update(App& app, const Input& input, float dt) override
@@ -261,7 +262,11 @@ private:
 
         m_section = clamped;
         m_focus = 0;
+        // Back to the top, not merely stopped: stop() leaves the offset where
+        // the last section was scrolled to, which would open a section on its
+        // fourth row with the cursor on its first.
         m_scroll.stop();
+        m_scroll.centerOn(0.0f);
     }
 
     // A on a section, or a tap on one: now the rows take the cursor.
@@ -276,9 +281,23 @@ private:
         for (size_t i = 0; i < m_rows.size(); i++) {
             if (m_rows[i].id == id) {
                 m_focus = static_cast<int>(i);
+                revealFocus();
                 return;
             }
         }
+    }
+
+    // Keep the focused row on screen.
+    void revealFocus()
+    {
+        if (m_rows.empty())
+            return;
+        float pitch = kRowHeight + theme::s3;
+        float top = float(m_focus) * pitch;
+        if (m_scroll.visible(top, top + kRowHeight))
+            return;
+        m_scroll.stop();
+        m_scroll.centerOn(top + kRowHeight * 0.5f);
     }
 
     void updateSidebar(App& app, const Input& input)
@@ -308,8 +327,11 @@ private:
         }
 
         if (input.navDown || input.navUp) {
+            int was = m_focus;
             m_focus = std::min(std::max(m_focus + (input.navDown ? 1 : -1), 0),
                 static_cast<int>(m_rows.size()) - 1);
+            if (m_focus != was)
+                revealFocus();
         }
 
         const Row& row = m_rows[static_cast<size_t>(m_focus)];

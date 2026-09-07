@@ -10,7 +10,8 @@ the app says that no language has been given (it comes out in English).
 This finds both.
 
     tools/i18n_scan.py                 what French is missing, and what is stale
-    tools/i18n_scan.py --lang fr       the same, said out loud
+    tools/i18n_scan.py --lang de       the same for German, and so on
+    tools/i18n_scan.py --all           one line of coverage per language
     tools/i18n_scan.py --check         exit 1 if anything is stale
     tools/i18n_scan.py --stub          print the missing entries as C++ rows
     tools/i18n_scan.py --loose         also guess at labels no sink can see
@@ -42,7 +43,10 @@ except (AttributeError, ValueError):
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "source")
-CATALOGS = {"fr": os.path.join(SOURCE, "core", "lang_fr.cpp")}
+CATALOGS = {
+    code: os.path.join(SOURCE, "core", "lang_%s.cpp" % code)
+    for code in ("fr", "de", "es", "it", "nl", "pt", "ru", "ja")
+}
 
 # name -> which argument holds the label, zero based. A tuple takes several.
 SINKS = {
@@ -496,12 +500,29 @@ def main():
                         help="exit 1 on a stale or duplicated entry")
     parser.add_argument("--stub", action="store_true",
                         help="print missing strings as C++ rows to paste in")
+    parser.add_argument("--all", action="store_true",
+                        help="one line of coverage per language, then stop")
     parser.add_argument("--loose", action="store_true",
                         help="also list literals that read like labels but reach "
                              "no sink this tool knows about")
     args = parser.parse_args()
 
     said = scan_sources()
+
+    if args.all:
+        for code in sorted(CATALOGS):
+            rows = read_catalog(CATALOGS[code])
+            seen = {}
+            for source, target in rows:
+                seen.setdefault(source, target)
+            done = sum(1 for s, t in seen.items() if t != s and t)
+            same = sum(1 for s, t in seen.items() if t == s)
+            stale = sum(1 for s in seen if s not in said)
+            print("%s: %4d of %d translated, %2d the same in both%s"
+                  % (code, done, len(said), same,
+                     ", %d stale" % stale if stale else ""))
+        return 0
+
     rows = read_catalog(CATALOGS[args.lang])
 
     seen = {}

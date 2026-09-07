@@ -36,6 +36,13 @@ namespace nxp {
 enum Lang : int {
     Lang_English = 0, // the source language: the literals in the code
     Lang_French,
+    Lang_German,
+    Lang_Spanish,
+    Lang_Italian,
+    Lang_Dutch,
+    Lang_Portuguese,
+    Lang_Russian,
+    Lang_Japanese,
     Lang_Count,
 };
 
@@ -83,5 +90,12 @@ struct Catalog {
 };
 
 Catalog frenchCatalog();
+Catalog germanCatalog();
+Catalog spanishCatalog();
+Catalog italianCatalog();
+Catalog dutchCatalog();
+Catalog portugueseCatalog();
+Catalog russianCatalog();
+Catalog japaneseCatalog();
 
 } // namespace nxp

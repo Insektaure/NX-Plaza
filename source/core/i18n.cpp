@@ -9,9 +9,18 @@
 namespace nxp {
 namespace {
 
+    // Named in itself first, because that is the name somebody looking for
+    // their own language is looking for.
     const LangInfo kLangs[Lang_Count] = {
         { "en", "English", "English" },
         { "fr", "Français", "French" },
+        { "de", "Deutsch", "German" },
+        { "es", "Español", "Spanish" },
+        { "it", "Italiano", "Italian" },
+        { "nl", "Nederlands", "Dutch" },
+        { "pt", "Português", "Portuguese" },
+        { "ru", "Русский", "Russian" },
+        { "ja", "日本語", "Japanese" },
     };
 
     Catalog catalogFor(Lang lang)
@@ -19,6 +28,20 @@ namespace {
         switch (lang) {
         case Lang_French:
             return frenchCatalog();
+        case Lang_German:
+            return germanCatalog();
+        case Lang_Spanish:
+            return spanishCatalog();
+        case Lang_Italian:
+            return italianCatalog();
+        case Lang_Dutch:
+            return dutchCatalog();
+        case Lang_Portuguese:
+            return portugueseCatalog();
+        case Lang_Russian:
+            return russianCatalog();
+        case Lang_Japanese:
+            return japaneseCatalog();
         default:
             return Catalog {};
         }
