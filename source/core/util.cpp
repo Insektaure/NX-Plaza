@@ -222,14 +222,78 @@ std::string trim(const std::string& s)
     return s.substr(a, b - a);
 }
 
+// Upper case for the alphabets the console's fonts have cases for: ASCII,
+// the accented Latin letters, and Cyrillic. Everything else - CJK, and the
+// handful of letters whose upper case is two codepoints - comes back as it
+// went in, which is what "no upper case" should look like.
+uint32_t upperCodepoint(uint32_t cp)
+{
+    if (cp >= 'a' && cp <= 'z')
+        return cp - 0x20;
+    // Latin-1 supplement: a-grave to thorn, less the division sign sitting in
+    // the middle of the range and the sharp s, which has no single-letter
+    // upper case.
+    if (cp >= 0x00E0 && cp <= 0x00FE && cp != 0x00F7)
+        return cp - 0x20;
+    if (cp == 0x00FF) // y-diaeresis, whose capital sits up in Extended-A
+        return 0x0178;
+    // Latin Extended-A is pairs of upper then lower, and the parity flips
+    // twice on the way through: it is even-upper from A-macron, odd-upper from
+    // L-acute, even-upper again from Eng, and odd-upper for the last six. A
+    // blanket "odd is the lower case" turns capital L-stroke into kra and
+    // capital Z-caron into z-dot, which is worse than not uppercasing at all,
+    // so the ranges are spelled out.
+    if ((cp >= 0x0101 && cp <= 0x0137) || (cp >= 0x014B && cp <= 0x0177)) {
+        // Dotless i is the exception in the range: its capital is a plain I,
+        // and the letter above it is I-with-dot. Left alone rather than
+        // guessed at.
+        if ((cp & 1) == 1 && cp != 0x0131)
+            return cp - 1;
+    } else if ((cp >= 0x013A && cp <= 0x0148) || (cp >= 0x017A && cp <= 0x017E)) {
+        if ((cp & 1) == 0)
+            return cp - 1;
+    }
+    if (cp >= 0x0430 && cp <= 0x044F) // Cyrillic a to ya
+        return cp - 0x20;
+    if (cp >= 0x0450 && cp <= 0x045F) // Cyrillic ie to dzhe
+        return cp - 0x50;
+    return cp;
+}
+
+static void utf8Append(std::string& out, uint32_t cp)
+{
+    if (cp < 0x80) {
+        out.push_back(static_cast<char>(cp));
+    } else if (cp < 0x800) {
+        out.push_back(static_cast<char>(0xC0 | (cp >> 6)));
+        out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    } else if (cp < 0x10000) {
+        out.push_back(static_cast<char>(0xE0 | (cp >> 12)));
+        out.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    } else {
+        out.push_back(static_cast<char>(0xF0 | (cp >> 18)));
+        out.push_back(static_cast<char>(0x80 | ((cp >> 12) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | ((cp >> 6) & 0x3F)));
+        out.push_back(static_cast<char>(0x80 | (cp & 0x3F)));
+    }
+}
+
+// By codepoint rather than by byte: the hint bar title-cases every verb the
+// app puts in it, and a byte-wise version left a French or Russian verb in
+// lower case beside its capitalised neighbours.
 std::string titleCase(const std::string& s)
 {
-    std::string out = s;
+    std::string out;
+    out.reserve(s.size());
+
+    const char* p = s.data();
+    const char* end = p + s.size();
+    uint32_t cp = 0;
     bool atWordStart = true;
-    for (char& c : out) {
-        if (atWordStart && c >= 'a' && c <= 'z')
-            c = static_cast<char>(c - 32);
-        atWordStart = c == ' ' || c == '\t' || c == '/';
+    while (utf8Next(p, end, cp)) {
+        utf8Append(out, atWordStart ? upperCodepoint(cp) : cp);
+        atWordStart = cp == ' ' || cp == '\t' || cp == '/';
     }
     return out;
 }

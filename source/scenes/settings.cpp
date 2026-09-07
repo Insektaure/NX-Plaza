@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/backup.h"
+#include "core/i18n.h"
 #include "net/update.h"
 #include "core/identity.h"
 #include "core/log.h"
@@ -131,6 +132,7 @@ private:
         Sec_Exchange,
         Sec_Notifications,
         Sec_Appearance,
+        Sec_Languages,
         Sec_Console,
         Sec_Data,
         Sec_About,
@@ -146,28 +148,47 @@ private:
         std::string blurb;
     };
 
-    static const SectionInfo& sectionInfo(int index)
+    // Built each time rather than kept in a static table: a static is filled
+    // once, in whatever language the app happened to start in, and these words
+    // have to follow the language while the app is running.
+    static SectionInfo sectionInfo(int index)
     {
-        static const SectionInfo kSections[Sec_Count] = {
-            { "Privacy", ui::Icon::Shield, "Privacy",
-                format("%s never sends your name or an exact position. You choose how much ",
-                    kAppName) +
-                "of a pass leaves the console." },
-            { "Exchange", ui::Icon::Radar, "Exchange", "How passes find their way to you." },
-            { "Notifications", ui::Icon::Bell, "Notifications",
-                "Nothing interrupts a game. The plaza waits." },
-            { "Appearance", ui::Icon::Sun, "Appearance",
-                "The app opens in daylight. Dark is for a dim room, or match whatever the "
-                "console is set to." },
-            { "This console", ui::Icon::Monitor, "This console",
-                "Where your passes go, and how another console recognises this one." },
-            { "Data", ui::Icon::Trash, "Data",
-                "Everything the app keeps lives on the SD card, and all of it can go." },
-            { "About", ui::Icon::Info, "About",
-                format("What this build of %s is, who made it, and where it came from.",
-                    kAppName) },
-        };
-        return kSections[std::min(std::max(index, 0), static_cast<int>(Sec_Count) - 1)];
+        switch (std::min(std::max(index, 0), static_cast<int>(Sec_Count) - 1)) {
+        case Sec_Exchange:
+            return { "Exchange", ui::Icon::Radar, "Exchange",
+                tr("How passes find their way to you.") };
+        case Sec_Notifications:
+            return { "Notifications", ui::Icon::Bell, "Notifications",
+                tr("Nothing interrupts a game. The plaza waits.") };
+        case Sec_Appearance:
+            return { "Appearance", ui::Icon::Sun, "Appearance",
+                tr("The app opens in daylight. Dark is for a dim room, or match "
+                   "whatever the console is set to.") };
+        case Sec_Languages:
+            return { "Languages", ui::Icon::Globe, "Languages",
+                tr("The app is written in English and says what it has been taught "
+                   "to say in anything else. Whatever a language is missing stays "
+                   "in English.") };
+        case Sec_Console:
+            return { "This console", ui::Icon::Monitor, "This console",
+                tr("Where your passes go, and how another console recognises this "
+                   "one.") };
+        case Sec_Data:
+            return { "Data", ui::Icon::Trash, "Data",
+                tr("Everything the app keeps lives on the SD card, and all of it "
+                   "can go.") };
+        case Sec_About:
+            return { "About", ui::Icon::Info, "About",
+                format(tr("What this build of %s is, who made it, and where it came "
+                          "from."),
+                    kAppName) };
+        case Sec_Privacy:
+        default:
+            return { "Privacy", ui::Icon::Shield, "Privacy",
+                format(tr("%s never sends your name or an exact position. You choose "
+                          "how much of a pass leaves the console."),
+                    kAppName) };
+        }
     }
 
     // ------------------------------------------------------------------ rows
@@ -199,13 +220,18 @@ private:
         Id_CheckUpdates,
         Id_AutoCheckUpdates,
 
+        // One row per language this build has words for, the same way the
+        // block list works: a range rather than a name, because the list is
+        // whatever i18n has been given.
+        Id_LanguageFirst = 500,
+
         // One row per blocked console, so their ids are a range rather than a
         // name. Last in the enum: everything above it is a fixed row, and
         // anything at or past it is the nth entry on the block list.
         Id_BlockedFirst = 1000,
     };
 
-    enum class Kind { Toggle, Segmented, Value, Action, Danger };
+    enum class Kind { Toggle, Segmented, Choice, Value, Action, Danger };
 
     struct Row {
         Kind kind = Kind::Value;
@@ -300,9 +326,9 @@ private:
             if (!row.enabled) {
                 // Says why rather than doing nothing. A dead button that gives
                 // no reason reads as a bug.
-                app.toast("Not connected to the plaza",
-                    "This one needs the server. The dot by the tabs turns green when "
-                    "it can be reached.");
+                app.toast(tr("Not connected to the plaza"),
+                    tr("This one needs the server. The dot by the tabs turns green "
+                       "when it can be reached."));
             } else {
                 activate(app, row.id);
             }
@@ -329,13 +355,27 @@ private:
         const bool reachable = plazaReachable(status);
         m_rows.clear();
 
+        // Every row's words go through tr() here, once, rather than at a
+        // hundred call sites. A row whose label is data rather than a label -
+        // a blocked console is named after whoever it was - writes over it
+        // after the fact.
         auto toggle = [&](Id id, const char* label, const char* hint, bool state) {
             Row row;
             row.kind = Kind::Toggle;
             row.id = id;
+            row.label = tr(label);
+            row.hint = tr(hint);
+            row.toggleState = state;
+            m_rows.push_back(row);
+        };
+        auto choice = [&](Id id, const std::string& label, const std::string& hint,
+                          bool selected) {
+            Row row;
+            row.kind = Kind::Choice;
+            row.id = id;
             row.label = label;
             row.hint = hint;
-            row.toggleState = state;
+            row.toggleState = selected;
             m_rows.push_back(row);
         };
         auto segmented = [&](Id id, const char* label, const std::string& hint,
@@ -343,8 +383,8 @@ private:
             Row row;
             row.kind = Kind::Segmented;
             row.id = id;
-            row.label = label;
-            row.hint = hint;
+            row.label = tr(label);
+            row.hint = tr(hint);
             row.options = options;
             row.optionCount = count;
             row.selected = selected;
@@ -358,9 +398,9 @@ private:
             Row row;
             row.kind = kind;
             row.id = id;
-            row.label = label;
-            row.hint = hint;
-            row.value = shown;
+            row.label = tr(label);
+            row.hint = tr(hint);
+            row.value = tr(shown);
             row.enabled = enabled;
             m_rows.push_back(row);
         };
@@ -409,6 +449,23 @@ private:
                 settings.reduceMotion);
             break;
 
+        case Sec_Languages: {
+            Lang chosen = langFromCode(settings.language.c_str());
+            for (int i = 0; i < Lang_Count; i++) {
+                const LangInfo& info = langInfo(static_cast<Lang>(i));
+                // Named in itself, because somebody looking for their own
+                // language is looking for the word they would use for it. What
+                // it is called in English is the hint under it, for anybody
+                // who has landed here from a language they cannot read.
+                choice(static_cast<Id>(Id_LanguageFirst + i), info.endonym,
+                    i == Lang_English
+                        ? tr("English - what the app is written in")
+                        : std::string(info.english),
+                    i == static_cast<int>(chosen));
+            }
+            break;
+        }
+
         case Sec_Console:
             value(Id_ServerUrl, "Plaza server",
                 kServerIsEditable ? "http://host:port of your own server"
@@ -452,6 +509,9 @@ private:
                                      : hint + ". Offline - unblocking needs the plaza";
                     value(static_cast<Id>(Id_BlockedFirst + int(b)), name, hint,
                         "unblock", Kind::Action, reachable);
+                    // A handle is data, not a label: put it back over whatever
+                    // the row builder made of it.
+                    m_rows.back().label = name;
                 }
                 value(Id_Unblock, "Clear the whole list",
                     reachable
@@ -651,8 +711,23 @@ private:
             // theirs, and it does not tell us whether theirs is still there -
             // which is the same discretion blocking gets in the other
             // direction.
-            app.toast("Unblocked " + name,
-                "They can cross you again, unless they blocked you as well.");
+            app.toast(format(tr("Unblocked %s"), name.c_str()),
+                tr("They can cross you again, unless they blocked you as well."));
+            return;
+        }
+
+        // The language list is a range as well. Nothing to save but the code,
+        // and the words change on the next frame because every screen builds
+        // its own as it draws.
+        if (id >= Id_LanguageFirst && id < Id_BlockedFirst) {
+            int index = int(id) - int(Id_LanguageFirst);
+            if (index < 0 || index >= Lang_Count)
+                return;
+            Lang lang = static_cast<Lang>(index);
+            settings.language = langInfo(lang).code;
+            app.store().setSettings(settings);
+            app.store().flush();
+            setCurrentLang(lang);
             return;
         }
 
@@ -708,30 +783,31 @@ private:
             // present and still be older than the puzzles this build has, and
             // the owner is better placed to know it looks wrong than we are.
             if (!Update::get().beginArtDownload()) {
-                app.toast("Busy with another download",
-                    "Wait for the update in About to finish, then try again.");
+                app.toast(tr("Busy with another download"),
+                    tr("Wait for the update in About to finish, then try again."));
                 return;
             }
             // What has happened, not what will: it can still fail, and this
             // row reports either way. The restart is asked for when there is
             // something to restart for.
-            app.toast("Downloading puzzle art", "This row shows how it is going.");
+            app.toast(tr("Downloading puzzle art"),
+                tr("This row shows how it is going."));
             return;
 
         case Id_Backup: {
             std::string where;
             std::string why;
             if (!createBackup(where, why)) {
-                app.toast("Could not back up", why);
+                app.toast(tr("Could not back up"), why);
                 return;
             }
             // The folder name, not the whole path: the path is long, and the
             // only part the owner needs is which folder to look in.
             size_t slash = where.find_last_of('/');
             std::string folder = slash == std::string::npos ? where : where.substr(slash + 1);
-            app.toast("Backed up to " + folder,
-                "It is on the same card. Copy the backup folder to a computer to be safe "
-                "from losing the card itself.");
+            app.toast(format(tr("Backed up to %s"), folder.c_str()),
+                tr("It is on the same card. Copy the backup folder to a computer to "
+                   "be safe from losing the card itself."));
             return;
         }
         case Id_LogToFile:
@@ -768,7 +844,7 @@ private:
         case Id_TestConnection:
             app.sync().publishPass();
             app.sync().kick();
-            app.toast("Checking in", settings.serverUrl);
+            app.toast(tr("Checking in"), settings.serverUrl);
             return;
         case Id_Unblock: {
             // No early return on an empty local list any more. An empty list is
@@ -849,7 +925,7 @@ private:
         float itemHeight = theme::textBase * theme::leadingNormal + 36.0f;
 
         for (int i = 0; i < Sec_Count; i++) {
-            const SectionInfo& info = sectionInfo(i);
+            const SectionInfo info = sectionInfo(i);
             Rect item { box.x + theme::s6, y, box.w - theme::s6 * 2.0f, itemHeight };
             app.touchZone(item, Zone_Section, i);
 
@@ -874,8 +950,8 @@ private:
             label.size = theme::textBase;
             label.weight = current ? FontWeight::Bold : FontWeight::Regular;
             label.color = current ? theme::accent : theme::fg2;
-            r.text(Rect { iconBox.right() + theme::s4, item.y, item.w, item.h }, info.label,
-                label, Align::Left, VAlign::Middle);
+            r.text(Rect { iconBox.right() + theme::s4, item.y, item.w, item.h },
+                tr(info.label), label, Align::Left, VAlign::Middle);
 
             y += itemHeight + theme::s2;
         }
@@ -891,14 +967,14 @@ private:
             app.hint("B", "sections");
         }
 
-        const SectionInfo& info = sectionInfo(m_section);
+        const SectionInfo info = sectionInfo(m_section);
 
         TextStyle title;
         title.size = theme::text2xl;
         title.weight = FontWeight::Bold;
         title.color = theme::fg1;
         title.tracking = theme::trackingTight;
-        r.text(box.x, box.y, info.title, title);
+        r.text(box.x, box.y, tr(info.title), title);
 
         TextStyle blurb;
         blurb.size = theme::textBase;
@@ -1024,6 +1100,19 @@ private:
         case Kind::Toggle:
             ui::toggle(r, inner, row.toggleState, focus);
             break;
+
+        case Kind::Choice: {
+            // A dot in a ring, not a toggle: these are one choice out of a
+            // list, and seven toggles would say they can all be on at once.
+            constexpr float kDot = 40.0f;
+            Rect ring { inner.right() - kDot, inner.centerY() - kDot * 0.5f, kDot,
+                kDot };
+            r.strokeRect(ring, kDot * 0.5f, theme::stroke * 1.5f,
+                row.toggleState ? theme::accent : theme::stroke2);
+            if (row.toggleState)
+                r.circle(ring.centerX(), ring.centerY(), kDot * 0.26f, theme::accent);
+            break;
+        }
 
         case Kind::Segmented: {
             // A zone per pill, so touch can pick an option instead of stepping.

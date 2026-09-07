@@ -52,6 +52,11 @@ struct Settings {
     int dailyLimit = 12;            // crossings accepted per day
     bool firstRunDone = false;
 
+    // The language code the app speaks: "en", "fr". A code this build has no
+    // words for reads back as English, so a profile from a later build that
+    // knows more languages loses the setting rather than the app.
+    std::string language = "en";
+
     // theme::Mode as an int, so core does not have to know about the UI layer.
     // 0 = Light (the default), 1 = Dark, 2 = match the console's own setting.
     int themeMode = 0;

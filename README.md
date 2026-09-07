@@ -336,6 +336,26 @@ Theme*: `Light`, `Dark`, or `Console` (follow the Switch's own light/dark
 setting, re-read whenever the app regains focus). The choice is saved in
 `profile.json`.
 
+## Languages
+
+The app is written in English and ships with **French** as well. *Settings →
+Languages* lists what this build has words for, named in itself - `English`,
+`Français` - and the choice takes effect on the next frame and is saved in
+`profile.json`.
+
+Anything a language has not been given stays in English rather than showing a
+key, so a partly translated language is usable rather than broken. Nothing
+about the drawing had to change to support this: the glyphs come from the
+console's own shared fonts, which cover Latin, Cyrillic, Japanese, both Chinese
+sets and Korean, and the renderer already measures, kerns, wraps and ellipsizes
+UTF-8.
+
+Adding a language is a table of English-to-its-own in `source/core/lang_xx.cpp`
+and a line in the `Lang` enum; the settings list is built from the enum, so
+there is no screen to edit. `tools/i18n_scan.py` says what a language is
+missing, and - just as important - which of its entries name English that no
+longer exists in the code.
+
 ## Trophies
 
 All 72 of them, as the app lists them. Nearly every one is worked out from

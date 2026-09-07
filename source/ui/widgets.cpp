@@ -1,5 +1,6 @@
 #include "ui/widgets.h"
 
+#include "core/i18n.h"
 #include "core/model.h"
 #include "core/util.h"
 
@@ -348,6 +349,22 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
                 color);
         break;
     }
+    case Icon::Globe: {
+        // A ring with a meridian and an equator. Three strokes, and the only
+        // honest way to say "language" - a flag would have to choose a country
+        // for a language, which is a thing to get wrong.
+        float radius = s * 0.34f;
+        r.strokeRect(Rect { cx - radius, cy - radius, radius * 2.0f, radius * 2.0f },
+            radius, weight, color);
+        r.rect(Rect { cx - radius, cy - weight * 0.5f, radius * 2.0f, weight }, color);
+        // The meridian: a stadium not quite half as wide as the globe is round,
+        // which is a circle seen edge on.
+        float meridian = radius * 0.46f;
+        r.strokeRect(
+            Rect { cx - meridian, cy - radius, meridian * 2.0f, radius * 2.0f },
+            meridian, weight, color);
+        break;
+    }
     case Icon::Radar: {
         for (int i = 1; i <= 3; i++) {
             float radius = s * 0.12f * static_cast<float>(i);
@@ -465,7 +482,11 @@ void eyebrow(Renderer& r, const Rect& box, const std::string& text, Color color)
     style.color = color;
     style.tracking = theme::trackingWider;
     style.uppercase = true;
-    r.text(box, text, style, Align::Left, VAlign::Top);
+    // Translated here rather than at the call site, along with the buttons,
+    // the pills and the captions below: these widgets are only ever handed a
+    // label, never a name or a number, so one tr() covers every screen that
+    // uses them.
+    r.text(box, tr(text), style, Align::Left, VAlign::Top);
 }
 
 void focusRing(Renderer& r, const Rect& box, float radius, float focus, Color tint)
@@ -564,7 +585,7 @@ void statBlock(Renderer& r, const Rect& box, const std::string& value,
     small.color = theme::fg3;
 
     r.text(box.x, box.y, value, big);
-    r.text(box.x, box.y + theme::textXl * theme::leadingSnug, caption, small);
+    r.text(box.x, box.y + theme::textXl * theme::leadingSnug, tr(caption), small);
 }
 
 // A hint whose button is a direction is drawn as an arrow rather than spelled
@@ -703,7 +724,7 @@ void statCard(Renderer& r, const Rect& box, const std::string& value,
     Rect inner = box.inset(theme::s5);
     r.text(inner.x, inner.y, r.ellipsize(value, number, inner.w), number);
     r.text(inner.x, inner.y + valueSize * theme::leadingSnug + 6.0f,
-        r.ellipsize(caption, label, inner.w), label);
+        r.ellipsize(tr(caption), label, inner.w), label);
 }
 
 float chipWidth(Renderer& r, const std::string& label, float textSize)
@@ -738,7 +759,9 @@ float actionButtonWidth(Renderer& r, const std::string& label)
     TextStyle style;
     style.size = theme::textBase;
     style.weight = FontWeight::Bold;
-    return 40.0f + r.measure(label, style) + 40.0f; // padding 20px 40px
+    // The translated label, because the button is drawn from this number: a
+    // width measured in English would clip every other language.
+    return 40.0f + r.measure(tr(label), style) + 40.0f; // padding 20px 40px
 }
 
 void actionButton(Renderer& r, const Rect& box, const std::string& label, bool filled,
@@ -755,7 +778,7 @@ void actionButton(Renderer& r, const Rect& box, const std::string& label, bool f
     style.size = theme::textBase;
     style.weight = filled ? FontWeight::Bold : FontWeight::Medium;
     style.color = filled ? theme::bg0 : theme::fg1;
-    r.text(box, label, style, Align::Center, VAlign::Middle);
+    r.text(box, tr(label), style, Align::Center, VAlign::Middle);
 
     // The ring sits outside the button, on the page, so a filled button needs
     // no special tint: tinting it bg0 drew the ring in the background's own
@@ -802,7 +825,7 @@ float segmentWidth(Renderer& r, const char* label)
     TextStyle style;
     style.size = theme::textSm;
     style.weight = FontWeight::Bold;
-    return 22.0f + r.measure(label, style) + 22.0f; // padding 12px 22px
+    return 22.0f + r.measure(tr(label), style) + 22.0f; // padding 12px 22px
 }
 
 void segmented(Renderer& r, const Rect& box, const char* const* labels, int count,
@@ -830,7 +853,7 @@ void segmented(Renderer& r, const Rect& box, const char* const* labels, int coun
         style.size = theme::textSm;
         style.weight = chosen ? FontWeight::Bold : FontWeight::Regular;
         style.color = chosen ? theme::bg0 : theme::fg4;
-        r.text(pill, labels[i], style, Align::Center, VAlign::Middle);
+        r.text(pill, tr(labels[i]), style, Align::Center, VAlign::Middle);
 
         if (chosen)
             focusRing(r, pill, theme::r2, focus);

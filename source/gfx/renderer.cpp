@@ -77,11 +77,6 @@ namespace {
         return ok;
     }
 
-    uint32_t toUpperAscii(uint32_t cp)
-    {
-        return (cp >= 'a' && cp <= 'z') ? cp - 32 : cp;
-    }
-
     bool isCjk(uint32_t cp)
     {
         return (cp >= 0x1100 && cp <= 0x11FF) || (cp >= 0x2E80 && cp <= 0xA4CF)
@@ -636,7 +631,7 @@ float Renderer::text(float x, float yTop, const std::string& utf8, const TextSty
         if (cp == '\n')
             break;
         if (style.uppercase)
-            cp = toUpperAscii(cp);
+            cp = upperCodepoint(cp);
 
         const Glyph* glyph = m_font->glyph(cp, px, style.weight);
         if (!glyph)
@@ -679,7 +674,7 @@ float Renderer::measure(const std::string& utf8, const TextStyle& style)
         if (cp == '\n')
             break;
         if (style.uppercase)
-            cp = toUpperAscii(cp);
+            cp = upperCodepoint(cp);
 
         const Glyph* glyph = m_font->glyph(cp, px, style.weight);
         if (!glyph)
@@ -739,7 +734,7 @@ std::string Renderer::ellipsize(const std::string& utf8, const TextStyle& style,
         const char* before = p;
         if (!utf8Next(p, end, cp))
             break;
-        const Glyph* glyph = m_font->glyph(style.uppercase ? toUpperAscii(cp) : cp, px, style.weight);
+        const Glyph* glyph = m_font->glyph(style.uppercase ? upperCodepoint(cp) : cp, px, style.weight);
         if (glyph)
             width += (glyph->advance + style.tracking * static_cast<float>(px)) / m_scale;
         if (width > budget) {

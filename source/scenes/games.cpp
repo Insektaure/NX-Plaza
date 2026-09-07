@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
@@ -148,7 +149,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(content.x, y, "Something to do", title);
+            r.text(content.x, y, tr("Something to do"), title);
 
             // The balance, because one of these can be played for a coin.
             TextStyle meta;
@@ -165,8 +166,8 @@ namespace {
             sub.size = theme::textBase;
             sub.color = theme::fg3;
             r.text(content.x, y,
-                "Played with the faces and names in your collection, so the more "
-                "people you have crossed, the more there is here.",
+                tr("Played with the faces and names in your collection, so the more "
+                   "people you have crossed, the more there is here."),
                 sub);
             y += sub.size * theme::leadingNormal + theme::s6;
 
@@ -235,7 +236,7 @@ namespace {
             name.weight = FontWeight::Bold;
             name.color = theme::fg1;
             name.leading = theme::leadingSnug;
-            r.text(textX, inner.y, entry.name, name);
+            r.text(textX, inner.y, tr(entry.name), name);
 
             // The record, opposite the name, for a game that keeps one.
             uint32_t best = entry.score ? app.store().bestScore(entry.score) : 0u;
@@ -245,7 +246,7 @@ namespace {
                 meta.color = theme::fg3;
                 meta.tracking = theme::trackingWide;
                 r.text(Rect { textX, inner.y, textW, name.size * theme::leadingSnug },
-                    format("best %u %s", unsigned(best), entry.unit), meta,
+                    format(tr("best %u %s"), unsigned(best), tr(entry.unit)), meta,
                     Align::Right,
                     VAlign::Top);
             }
@@ -256,7 +257,7 @@ namespace {
             body.leading = theme::leadingNormal;
             r.textWrapped(Rect { textX, inner.y + name.size * theme::leadingSnug + 6.0f,
                               textW, inner.h },
-                entry.body, body, 2);
+                tr(entry.body), body, 2);
         }
 
         int m_row = 0;

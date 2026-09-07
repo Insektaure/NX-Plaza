@@ -77,6 +77,12 @@ std::string trim(const std::string& s);
 // Uppercases the first letter of each word. ASCII only: any other byte is left
 // exactly as it was, so UTF-8 passes through untouched.
 std::string titleCase(const std::string& s);
+
+// Upper case one codepoint, for ASCII, accented Latin and Cyrillic. Anything
+// with no upper case - CJK, a letter whose capital is two codepoints - comes
+// back unchanged. The renderer's small-caps styles go through this, which is
+// what keeps an uppercased French or Russian label from coming out half done.
+uint32_t upperCodepoint(uint32_t cp);
 std::string clampUtf8(const std::string& s, size_t maxCodepoints);
 size_t utf8Length(const std::string& s);
 bool utf8Next(const char*& p, const char* end, uint32_t& cp);

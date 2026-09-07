@@ -5,6 +5,7 @@
 #include "net/update.h"
 
 #include "core/mii_parts.h"
+#include "core/i18n.h"
 #include "core/identity.h"
 #include "core/trophies.h"
 #include "core/wallet.h"
@@ -89,8 +90,10 @@ bool App::init()
     m_zonesBuilding.reserve(64);
     m_zonesLive.reserve(64);
 
-    // Applied before the first frame, so nothing ever draws in the wrong palette.
+    // Applied before the first frame, so nothing ever draws in the wrong
+    // palette - or the wrong language.
     theme::setMode(static_cast<theme::Mode>(store().settings().themeMode));
+    setCurrentLang(langFromCode(store().settings().language.c_str()));
 
     m_tabScenes[static_cast<int>(Tab::Plaza)] = makePlazaScene();
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();
@@ -297,8 +300,11 @@ void App::hint(const char* button, const std::string& label)
 {
     // Title-cased here rather than at every call site, so a scene can declare
     // its controls in plain lowercase and they all read the same in the bar.
+    // Translated here as well, for the same reason the buttons are: a scene
+    // hands this a verb and nothing else, and every verb in the app goes
+    // through this one line.
     if (m_hints.size() < 6)
-        m_hints.push_back(HintEntry { button, titleCase(label) });
+        m_hints.push_back(HintEntry { button, titleCase(tr(label)) });
 }
 
 // The strip along the bottom. 88px on --bg-1 with the controls
@@ -323,7 +329,7 @@ void App::drawHintBar(Renderer& r)
     label.color = theme::fg3;
     label.tracking = theme::trackingWide;
     r.text(Rect { bar.x + theme::edge, bar.y, 600.0f, bar.h },
-        kTabs[static_cast<int>(m_tab)].label, label, Align::Left, VAlign::Middle);
+        tr(kTabs[static_cast<int>(m_tab)].label), label, Align::Left, VAlign::Middle);
 
     std::vector<std::pair<const char*, std::string>> hints;
     hints.reserve(m_hints.size() + 2);

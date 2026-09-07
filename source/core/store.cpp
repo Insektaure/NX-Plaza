@@ -166,6 +166,11 @@ void Store::load()
             m_settings.dailyLimit = static_cast<int>(js::getInt(s, "daily_limit", 12));
             m_settings.firstRunDone = js::getBool(s, "first_run_done", false);
             m_settings.themeMode = static_cast<int>(js::getInt(s, "theme", 0));
+            // English unless the profile says otherwise. Whether the code names
+            // a language this build has is i18n's business, not the store's.
+            m_settings.language = js::getStr(s, "language");
+            if (m_settings.language.empty())
+                m_settings.language = "en";
             // Defaulting to true here as well as in the struct, so a profile
             // written before the key existed comes up with the scenery still
             // rather than with the setting silently inverted.
@@ -294,6 +299,7 @@ void Store::saveProfileLocked()
     json_object_set_new(s, "daily_limit", json_integer(m_settings.dailyLimit));
     json_object_set_new(s, "first_run_done", json_boolean(m_settings.firstRunDone));
     json_object_set_new(s, "theme", json_integer(m_settings.themeMode));
+    json_object_set_new(s, "language", json_string(m_settings.language.c_str()));
     json_object_set_new(s, "reduce_motion", json_boolean(m_settings.reduceMotion));
     json_t* blocked = json_array();
     for (const BlockedConsole& b : m_settings.blocked) {
