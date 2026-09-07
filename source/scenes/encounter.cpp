@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/crossing_extras.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -227,8 +228,9 @@ private:
             app.store().markTradedBack(m_id);
             m_crossing.tradedBack = true;
             app.sync().publishPass();
-            app.toast(format("Sent something back to %s", m_crossing.pass.handle.c_str()),
-                "It travels with your pass the next time you cross.");
+            app.toast(
+                format(tr("Sent something back to %s"), m_crossing.pass.handle.c_str()),
+                tr("It travels with your pass the next time you cross."));
         } else {
             close(app);
         }
@@ -241,10 +243,10 @@ private:
         bool on = !app.store().isFavourite(m_id);
         app.store().setFavourite(m_id, on);
         // The same words the collection uses, because it is the same flag.
-        app.toast(on ? "Starred " + m_crossing.pass.handle
-                     : "Unstarred " + m_crossing.pass.handle,
-            on ? "Kept when the collection fills up."
-               : "No longer kept when the collection fills up.");
+        app.toast(format(on ? tr("Starred %s") : tr("Unstarred %s"),
+                      m_crossing.pass.handle.c_str()),
+            on ? tr("Kept when the collection fills up.")
+               : tr("No longer kept when the collection fills up."));
     }
 
     // Whether the plaza can be reached. Blocking is half local and half
@@ -263,18 +265,18 @@ private:
         // Checked here rather than at each of the three ways in - the button,
         // X, and A on the third action.
         if (!canReachPlaza(app)) {
-            app.toast("Not connected to the plaza",
-                "Blocking has to reach the server, or they would keep receiving your "
-                "pass. Try again when the dot by the tabs is green.");
+            app.toast(tr("Not connected to the plaza"),
+                tr("Blocking has to reach the server, or they would keep receiving "
+                   "your pass. Try again when the dot by the tabs is green."));
             return;
         }
 
         std::string handle = m_crossing.pass.handle;
         std::string id = m_id;
-        app.askConfirm(format("Block %s?", handle.c_str()),
-            "Their pass is deleted and this console can never cross you again. They are "
-            "not told.",
-            "Block and forget",
+        app.askConfirm(format(tr("Block %s?"), handle.c_str()),
+            tr("Their pass is deleted and this console can never cross you again. "
+               "They are not told."),
+            tr("Block and forget"),
             [appPtr = &app, id, handle]() {
                 // The handle goes with it: the pass is deleted a line later,
                 // and the block list is the only place their name survives.
@@ -321,7 +323,8 @@ private:
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
         r.text(body.x, body.y,
-            format("crossed paths - %s", relativeTime(m_crossing.lastSeen, nowUnix()).c_str()),
+            format(tr("crossed paths - %s"),
+                relativeTime(m_crossing.lastSeen, nowUnix()).c_str()),
             eyebrow);
 
         TextStyle name;
@@ -365,10 +368,10 @@ private:
         // How many times is a stat, not a caption: it sits with the other
         // numbers below rather than in a line about where they were.
         if (!m_crossing.pass.playing.empty())
-            add("playing " + m_crossing.pass.playing);
+            add(format(tr("playing %s"), m_crossing.pass.playing.c_str()));
         add(m_crossing.pass.activity);
         if (meta.empty())
-            meta = "somewhere on the network";
+            meta = tr("somewhere on the network");
 
         TextStyle metaStyle;
         metaStyle.size = theme::textSm;
@@ -409,7 +412,7 @@ private:
         label.color = theme::fg3;
         label.tracking = theme::trackingWide;
         label.uppercase = true;
-        r.text(box.x, box.y, "carrying", label);
+        r.text(box.x, box.y, tr("carrying"), label);
 
         float top = box.y + theme::textSm * theme::leadingNormal + theme::s4;
         float x = box.x;
@@ -441,14 +444,15 @@ private:
 
         // The one number here about the two of you rather than about them.
         std::string crossed = format("%u", m_crossing.count);
-        const char* crossedCaption = m_crossing.count == 1 ? "time crossed" : "times crossed";
+        const char* crossedCaption
+            = m_crossing.count == 1 ? tr("time crossed") : tr("times crossed");
 
         ui::statCard(r, Rect { box.x, box.y, width, kStatCardHeight },
             crossed, crossedCaption);
         // A count of what is on their console (how many games).
         ui::statCard(r, Rect { box.x + width + gap, box.y, width, kStatCardHeight },
             m_titles > 0 ? ui::groupedNumber(m_titles) : std::string("-"),
-            m_titles == 1 ? "game installed" : "games installed");
+            m_titles == 1 ? tr("game installed") : tr("games installed"));
         ui::statCard(r, Rect { box.x + (width + gap) * 2.0f, box.y, width, kStatCardHeight },
             ui::groupedNumber(m_crossing.pass.met), "people met");
 
@@ -456,8 +460,8 @@ private:
             ? format("%uh", m_crossing.pass.hours)
             : std::string("-");
         std::string caption = m_crossing.pass.playing.empty()
-            ? std::string("hours played")
-            : format("in %s", m_crossing.pass.playing.c_str());
+            ? std::string(tr("hours played"))
+            : format(tr("in %s"), m_crossing.pass.playing.c_str());
 
         ui::statCard(r, Rect { box.x, box.y + kStatCardHeight + gap,
                          std::min(box.w, 1000.0f), kStatCardHeight },
@@ -468,13 +472,13 @@ private:
     void drawActions(App& app, Renderer& r, const Rect& box)
     {
         std::string primaryLabel = m_crossing.tradedBack
-            ? "Already traded back"
-            : (m_crossing.pass.carrying.empty()
-                    ? "Trade something back"
-                    : format("Take it, send something back"));
+            ? tr("Already traded back")
+            : (m_crossing.pass.carrying.empty() ? tr("Trade something back")
+                                                : tr("Take it, send something back"));
 
         bool starred = app.store().isFavourite(m_id);
-        const char* secondaryLabel = starred ? "Unstar this card" : "Star this card";
+        const char* secondaryLabel
+            = starred ? tr("Unstar this card") : tr("Star this card");
 
         float primaryWidth = std::min(ui::actionButtonWidth(r, primaryLabel), box.w * 0.5f);
         float secondaryWidth = ui::actionButtonWidth(r, secondaryLabel);

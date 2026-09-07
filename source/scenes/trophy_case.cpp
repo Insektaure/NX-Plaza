@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/trophies.h"
 #include "core/util.h"
@@ -119,7 +120,8 @@ namespace {
         {
             rebuild(app);
 
-            app.hint("X", format("show %s", filterName((m_filter + 1) % Filter_Count)));
+            app.hint("X",
+                format(tr("show %s"), tr(filterName((m_filter + 1) % Filter_Count))));
 
             Rect area = app.contentArea();
             Rect content { area.x + theme::edge, area.y + theme::s8,
@@ -136,7 +138,8 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(content.x, y, format("%d of %zu", m_earnedCount, all.size()), title);
+            r.text(content.x, y, format(tr("%d of %zu"), m_earnedCount, all.size()),
+                title);
 
             // What the list is showing, then the tiers, opposite the count -
             // the shape the collection puts its sort order in, because it is
@@ -147,7 +150,7 @@ namespace {
             meta.size = theme::textSm;
             meta.color = theme::fg3;
             r.text(Rect { content.x, y, content.w, line },
-                format("%s - %s", filterName(m_filter), tallyText().c_str()), meta,
+                format("%s - %s", tr(filterName(m_filter)), tallyText().c_str()), meta,
                 Align::Right, VAlign::Middle);
             y += line + theme::s3;
 
@@ -172,8 +175,9 @@ namespace {
                 empty.size = theme::textBase;
                 empty.color = theme::fg3;
                 r.text(list.x, list.y,
-                    m_filter == Filter_Earned ? "Nothing earned yet. Go and meet somebody."
-                                              : "Everything here is earned.",
+                    m_filter == Filter_Earned
+                        ? tr("Nothing earned yet. Go and meet somebody.")
+                        : tr("Everything here is earned."),
                     empty);
                 return;
             }
@@ -245,7 +249,7 @@ namespace {
                 if (!out.empty())
                     out += "   ";
                 out += format("%d/%d %s", done[tier], total[tier],
-                    tierName(Tier(tier)));
+                    tr(tierName(Tier(tier))));
             }
             return out;
         }
@@ -297,7 +301,7 @@ namespace {
             right.weight = FontWeight::Medium;
             right.color = earned ? metal : theme::fg4;
             right.tracking = theme::trackingWide;
-            std::string tier = tierName(trophy.tier);
+            std::string tier = tr(tierName(trophy.tier));
 
             TextStyle when;
             when.size = theme::textSm;
@@ -306,8 +310,8 @@ namespace {
             if (earned) {
                 uint64_t at = app.store().trophyDate(trophy.id);
                 date = at != 0
-                    ? format("earned %s", relativeTime(at, nowUnix()).c_str())
-                    : std::string("earned");
+                    ? format(tr("earned %s"), relativeTime(at, nowUnix()).c_str())
+                    : std::string(tr("earned"));
             }
 
             // The column is as wide as its widest line, so the text column
@@ -334,7 +338,7 @@ namespace {
             name.weight = FontWeight::Bold;
             name.color = earned ? theme::fg1 : theme::fg3;
             name.leading = theme::leadingSnug;
-            r.text(textX, inner.y, r.ellipsize(trophy.name, name, textW), name);
+            r.text(textX, inner.y, r.ellipsize(tr(trophy.name), name, textW), name);
 
             // What it takes, on every row whether it is earned or not: the
             // list reads as a record of what happened, which needs the reason
@@ -344,7 +348,7 @@ namespace {
             sub.color = earned ? theme::fg2 : theme::fg3;
             sub.leading = theme::leadingNormal;
             r.text(textX, inner.y + name.size * theme::leadingSnug + 6.0f,
-                r.ellipsize(trophy.hint, sub, textW), sub);
+                r.ellipsize(tr(trophy.hint), sub, textW), sub);
         }
 
         std::vector<uint8_t> m_state;

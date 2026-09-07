@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
@@ -82,9 +83,11 @@ public:
                 const Crossing& c = m_crossings[static_cast<size_t>(m_selected)];
                 bool on = !app.store().isFavourite(c.id);
                 app.store().setFavourite(c.id, on);
-                app.toast(on ? "Starred " + c.pass.handle : "Unstarred " + c.pass.handle,
-                    on ? "Kept when the collection fills up."
-                       : "No longer kept when the collection fills up.");
+                app.toast(
+                    format(on ? tr("Starred %s") : tr("Unstarred %s"),
+                        c.pass.handle.c_str()),
+                    on ? tr("Kept when the collection fills up.")
+                       : tr("No longer kept when the collection fills up."));
 
                 // Only this screen knows its order depends on the star.
                 // The store deliberately does not bump the generation for a
@@ -123,14 +126,16 @@ public:
 
         Stats stats = app.store().stats();
         r.text(content.x, content.y + 40.0f,
-            format("%u %s met", stats.uniquePeople, stats.uniquePeople == 1 ? "person" : "people"),
+            format(tr("%u %s met"), stats.uniquePeople,
+                stats.uniquePeople == 1 ? tr("person") : tr("people")),
             title);
 
         TextStyle meta;
         meta.size = theme::textSm;
         meta.color = theme::fg3;
         r.text(Rect { content.x, content.y + 40.0f, content.w, title.size * theme::leadingSnug },
-            format("%s - %u crossings in total", sortLabel(), stats.totalCrossings),
+            format(tr("%s - %u crossings in total"), tr(sortLabel()),
+                stats.totalCrossings),
             meta, Align::Right, VAlign::Bottom);
 
         app.hint("A", "open");
@@ -163,7 +168,8 @@ public:
             empty.size = theme::textBase;
             empty.color = theme::fg3;
             r.textWrapped(Rect { grid.x, grid.y + 48.0f, std::min(grid.w, 960.0f), 130.0f },
-                "Nothing collected yet. The first pass you receive lands here and stays.",
+                tr("Nothing collected yet. The first pass you receive lands here and "
+                   "stays."),
                 empty, 2);
             return;
         }
@@ -443,7 +449,8 @@ private:
         if (crossing.count > 1) {
             r.text(Rect { cell.x + theme::s5, metaY + theme::textXs * theme::leadingNormal,
                        textWidth, 32.0f },
-                r.ellipsize(format("met %u times", crossing.count), meta, textWidth),
+                r.ellipsize(format(tr("met %u times"), crossing.count), meta,
+                    textWidth),
                 meta, Align::Left, VAlign::Top);
         }
 

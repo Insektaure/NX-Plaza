@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/place.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -221,19 +222,19 @@ private:
         app.hint("A", m_onToggle ? "toggle" : "open");
         app.hint("X", "look now");
 
-        const char* eyebrowText = "live - scanning";
+        const char* eyebrowText = tr("live - scanning");
         Color eyebrowColor = theme::teal;
         switch (m_status.state) {
         case Sync::State::Offline:
-            eyebrowText = "offline";
+            eyebrowText = tr("offline");
             eyebrowColor = theme::fg3;
             break;
         case Sync::State::Error:
-            eyebrowText = "cannot reach the plaza";
+            eyebrowText = tr("cannot reach the plaza");
             eyebrowColor = theme::danger;
             break;
         case Sync::State::Working:
-            eyebrowText = "live - trading";
+            eyebrowText = tr("live - trading");
             break;
         default:
             break;
@@ -262,8 +263,8 @@ private:
 
         int count = static_cast<int>(m_peers.size());
         std::string headline = count == 1
-            ? std::string("1 console awake near you")
-            : format("%d consoles awake near you", count);
+            ? std::string(tr("1 console awake near you"))
+            : format(tr("%d consoles awake near you"), count);
 
         float titleY = box.y + theme::textSm * theme::leadingNormal + theme::s3;
         float titleUsed = r.textWrapped(Rect { box.x, titleY, box.w, title.size * 2.3f },
@@ -274,7 +275,8 @@ private:
         body.color = theme::fg2;
         body.leading = theme::leadingNormal;
         std::string explainer = m_status.message.empty()
-            ? std::string("Passes exchange on their own. You do not have to sit here.")
+            ? std::string(
+                  tr("Passes exchange on their own. You do not have to sit here."))
             : m_status.message;
         float bodyY = titleY + titleUsed + theme::s3;
         float bodyUsed = r.textWrapped(Rect { box.x, bodyY, box.w, 130.0f }, explainer, body, 3);
@@ -313,8 +315,8 @@ private:
             empty.size = theme::textBase;
             empty.color = theme::fg3;
             r.textWrapped(Rect { rows.x, list.y, rows.w, 120.0f },
-                "Nobody else has checked in here yet. Leave the app open; the plaza fills "
-                "faster if you do.",
+                tr("Nobody else has checked in here yet. Leave the app open; the "
+                   "plaza fills faster if you do."),
                 empty, 3);
         }
 
@@ -351,21 +353,21 @@ private:
         meta.size = theme::textSm;
         meta.color = theme::fg3;
 
-        const char* stateText = "waiting";
+        const char* stateText = tr("waiting");
         Color stateColor = theme::fg3;
         bool pill = false;
         switch (peer.state) {
         case Peer::State_Exchanging:
-            stateText = "exchanging...";
+            stateText = tr("exchanging...");
             stateColor = theme::fg3;
             break;
         case Peer::State_Passed:
-            stateText = "passed";
+            stateText = tr("passed");
             stateColor = theme::teal;
             pill = true;
             break;
         case Peer::State_OutOfRange:
-            stateText = "out of range";
+            stateText = tr("out of range");
             stateColor = theme::fg4;
             break;
         default:
@@ -395,8 +397,9 @@ private:
                           + meta.size * theme::leadingNormal) * 0.5f;
         r.text(textX, nameY, r.ellipsize(peer.handle, name, textW), name);
 
-        std::string detail = peer.playing.empty() ? std::string("hidden title") : peer.playing;
-        detail += " - " + peer.proximityLabel();
+        std::string detail
+            = peer.playing.empty() ? std::string(tr("hidden title")) : peer.playing;
+        detail += " - " + tr(peer.proximityLabel());
         r.text(textX, nameY + name.size * theme::leadingSnug + 4.0f,
             r.ellipsize(detail, meta, textW), meta);
     }
@@ -418,17 +421,18 @@ private:
         label.size = theme::textBase;
         label.weight = FontWeight::Bold;
         label.color = theme::fg1;
-        r.text(inner.x, inner.y, "Exchange passes automatically", label);
+        r.text(inner.x, inner.y, tr("Exchange passes automatically"), label);
 
         TextStyle hint;
         hint.size = theme::textSm;
         hint.color = theme::fg3;
-        std::string detail = format("Up to %d per day while the app is open",
+        std::string detail = format(tr("Up to %d per day while the app is open"),
             settings.dailyLimit);
         if (!m_status.networkName.empty()) {
             detail += m_status.placeKnown
-                ? format(" - matching on \"%s\"", m_status.networkName.c_str())
-                : format(" - on \"%s\", no name to match", m_status.networkName.c_str());
+                ? format(tr(" - matching on \"%s\""), m_status.networkName.c_str())
+                : format(tr(" - on \"%s\", no name to match"),
+                      m_status.networkName.c_str());
         }
         r.text(inner.x, inner.y + label.size * theme::leadingSnug + 6.0f,
             r.ellipsize(detail, hint, inner.w * 0.66f), hint);

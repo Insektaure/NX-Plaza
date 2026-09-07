@@ -1,6 +1,7 @@
 #include "app.h"
 #include "core/pieces.h"
 #include "core/store.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "core/wallet.h"
 #include "scenes/scene.h"
@@ -29,8 +30,8 @@ namespace {
         // Re-checked rather than trusted: the dialog was drawn against a
         // balance and a shelf from an earlier frame.
         if (wallet.balance() < price) {
-            app.toast(format("%u coins short", unsigned(price - wallet.balance())),
-                "Ten arrive on each new day you open the app.");
+            app.toast(format(tr("%u coins short"), unsigned(price - wallet.balance())),
+                tr("Ten arrive on each new day you open the app."));
             return;
         }
 
@@ -38,8 +39,8 @@ namespace {
         // grant, nobody has been charged for it.
         Store::PiecePurchase bought = app.store().buyPiece(activeOnly);
         if (bought.set < 0) {
-            app.toast("Nothing to sell there",
-                "There are no pieces left to find there.");
+            app.toast(tr("Nothing to sell there"),
+                tr("There are no pieces left to find there."));
             return;
         }
         wallet.spend(price);
@@ -49,9 +50,9 @@ namespace {
         // land in a puzzle you are not looking at, and the two toasts should
         // not need reading differently.
         const std::vector<PieceSet>& sets = pieceSets();
-        app.toast(format("Piece %d of %s", bought.piece + 1,
+        app.toast(format(tr("Piece %d of %s"), bought.piece + 1,
                       sets[size_t(bought.set)].name),
-            format("%u coins left.", unsigned(wallet.balance())));
+            format(tr("%u coins left."), unsigned(wallet.balance())));
     }
 
     // What a day of opening the app is worth.
@@ -162,7 +163,7 @@ namespace {
             totals.color = theme::fg4;
             totals.tracking = theme::trackingWide;
             r.text(Rect { content.x, y, content.w, title.size * theme::leadingTight },
-                format("%u earned - %u spent", unsigned(Wallet::get().granted()),
+                format(tr("%u earned - %u spent"), unsigned(Wallet::get().granted()),
                     unsigned(Wallet::get().spent())),
                 totals, Align::Right, VAlign::Middle);
             y += title.size * theme::leadingTight + theme::s3;
@@ -216,15 +217,16 @@ namespace {
             chosen.icon = ui::Icon::Puzzle;
             chosen.price = Wallet::kChosenPiecePrice;
             chosen.activeOnly = true;
-            chosen.label = format("A piece of %s", set.name);
+            chosen.label = format(tr("A piece of %s"), set.name);
             chosen.stocked = !pieces.complete(active);
             chosen.caption = chosen.stocked
-                ? format("A piece you do not have yet of %s - the puzzle your "
-                         "crossings are filling, %d of %u so far. Twice the price, "
-                         "because you get to say which picture it goes into.",
+                ? format(tr("A piece you do not have yet of %s - the puzzle your "
+                            "crossings are filling, %d of %u so far. Twice the "
+                            "price, because you get to say which picture it goes "
+                            "into."),
                       set.name, pieces.countHeld(active), unsigned(set.count))
-                : format("%s is finished. Choose another to fill on the puzzles "
-                         "screen, or take your chances with any puzzle.",
+                : format(tr("%s is finished. Choose another to fill on the puzzles "
+                            "screen, or take your chances with any puzzle."),
                       set.name);
             m_items.push_back(chosen);
 
@@ -246,15 +248,15 @@ namespace {
             any.icon = ui::Icon::Dice;
             any.price = Wallet::kAnyPiecePrice;
             any.activeOnly = false;
-            any.label = "A piece of any puzzle";
+            any.label = tr("A piece of any puzzle");
             any.stocked = unfinished > 0;
             any.caption = any.stocked
-                ? format("Half the price, and you do not choose: one piece drawn "
-                         "from every unfinished puzzle at once - %d still to find "
-                         "across %d of them.",
+                ? format(tr("Half the price, and you do not choose: one piece drawn "
+                            "from every unfinished puzzle at once - %d still to find "
+                            "across %d of them."),
                       outstanding, unfinished)
-                : std::string("Every puzzle is finished. There is nothing left to "
-                              "sell you.");
+                : std::string(tr("Every puzzle is finished. There is nothing left to "
+                                 "sell you."));
             m_items.push_back(any);
 
             m_focus = std::min(std::max(m_focus, 0), int(m_items.size()) - 1);
@@ -264,12 +266,12 @@ namespace {
         std::string caption() const
         {
             if (m_items.empty())
-                return "Nothing on the shelf yet.";
+                return tr("Nothing on the shelf yet.");
             const Item& item = m_items[size_t(m_focus)];
             uint32_t coins = Wallet::get().balance();
             if (item.stocked && coins < item.price) {
-                return format("%u more coins needed. Ten arrive on every new day "
-                              "you open the app.",
+                return format(tr("%u more coins needed. Ten arrive on every new day "
+                                 "you open the app."),
                     unsigned(item.price - coins));
             }
             return item.caption;
@@ -345,7 +347,7 @@ namespace {
             priceText.size = theme::textSm;
             priceText.weight = FontWeight::Bold;
             std::string price = item.stocked ? format("%u", unsigned(item.price))
-                                             : std::string("sold out");
+                                             : std::string(tr("sold out"));
             float width = r.measure(price, priceText) + theme::s6;
             ui::pill(r,
                 Rect { inner.centerX() - width * 0.5f, inner.bottom() - 38.0f, width,
@@ -368,12 +370,12 @@ namespace {
             uint32_t coins = Wallet::get().balance();
 
             if (!item.stocked) {
-                app.toast("Nothing to sell there", item.caption);
+                app.toast(tr("Nothing to sell there"), item.caption);
                 return;
             }
             if (coins < item.price) {
-                app.toast(format("%u coins short", unsigned(item.price - coins)),
-                    "Ten arrive on each new day you open the app.");
+                app.toast(format(tr("%u coins short"), unsigned(item.price - coins)),
+                    tr("Ten arrive on each new day you open the app."));
                 return;
             }
 
@@ -384,15 +386,16 @@ namespace {
             if (!what.empty())
                 what[0] = char(std::tolower(static_cast<unsigned char>(what[0])));
 
-            app.askConfirm(format("Buy %s for %u coins?", what.c_str(),
-                               unsigned(price)),
-                format("%s That leaves you %u.",
+            app.askConfirm(
+                format(tr("Buy %s for %u coins?"), what.c_str(), unsigned(price)),
+                format(tr("%s That leaves you %u."),
                     activeOnly
-                        ? "One you do not hold yet, into the puzzle you are filling."
-                        : "Drawn from every unfinished puzzle at once, so it may not "
-                          "be the one you are filling.",
+                        ? tr("One you do not hold yet, into the puzzle you are "
+                             "filling.")
+                        : tr("Drawn from every unfinished puzzle at once, so it may "
+                             "not be the one you are filling."),
                     unsigned(coins - price)),
-                "Buy it",
+                tr("Buy it"),
                 [appPtr = &app, price, activeOnly]() {
                     settle(*appPtr, price, activeOnly);
                 });

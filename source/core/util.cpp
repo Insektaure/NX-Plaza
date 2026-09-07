@@ -1,3 +1,4 @@
+#include "core/i18n.h"
 #include "core/util.h"
 
 #include <switch.h>
@@ -114,17 +115,17 @@ uint64_t monotonicMs()
 std::string relativeTime(uint64_t then, uint64_t now)
 {
     if (then == 0)
-        return "unknown";
+        return tr("unknown");
     if (now < then)
         now = then;
 
     uint64_t delta = now - then;
     if (delta < 60)
-        return "just now";
+        return tr("just now");
     if (delta < 3600)
-        return format("%llum ago", (unsigned long long)(delta / 60));
+        return format(tr("%llum ago"), (unsigned long long)(delta / 60));
     if (delta < 24 * 3600)
-        return format("%lluh ago", (unsigned long long)(delta / 3600));
+        return format(tr("%lluh ago"), (unsigned long long)(delta / 3600));
 
     time_t t0 = static_cast<time_t>(then);
     struct tm a {};
@@ -132,22 +133,29 @@ std::string relativeTime(uint64_t then, uint64_t now)
 
     int dayDiff = static_cast<int>(delta / (24 * 3600));
     if (dayDiff <= 1)
-        return "Yesterday";
+        return tr("Yesterday");
     if (delta < 7 * 24 * 3600)
-        return format("%d days ago", dayDiff);
+        return format(tr("%d days ago"), dayDiff);
 
+    // Translated where it is used, not where it is written: the table is a
+    // static, filled once, and a language can be changed after that.
     static const char* months[12] = { "Jan", "Feb", "Mar", "Apr", "May", "Jun",
         "Jul", "Aug", "Sep", "Oct", "Nov", "Dec" };
-    return format("%d %s", a.tm_mday, months[a.tm_mon % 12]);
+    // The day before the month reads right in English and in French. A
+    // language that puts it the other way round wants the whole date as one
+    // string, which is what this being a format string leaves room for.
+    return format(tr("%d %s"), a.tm_mday, tr(months[a.tm_mon % 12]));
 }
 
 std::string weekdayShort(uint64_t when)
 {
+    // A static table, so translated where it is read - same as the months
+    // above.
     static const char* days[7] = { "Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat" };
     time_t t = static_cast<time_t>(when);
     struct tm tmv {};
     localtime_r(&t, &tmv);
-    return days[tmv.tm_wday % 7];
+    return tr(days[tmv.tm_wday % 7]);
 }
 
 std::string format(const char* fmt, ...)

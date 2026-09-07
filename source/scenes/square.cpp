@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/store.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -170,7 +171,7 @@ namespace {
             Pass mine = app.store().myPass();
             Figure self;
             self.mii = mine.face();
-            self.name = mine.handle.empty() ? std::string("You") : mine.handle;
+            self.name = mine.handle.empty() ? std::string(tr("You")) : mine.handle;
             self.greeting = mine.greeting;
             place(self, area);
             m_figures.push_back(std::move(self));
@@ -487,8 +488,8 @@ namespace {
             body.leading = theme::leadingNormal;
             size_t others = m_figures.empty() ? 0 : m_figures.size() - 1;
             std::string sub = others == 0
-                ? std::string("Everyone you cross paths with turns up here.")
-                : std::string("A few of the people you have met, milling about.");
+                ? std::string(tr("Everyone you cross paths with turns up here."))
+                : std::string(tr("A few of the people you have met, milling about."));
             r.textWrapped(Rect { box.x, box.y + 40.0f, box.w, 80.0f }, sub, body, 2);
         }
 

@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "scenes/scene.h"
@@ -195,7 +196,7 @@ namespace {
             for (const Crossing& c : crossings) {
                 Floor f;
                 f.mii = c.pass.face();
-                f.name = c.pass.handle.empty() ? std::string("A stranger")
+                f.name = c.pass.handle.empty() ? std::string(tr("A stranger"))
                                                : c.pass.handle;
                 cast.push_back(std::move(f));
                 if (cast.size() >= 40)
@@ -207,7 +208,7 @@ namespace {
             Pass mine = app.store().myPass();
             Floor self;
             self.mii = mine.face();
-            self.name = mine.handle.empty() ? std::string("You") : mine.handle;
+            self.name = mine.handle.empty() ? std::string(tr("You")) : mine.handle;
             cast.push_back(std::move(self));
             while (cast.size() < 8) {
                 Pass stranger;
@@ -216,7 +217,7 @@ namespace {
                 stranger.portrait = seed;
                 Floor f;
                 f.mii = stranger.face();
-                f.name = "A stranger";
+                f.name = tr("A stranger");
                 cast.push_back(std::move(f));
             }
             return cast;
@@ -523,8 +524,8 @@ namespace {
             r.text(Rect { 0.0f, 54.0f + theme::text3xl * theme::leadingTight,
                       Renderer::DesignWidth - theme::edge, 30.0f },
                 uint32_t(floors()) > m_best && m_best > 0
-                    ? "a new best"
-                    : format("floors, best %u", unsigned(m_best)),
+                    ? std::string(tr("a new best"))
+                    : format(tr("floors, best %u"), unsigned(m_best)),
                 label, Align::Right, VAlign::Top);
 
             // How close the lean is to going over. A bar rather than a number,
@@ -540,7 +541,7 @@ namespace {
             caption.color = theme::fg4;
             caption.tracking = theme::trackingWider;
             caption.uppercase = true;
-            r.text(track.x, track.bottom() + 8.0f, "lean", caption);
+            r.text(track.x, track.bottom() + 8.0f, tr("lean"), caption);
         }
 
         Rect plate(float width, float height) const
@@ -573,7 +574,7 @@ namespace {
             // of 64px bold - about 870px in an 864px box - and the best-height
             // label shares the line with it. The eyebrow above already says
             // what this is.
-            r.text(inner.x, y, r.ellipsize("Stack them up", title, inner.w * 0.62f),
+            r.text(inner.x, y, r.ellipsize(tr("Stack them up"), title, inner.w * 0.62f),
                 title);
 
             if (m_best > 0) {
@@ -582,7 +583,7 @@ namespace {
                 best.color = theme::fg3;
                 best.tracking = theme::trackingWide;
                 r.text(Rect { inner.x, y, inner.w, title.size * theme::leadingTight },
-                    format("best %u floors", unsigned(m_best)), best, Align::Right,
+                    format(tr("best %u floors"), unsigned(m_best)), best, Align::Right,
                     VAlign::Middle);
             }
             y += title.size * theme::leadingTight + theme::s3;
@@ -592,8 +593,8 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
-                "A drops whoever is swinging. Miss the shoulders below and they "
-                "fall; drift too far from the base and the lot goes over.",
+                tr("A drops whoever is swinging. Miss the shoulders below and they "
+                   "fall; drift too far from the base and the lot goes over."),
                 body, 2);
 
             Rect go { inner.x, std::max(inner.bottom() - 76.0f, y + theme::s5),
@@ -621,7 +622,7 @@ namespace {
             title.color = m_beatBest ? theme::accent : theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(inner.x, y, format("%d floors", floors()), title);
+            r.text(inner.x, y, format(tr("%d floors"), floors()), title);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;
@@ -629,10 +630,10 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             std::string line = m_missed
-                ? format("%s had nothing to stand on.", m_blame.c_str())
-                : format("It went over with %s on top.", m_blame.c_str());
+                ? format(tr("%s had nothing to stand on."), m_blame.c_str())
+                : format(tr("It went over with %s on top."), m_blame.c_str());
             if (m_beatBest)
-                line = "A new best. " + line;
+                line = std::string(tr("A new best.")) + " " + line;
             r.text(inner.x, y, r.ellipsize(line, body, inner.w), body);
             y += body.size * theme::leadingNormal;
 

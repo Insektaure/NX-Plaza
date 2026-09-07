@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
@@ -326,7 +327,7 @@ namespace {
             Pass mine = app.store().myPass();
             Racer you;
             you.mii = mine.face();
-            you.name = mine.handle.empty() ? std::string("You") : mine.handle;
+            you.name = mine.handle.empty() ? std::string(tr("You")) : mine.handle;
             you.you = true;
             m_racers.push_back(std::move(you));
 
@@ -349,7 +350,7 @@ namespace {
             for (const Crossing* c : chosen) {
                 Racer other;
                 other.mii = c->pass.face();
-                other.name = c->pass.handle.empty() ? std::string("A stranger")
+                other.name = c->pass.handle.empty() ? std::string(tr("A stranger"))
                                                     : c->pass.handle;
                 m_racers.push_back(std::move(other));
             }
@@ -364,7 +365,7 @@ namespace {
                 stranger.portrait = seed;
                 Racer other;
                 other.mii = stranger.face();
-                other.name = "A stranger";
+                other.name = tr("A stranger");
                 m_racers.push_back(std::move(other));
             }
 
@@ -492,8 +493,8 @@ namespace {
             Wallet& wallet = Wallet::get();
             if (staked) {
                 if (!wallet.spend(kStake)) {
-                    app.toast("Nothing to bet",
-                        "Ten coins arrive on each new day you open the app.");
+                    app.toast(tr("Nothing to bet"),
+                        tr("Ten coins arrive on each new day you open the app."));
                     return;
                 }
                 // Written now, so quitting on a bad race still costs the coin.
@@ -700,7 +701,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(inner.x, y, "Four runners, one line", title);
+            r.text(inner.x, y, tr("Four runners, one line"), title);
 
             TextStyle purse;
             purse.size = theme::textSm;
@@ -716,18 +717,19 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             r.text(inner.x, y,
-                "Nobody is faster than anybody. Nothing you do changes that.", body);
+                tr("Nobody is faster than anybody. Nothing you do changes that."),
+                body);
             y += body.size * theme::leadingNormal + theme::s5;
 
             const char* labels[kOptions] = {
-                "Race for free",
-                "Bet 1 coin - your Mii to win",
-                "Predict 1st and 2nd",
+                tr("Race for free"),
+                tr("Bet 1 coin - your Mii to win"),
+                tr("Predict 1st and 2nd"),
             };
             std::string notes[kOptions] = {
-                std::string("Just to watch."),
-                format("%u back if it comes in.", unsigned(kPayoutWin)),
-                format("For free, or bet 1 coin for %u back.",
+                std::string(tr("Just to watch.")),
+                format(tr("%u back if it comes in."), unsigned(kPayoutWin)),
+                format(tr("For free, or bet 1 coin for %u back."),
                     unsigned(kPayoutExacta)),
             };
 
@@ -735,7 +737,7 @@ namespace {
                 Rect row { inner.x, y, inner.w, kOption };
                 bool poor = i == 1 && coins < kStake;
                 drawOption(app, r, row, i, labels[i],
-                    poor ? std::string("Nothing to bet with.") : notes[i], !poor);
+                    poor ? std::string(tr("Nothing to bet with.")) : notes[i], !poor);
                 y += kOption + theme::s3;
             }
 
@@ -792,8 +794,8 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            const char* asks[3] = { "Who comes first?", "And who comes second?",
-                "That is your call" };
+            const char* asks[3] = { tr("Who comes first?"),
+                tr("And who comes second?"), tr("That is your call") };
             r.text(inner.x, y, asks[m_pickStep], title);
             y += title.size * theme::leadingTight + theme::s3;
 
@@ -852,7 +854,7 @@ namespace {
                 TextStyle badge;
                 badge.size = theme::textSm;
                 badge.weight = FontWeight::Bold;
-                std::string label = first ? "1st" : "2nd";
+                std::string label = first ? tr("1st") : tr("2nd");
                 float width = r.measure(label, badge) + theme::s5;
                 ui::pill(r,
                     Rect { inner.right() - width, inner.centerY() - 18.0f, width, 36.0f },
@@ -865,12 +867,12 @@ namespace {
         std::string callText() const
         {
             if (m_pick[0] < 0)
-                return format("First and second, in order. Eleven for a coin if you "
-                              "call it, or watch for nothing.");
+                return tr("First and second, in order. Eleven for a coin if you "
+                          "call it, or watch for nothing.");
             const std::string& first = m_racers[size_t(m_pick[0])].name;
             if (m_pick[1] < 0)
-                return format("%s to win. Now who is behind them?", first.c_str());
-            return format("%s first, %s second.", first.c_str(),
+                return format(tr("%s to win. Now who is behind them?"), first.c_str());
+            return format(tr("%s first, %s second."), first.c_str(),
                 m_racers[size_t(m_pick[1])].name.c_str());
         }
 
@@ -882,7 +884,7 @@ namespace {
             // the numbers have a pulse rather than a blink.
             int beat = std::min(int(m_clock / 0.8f), 3);
             float within = std::fmod(m_clock, 0.8f) / 0.8f;
-            const char* words[4] = { "3", "2", "1", "Go" };
+            const char* words[4] = { "3", "2", "1", tr("Go") };
 
             TextStyle count;
             count.size = theme::text4xl * (1.35f - 0.35f * std::min(within * 2.5f, 1.0f));
@@ -912,8 +914,8 @@ namespace {
             style.weight = FontWeight::Bold;
             style.color = front->you ? theme::accent : theme::fg2;
             r.text(Rect { 0.0f, 60.0f, Renderer::DesignWidth - theme::edge, 40.0f },
-                front->you ? std::string("You are in front")
-                           : format("%s is in front", front->name.c_str()),
+                front->you ? std::string(tr("You are in front"))
+                           : format(tr("%s is in front"), front->name.c_str()),
                 style, Align::Right, VAlign::Middle);
         }
 
@@ -946,13 +948,13 @@ namespace {
             // winning, or the order coming in as called.
             std::string headline;
             if (m_mode == Mode_Predict) {
-                headline = m_called ? std::string("Called it")
-                                    : format("%s won", first ? first->name.c_str()
-                                                             : "Nobody");
+                headline = m_called ? std::string(tr("Called it"))
+                                    : format(tr("%s won"),
+                                          first ? first->name.c_str() : tr("Nobody"));
             } else {
-                headline = m_called ? std::string("You won")
-                                    : format("%s won", first ? first->name.c_str()
-                                                             : "Nobody");
+                headline = m_called ? std::string(tr("You won"))
+                                    : format(tr("%s won"),
+                                          first ? first->name.c_str() : tr("Nobody"));
             }
             r.text(inner.x, inner.y, headline, title);
             float y = inner.y + title.size * theme::leadingTight + 8.0f;
@@ -968,9 +970,9 @@ namespace {
                 const Racer& one = m_racers[size_t(m_pick[0])];
                 const Racer& two = m_racers[size_t(m_pick[1])];
                 r.text(inner.x, y,
-                    format("You said %s then %s - they came %s and %s.",
-                        one.name.c_str(), two.name.c_str(), ordinal(one.place),
-                        ordinal(two.place)),
+                    format(tr("You said %s then %s - they came %s and %s."),
+                        one.name.c_str(), two.name.c_str(), tr(ordinal(one.place)),
+                        tr(ordinal(two.place))),
                     body);
                 y += body.size * theme::leadingNormal + 4.0f;
             }
@@ -978,13 +980,13 @@ namespace {
             std::string line;
             if (m_staked) {
                 line = m_paid > 0
-                    ? format("The bet paid %u - %u coins to spend.", unsigned(m_paid),
+                    ? format(tr("The bet paid %u - %u coins to spend."), unsigned(m_paid),
                           unsigned(Wallet::get().balance()))
-                    : format("The bet cost you a coin. %u left.",
+                    : format(tr("The bet cost you a coin. %u left."),
                           unsigned(Wallet::get().balance()));
             } else {
-                line = m_called ? "Nothing bet, but right is right."
-                                : "Nothing bet, nothing lost.";
+                line = m_called ? tr("Nothing bet, but right is right.")
+                                : tr("Nothing bet, nothing lost.");
             }
             r.text(inner.x, y, line, body);
 
@@ -998,7 +1000,8 @@ namespace {
                     row.size = theme::textBase;
                     row.weight = racer.you ? FontWeight::Bold : FontWeight::Regular;
                     row.color = racer.you ? theme::accent : theme::fg2;
-                    r.text(inner.x, y, format("%d.  %s", place, racer.name.c_str()), row);
+                    r.text(inner.x, y, format("%d.  %s", place, racer.name.c_str()),
+                        row);
                     r.text(Rect { inner.x, y, inner.w, row.size * theme::leadingSnug },
                         format("%.2fs", double(racer.finish)), row, Align::Right,
                         VAlign::Top);
@@ -1013,9 +1016,9 @@ namespace {
                 // between free and a coin is made there, after the two runners
                 // have been named. Offering it twice priced a bet that had not
                 // been placed yet.
-                drawOneButton(app, r, row, "Predict again");
+                drawOneButton(app, r, row, tr("Predict again"));
             } else {
-                drawButtons(app, r, row, "Race again",
+                drawButtons(app, r, row, tr("Race again"),
                     Wallet::get().balance() >= kStake);
             }
             drawBack(app, r, box);
@@ -1045,7 +1048,7 @@ namespace {
             // the one wording that cannot be read as either the stake or the
             // profit. It is also what the result says - "the bet paid 3" - so
             // the two screens tell the same story.
-            std::string staked = format("Bet %u coin - %u back", unsigned(kStake),
+            std::string staked = format(tr("Bet %u coin - %u back"), unsigned(kStake),
                 unsigned(payout()));
             float plainW = ui::actionButtonWidth(r, plainLabel);
             float stakeW = ui::actionButtonWidth(r, staked);

@@ -167,33 +167,36 @@ void App::pollUpdate()
     case UpdateState::Available:
         // Worth saying unprompted: the user cannot act on a release they were
         // never told about. Settings is where it actually happens.
-        toast("Version " + updater.version() + " is out",
-            "Settings -> About -> Check for updates to install it.");
+        toast(format(tr("Version %s is out"), updater.version().c_str()),
+            tr("Settings -> About -> Check for updates to install it."));
         break;
     case UpdateState::Installed:
         // The artwork fetch borrows this state and installs no build. Its own
         // row says what happened; announcing a version that was never
         // downloaded, and offering to restart into it, would be a lie.
         if (updater.fetchingArt()) {
-            toast("Puzzle art downloaded", "Restart the app to see the pictures.");
+            toast(tr("Puzzle art downloaded"),
+                tr("Restart the app to see the pictures."));
             break;
         }
-        toast("Update installed",
-            "Restart from Settings -> \"About\" to run version " + updater.version() + ".");
+        toast(tr("Update installed"),
+            format(tr("Restart from Settings -> \"About\" to run version %s."),
+                updater.version().c_str()));
         break;
     case UpdateState::UpToDate:
         // Only when the user asked. A silent launch check that found nothing
         // has nothing to report.
         if (updater.announce())
-            toast("Up to date", "nx-plaza " APP_VERSION " is the latest release.");
+            toast(tr("Up to date"),
+                format(tr("%s is the latest release."), "nx-plaza " APP_VERSION));
         break;
     case UpdateState::Failed:
         // Always said when it was the artwork, announce or not: that job only
         // ever runs because somebody pressed the row asking for it.
         if (updater.fetchingArt())
-            toast("Could not download puzzle art", updater.message());
+            toast(tr("Could not download puzzle art"), updater.message());
         else if (updater.announce())
-            toast("Could not check for updates", updater.message());
+            toast(tr("Could not check for updates"), updater.message());
         break;
     default:
         break;
@@ -431,12 +434,12 @@ void App::pumpArrivals()
     std::string title;
     if (store().findCrossing(arrivals.front(), first)) {
         if (arrivals.size() == 1)
-            title = format("%s passed you", first.pass.handle.c_str());
+            title = format(tr("%s passed you"), first.pass.handle.c_str());
         else
-            title = format("%s and %zu others passed you", first.pass.handle.c_str(),
-                arrivals.size() - 1);
+            title = format(tr("%s and %zu others passed you"),
+                first.pass.handle.c_str(), arrivals.size() - 1);
     } else {
-        title = format("%zu new passes", arrivals.size());
+        title = format(tr("%zu new passes"), arrivals.size());
     }
 
     std::string body;
@@ -466,15 +469,16 @@ void App::pumpArrivals()
         if (!body.empty())
             body += " - ";
         body += found == 1
-            ? format("a piece of %s", sets[size_t(foundSet)].name)
-            : format("%d pieces of %s", found, sets[size_t(foundSet)].name);
+            ? format(tr("a piece of %s"), sets[size_t(foundSet)].name)
+            : format(tr("%d pieces of %s"), found, sets[size_t(foundSet)].name);
     } else if (!first.pass.carrying.empty()) {
         if (!body.empty())
             body += " - ";
-        body += format("one of them is carrying %s", first.pass.carrying.front().c_str());
+        body += format(tr("one of them is carrying %s"),
+            first.pass.carrying.front().c_str());
     }
     if (body.empty())
-        body = "Open the plaza to see who.";
+        body = tr("Open the plaza to see who.");
 
     toast(title, body, first.pass);
 }
@@ -625,13 +629,13 @@ void App::checkTrophies()
     }
 
     if (fresh == 1 && last) {
-        toast(last->name, format("A %s trophy.", tierName(last->tier)));
+        toast(tr(last->name), format(tr("A %s trophy."), tr(tierName(last->tier))));
     } else if (fresh > 1) {
         // A console that had all this history before the feature existed earns
         // a fistful at once. One toast for the lot, rather than nine in a row
         // that push each other off the screen.
-        toast(format("%d trophies earned", fresh),
-            "Your record is in the trophies tab.");
+        toast(format(tr("%d trophies earned"), fresh),
+            tr("Your record is in the trophies tab."));
     }
 }
 
@@ -885,7 +889,7 @@ void App::drawDialog(Renderer& r)
     r.text(confirm, m_dialog.confirmLabel, label, Align::Center, VAlign::Middle);
 
     label.color = theme::fg1;
-    r.text(cancel, "Keep everything", label, Align::Center, VAlign::Middle);
+    r.text(cancel, tr("Keep everything"), label, Align::Center, VAlign::Middle);
 }
 
 void App::onOperationMode(AppletOperationMode mode)

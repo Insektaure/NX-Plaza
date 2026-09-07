@@ -1,6 +1,7 @@
 #include "app.h"
 #include "core/pieces.h"
 #include "core/store.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "gfx/picture.h"
 #include "scenes/scene.h"
@@ -302,10 +303,12 @@ namespace {
             caption.size = theme::textSm;
             caption.color = theme::fg3;
             std::string line = people == 1
-                ? std::string("One person brought this")
-                : format("%d people brought this", people);
-            if (finished != 0)
-                line += " - finished " + relativeTime(finished, nowUnix());
+                ? std::string(tr("One person brought this"))
+                : format(tr("%d people brought this"), people);
+            if (finished != 0) {
+                line += format(tr(" - finished %s"),
+                    relativeTime(finished, nowUnix()).c_str());
+            }
             r.text(Rect { content.x, content.y, content.w, back.h }, line, caption,
                 Align::Right, VAlign::Middle);
 
@@ -387,19 +390,19 @@ namespace {
             // saying "crossings go into this one" would be false before the day
             // is out. Say what will actually happen instead.
             if (m_inventory.complete(set)) {
-                app.toast(std::string(sets[size_t(set)].name) + " is finished",
-                    "Pieces go into the first puzzle that is not.");
+                app.toast(format(tr("%s is finished"), sets[size_t(set)].name),
+                    tr("Pieces go into the first puzzle that is not."));
                 return;
             }
             if (set == m_inventory.active) {
-                app.toast(std::string("Already filling ") + sets[size_t(set)].name,
-                    "Every crossing brings a piece of this one.");
+                app.toast(format(tr("Already filling %s"), sets[size_t(set)].name),
+                    tr("Every crossing brings a piece of this one."));
                 return;
             }
             app.store().setActivePieceSet(set);
             m_inventory = app.store().pieces();
-            app.toast(std::string("Filling ") + sets[size_t(set)].name,
-                "Crossings go into this one until you pick another.");
+            app.toast(format(tr("Filling %s"), sets[size_t(set)].name),
+                tr("Crossings go into this one until you pick another."));
         }
 
         // -------------------------------------------------------------- list
@@ -408,7 +411,7 @@ namespace {
             const std::vector<PieceSet>& sets)
         {
             app.hint("A", sets.empty() ? "-" : "open");
-            app.hint("Y", sets.empty() ? "-" : fillHintFor(m_row));
+            app.hint("Y", sets.empty() ? "-" : tr(fillHintFor(m_row)));
 
             float y = content.y;
             ui::eyebrow(r, Rect { content.x, y, content.w, 34.0f }, "puzzles");
@@ -427,10 +430,10 @@ namespace {
                     done++;
             }
             std::string headline = sets.empty()
-                ? std::string("Nothing to collect yet")
+                ? std::string(tr("Nothing to collect yet"))
                 : (done == static_cast<int>(sets.size())
-                        ? std::string("Every puzzle is finished")
-                        : format("%d of %zu finished", done, sets.size()));
+                        ? std::string(tr("Every puzzle is finished"))
+                        : format(tr("%d of %zu finished"), done, sets.size()));
             r.text(content.x, y, headline, title);
             y += title.size * theme::leadingTight + theme::s3;
 
@@ -440,7 +443,8 @@ namespace {
             sub.leading = theme::leadingNormal;
 
             r.text(content.x, y,
-                "Every console you cross brings one piece. Pick which puzzle they go into.",
+                tr("Every console you cross brings one piece. Pick which puzzle they "
+                   "go into."),
                 sub);
             y += sub.size * theme::leadingNormal + theme::s6;
 
@@ -502,20 +506,20 @@ namespace {
                 TextStyle badgeText;
                 badgeText.size = theme::textXs;
                 badgeText.weight = FontWeight::Medium;   // as pill() draws it
-                float badgeWidth = r.measure("filling", badgeText) + theme::s6;
+                float badgeWidth = r.measure(tr("filling"), badgeText) + theme::s6;
                 ui::pill(r,
                     Rect { inner.x + nameWidth + theme::s4,
                         inner.y + (label.size * theme::leadingSnug - 34.0f) * 0.5f,
                         badgeWidth, 34.0f },
-                    "filling", theme::bg0, theme::accent, theme::textXs);
+                    tr("filling"), theme::bg0, theme::accent, theme::textXs);
             }
 
             TextStyle progress;
             progress.size = theme::textSm;
             progress.color = complete ? theme::teal : theme::fg3;
             r.text(inner.x, inner.y + label.size * theme::leadingSnug + 6.0f,
-                complete ? std::string("finished")
-                         : format("%d of %u pieces", held, unsigned(spec.count)),
+                complete ? std::string(tr("finished"))
+                         : format(tr("%d of %u pieces"), held, unsigned(spec.count)),
                 progress);
 
             // A chevron rather than a value: the row opens something.
@@ -548,7 +552,7 @@ namespace {
             bool active = m_open == m_inventory.active;
             int held = m_inventory.countHeld(m_open);
 
-            app.hint("A", canShow(m_open) ? "look at it" : fillHintFor(m_open));
+            app.hint("A", canShow(m_open) ? "look at it" : tr(fillHintFor(m_open)));
             app.hint("B", "back");
 
             float y = content.y;
@@ -569,19 +573,19 @@ namespace {
                 TextStyle badgeText;
                 badgeText.size = theme::textXs;
                 badgeText.weight = FontWeight::Medium;
-                float badgeWidth = r.measure("filling", badgeText) + theme::s6;
+                float badgeWidth = r.measure(tr("filling"), badgeText) + theme::s6;
                 ui::pill(r,
                     Rect { back.right() + theme::s4 + nameWidth + theme::s4,
                         y + (back.h - 34.0f) * 0.5f, badgeWidth, 34.0f },
-                    "filling", theme::bg0, theme::accent, theme::textXs);
+                    tr("filling"), theme::bg0, theme::accent, theme::textXs);
             }
 
             TextStyle count;
             count.size = theme::textSm;
             count.color = complete ? theme::teal : theme::fg3;
             r.text(Rect { content.x, y, content.w, back.h },
-                complete ? std::string("finished")
-                         : format("%d of %u pieces", held, unsigned(spec.count)),
+                complete ? std::string(tr("finished"))
+                         : format(tr("%d of %u pieces"), held, unsigned(spec.count)),
                 count, Align::Right, VAlign::Middle);
 
             y += back.h + theme::s6;
@@ -716,19 +720,19 @@ namespace {
 
             std::string who;
             if (!held)
-                who = "Not found yet";
+                who = tr("Not found yet");
             else if (src == nullptr || src->who.empty())
-                who = "someone";   // collected before this was kept
+                who = tr("someone"); // collected before this was kept
             else
                 who = src->who;
 
             std::string tail;
             if (!held)
-                tail = "Cross someone while this puzzle is the one being filled.";
+                tail = tr("Cross someone while this puzzle is the one being filled.");
             else if (src != nullptr && src->when != 0)
                 tail = relativeTime(src->when, nowUnix());
             else
-                tail = "Collected before the app started keeping track.";
+                tail = tr("Collected before the app started keeping track.");
 
             TextStyle label;
             label.size = theme::textSm;
@@ -760,11 +764,11 @@ namespace {
             float x = panel.x + theme::s6;
             float y = panel.y + theme::s5;
 
-            r.text(x, y, format("Piece %d", piece + 1), label);
+            r.text(x, y, format(tr("Piece %d"), piece + 1), label);
             y += lineLabel;
 
             if (held) {
-                r.text(x, y, "Brought by", label);
+                r.text(x, y, tr("Brought by"), label);
                 y += lineLabel;
             }
 

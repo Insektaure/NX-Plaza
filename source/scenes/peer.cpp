@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -89,7 +90,7 @@ public:
         eyebrow.color = theme::teal;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(text.x, y, "awake near you", eyebrow);
+        r.text(text.x, y, tr("awake near you"), eyebrow);
         y += eyebrow.size * theme::leadingNormal + theme::s3;
 
         TextStyle name;
@@ -98,15 +99,16 @@ public:
         name.color = theme::fg1;
         name.tracking = theme::trackingTight;
         name.leading = theme::leadingTight;
-        std::string handle = m_peer.handle.empty() ? std::string("Someone") : m_peer.handle;
+        std::string handle
+            = m_peer.handle.empty() ? std::string(tr("Someone")) : m_peer.handle;
         r.text(text.x, y, r.ellipsize(handle, name, text.w), name);
         y += name.size * theme::leadingTight + theme::s5;
 
         // ---- the two facts we actually have about them
-        y = drawFact(r, text, y, "How close", m_peer.proximityLabel());
+        y = drawFact(r, text, y, tr("How close"), tr(m_peer.proximityLabel()));
         if (!m_peer.playing.empty())
-            y = drawFact(r, text, y, "Playing", m_peer.playing);
-        y = drawFact(r, text, y, "Right now", stateLabel(), stateColour());
+            y = drawFact(r, text, y, tr("Playing"), m_peer.playing);
+        y = drawFact(r, text, y, tr("Right now"), tr(stateLabel()), stateColour());
 
         // ---- and the thing worth saying plainly
         TextStyle note;
@@ -114,8 +116,8 @@ public:
         note.color = theme::fg3;
         note.leading = theme::leadingNormal;
         r.textWrapped(Rect { text.x, text.bottom() - 96.0f, text.w, 96.0f },
-            "Passes trade on their own with everyone in range. There is nothing to press "
-            "here, and nothing to wait for.",
+            tr("Passes trade on their own with everyone in range. There is nothing "
+               "to press here, and nothing to wait for."),
             note, 3);
     }
 

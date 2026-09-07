@@ -40,6 +40,9 @@ CATALOGS = {"fr": os.path.join(SOURCE, "core", "lang_fr.cpp")}
 SINKS = {
     "tr": (0,),
     "hint": (1,),
+    "textInput": (0,),
+    "askConfirm": (0, 1, 2),
+    "toast": (0, 1),
     "eyebrow": (2,),
     "actionButton": (2,),
     "actionButtonWidth": (1,),
@@ -56,12 +59,37 @@ SINKS = {
     "segmented": (1, 2),
 }
 
+# A named constant whose literal is a label, used through the name: the pass
+# card's own title is drawn twice and measured once, so it is written down once.
+CONSTANTS = (
+    {"file": "passport.cpp", "name": "kPassTitle"},
+)
+
+# Small functions that exist to turn a value into a word - a tier into
+# "bronze", a reel symbol into "bells". Their own `return "..."` lines are
+# labels, and the call sites read `tr(tierName(t))`, where the literal is out
+# of sight of the call.
+RETURNERS = ("tierName", "filterName", "symbolName", "ordinal", "sortLabel",
+             "nextSortHint", "stateLabel", "proximityLabel", "fillHintFor",
+             "caption", "subtitleText")
+
 # A table of rows whose labels are translated where they are drawn rather than
 # where the table is filled (see the note in i18n.h about statics). `fields` is
 # which column of a row is a label; None means every literal in it is.
 TABLES = (
     {"file": "app.cpp", "name": "kTabs", "fields": (1,)},
     {"file": "games.cpp", "name": "kShelf", "fields": (1, 2, 5)},
+    # A trophy's name and what earns it. Column 0 is its id, which is a key in
+    # profile.json and never shown.
+    {"file": "trophies.cpp", "name": "kTrophies", "fields": (1, 2)},
+    # The short month names relativeTime falls back to for anything older than
+    # a week.
+    {"file": "util.cpp", "name": "months", "fields": None},
+    # The short weekday names. Nothing calls weekdayShort() at the moment, so
+    # these are translated and waiting rather than on a screen.
+    {"file": "util.cpp", "name": "days", "fields": None},
+    # The Mii editor's rows: a label, then which part of the Mii it moves.
+    {"file": "mii_editor.cpp", "name": "kParts", "fields": (0,)},
 )
 
 # A string literal, with escapes, and the C++ habit of writing a long one as
@@ -163,6 +191,37 @@ def call_body(text, open_paren):
     return None
 
 
+def literals_in(arg):
+    """Every literal in an argument, for the ones that are not just a string.
+
+    A label is often a choice rather than a constant - `hint("A", dropping ?
+    "-" : "drop")` - and both sides of that go through the sink, so both are
+    labels. Adjacent literals are joined first, so a sentence written across
+    several lines counts as one.
+    """
+    whole = whole_literal(arg)
+    if whole is not None:
+        return [whole]
+    out = []
+    parts = []
+    i = 0
+    while i < len(arg):
+        m = LITERAL.match(arg, i)
+        if m:
+            parts.append(m.group(1))
+            i = m.end()
+            while i < len(arg) and arg[i] in " \t\n":
+                i += 1
+            continue
+        if parts:
+            out.append(unescape("".join(parts)))
+            parts = []
+        i += 1
+    if parts:
+        out.append(unescape("".join(parts)))
+    return out
+
+
 def whole_literal(arg):
     """An argument that is nothing but adjacent string literals, joined."""
     rest = arg.strip()
@@ -197,8 +256,31 @@ def brace_body(text, open_brace):
     return None
 
 
+def top_level_braces(body):
+    """The '{' offsets of the rows of a table, ignoring braces inside them."""
+    starts = []
+    depth = 0
+    i = 0
+    while i < len(body):
+        c = body[i]
+        if c == '"':
+            m = LITERAL.match(body, i)
+            if m:
+                i = m.end()
+                continue
+        if c == "{":
+            if depth == 0:
+                starts.append(i)
+            depth += 1
+        elif c == "}":
+            depth -= 1
+        i += 1
+    return starts
+
+
 def scan_table(text, name, fields, path, found):
-    m = re.search(r"\b" + name + r"\s*\[[^\]]*\]\s*=\s*\{", text)
+    # `kTabs[Tab::Count] = {`, but also `const std::vector<Trophy> kTrophies = {`.
+    m = re.search(r"\b" + name + r"\s*(?:\[[^\]]*\])?\s*=\s*\{", text)
     if not m:
         print("i18n_scan: no table %s in %s" % (name, os.path.basename(path)),
               file=sys.stderr)
@@ -206,8 +288,11 @@ def scan_table(text, name, fields, path, found):
     body = brace_body(text, m.end() - 1)
     if body is None:
         return
-    for row in re.finditer(r"\{", body):
-        entry = brace_body(body, row.start())
+    # A table of rows is a list of brace groups; a flat table - the twelve
+    # month names - is one row with no braces of its own.
+    starts = top_level_braces(body)
+    entries = [brace_body(body, start) for start in starts] if starts else [body]
+    for entry in entries:
         if entry is None:
             continue
         columns = split_args(entry)
@@ -220,9 +305,39 @@ def scan_table(text, name, fields, path, found):
                 found.setdefault(literal, set()).add(os.path.basename(path))
 
 
+def scan_constants(text, path, found):
+    for entry in CONSTANTS:
+        if os.path.basename(path) != entry["file"]:
+            continue
+        m = re.search(r"\b" + entry["name"] + r"\s*=\s*((?:\"(?:[^\"\\]|\\.)*\"\s*)+);",
+                      text)
+        if not m:
+            print("i18n_scan: no constant %s in %s"
+                  % (entry["name"], os.path.basename(path)), file=sys.stderr)
+            continue
+        literal = whole_literal(m.group(1))
+        if literal:
+            found.setdefault(literal, set()).add(os.path.basename(path))
+
+
+def scan_returners(text, path, found):
+    for name in RETURNERS:
+        for m in re.finditer(r"\b" + name + r"\s*\([^)]*\)\s*(?:const\s*)?\{", text):
+            body = brace_body(text, m.end() - 1)
+            if body is None:
+                continue
+            for ret in re.finditer(r"\breturn\s+((?:\"(?:[^\"\\]|\\.)*\"\s*)+);", body):
+                literal = whole_literal(ret.group(1))
+                if literal:
+                    found.setdefault(literal, set()).add(os.path.basename(path))
+
+
 def scan_file(path, found):
     with open(path, encoding="utf-8") as handle:
         text = strip_comments(handle.read())
+
+    scan_constants(text, path, found)
+    scan_returners(text, path, found)
 
     for table in TABLES:
         if os.path.basename(path) == table["file"]:
@@ -237,9 +352,9 @@ def scan_file(path, found):
             for pos in positions:
                 if pos >= len(args):
                     continue
-                literal = whole_literal(args[pos])
-                if literal:
-                    found.setdefault(literal, set()).add(os.path.basename(path))
+                for literal in literals_in(args[pos]):
+                    if literal:
+                        found.setdefault(literal, set()).add(os.path.basename(path))
 
 
 def scan_sources():
@@ -249,6 +364,11 @@ def scan_sources():
             if name.endswith((".cpp", ".h")) and not name.startswith("lang_"):
                 scan_file(os.path.join(folder, name), found)
     return found
+
+
+# A printf specifier, as format() understands them.
+SPECIFIER = re.compile(
+    r"%[-+ #0]*[0-9]*(?:\.[0-9]+)?(?:hh|ll|[hljzt]|L)?[a-zA-Z%]")
 
 
 ENTRY = re.compile(r"\{\s*((?:\"(?:[^\"\\]|\\.)*\"\s*)+),\s*((?:\"(?:[^\"\\]|\\.)*\"\s*)+)\}")
@@ -287,6 +407,15 @@ def main():
         else:
             seen[source] = target
 
+    # A translation whose specifiers do not match its English is not a
+    # cosmetic mistake: the line goes to format(), and an extra %s reads a
+    # varargs slot that was never passed.
+    mismatched = [
+        (source, target)
+        for source, target in seen.items()
+        if SPECIFIER.findall(source) != SPECIFIER.findall(target)
+    ]
+
     stale = [s for s in seen if s not in said]
     missing = [s for s in sorted(said) if s not in seen]
     untranslated = [s for s, t in seen.items() if t == s or not t]
@@ -299,6 +428,10 @@ def main():
     print("%s: %d of %d strings, %d the same in both, %d not looked at"
           % (args.lang, len(seen) - len(untranslated), len(said), len(untranslated),
              len(missing)))
+    for source, target in mismatched:
+        print("\nformat mismatch - %s\n            vs %s"
+              % (escape(source), escape(target)))
+
     for label, items in (
         ("stale - the English is gone", sorted(stale)),
         ("listed twice", sorted(set(duplicates))),
@@ -311,8 +444,9 @@ def main():
         for item in items:
             print("  %s" % escape(item))
 
-    if args.check and (stale or duplicates):
-        print("\nstale or duplicated entries: fix lang_%s.cpp" % args.lang)
+    if args.check and (stale or duplicates or mismatched):
+        print("\nstale, duplicated or mismatched entries: fix lang_%s.cpp"
+              % args.lang)
         return 1
     return 0
 

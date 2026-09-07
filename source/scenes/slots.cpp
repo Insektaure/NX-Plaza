@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
@@ -278,8 +279,8 @@ namespace {
             Wallet& wallet = Wallet::get();
             if (staked) {
                 if (!wallet.spend(kStake)) {
-                    app.toast("A coin a spin",
-                        "Ten arrive on each new day you open the app.");
+                    app.toast(tr("A coin a spin"),
+                        tr("Ten arrive on each new day you open the app."));
                     return;
                 }
                 // On the card before the reels move, so walking out on a bad
@@ -560,8 +561,8 @@ namespace {
             name.weight = FontWeight::Bold;
             name.color = theme::accent;
             name.tracking = theme::trackingWide;
-            r.text(sign, m_five ? "FIVE SYMBOLS" : "THREE SYMBOLS", name, Align::Center,
-                VAlign::Middle);
+            r.text(sign, m_five ? tr("FIVE SYMBOLS") : tr("THREE SYMBOLS"), name,
+                Align::Center, VAlign::Middle);
 
             // The window, its reels, and a double bezel.
             Rect glass { cab.x + 58.0f, kWinY, cab.w - 116.0f, kWinH };
@@ -715,21 +716,21 @@ namespace {
             line.size = theme::textSm;
             line.color = theme::fg2;
             if (m_five) {
-                r.text(inner.x, y, "Two sevens", line);
+                r.text(inner.x, y, tr("Two sevens"), line);
                 r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
                     format("%u", unsigned(kTwoSevens)), amount, Align::Right,
                     VAlign::Top);
                 y += line.size * theme::leadingNormal + 6.0f;
             }
             if (kTwoBells > 0) {
-                r.text(inner.x, y, "Two bells", line);
+                r.text(inner.x, y, tr("Two bells"), line);
                 r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
                     format("%u", unsigned(kTwoBells)), amount, Align::Right,
                     VAlign::Top);
                 y += line.size * theme::leadingNormal + 6.0f;
             }
             if (kPair > 0) {
-                r.text(inner.x, y, "Any two the same", line);
+                r.text(inner.x, y, tr("Any two the same"), line);
                 r.text(Rect { inner.x, y, inner.w, line.size * theme::leadingSnug },
                     format("%u", unsigned(kPair)), amount, Align::Right, VAlign::Top);
                 y += line.size * theme::leadingNormal;
@@ -741,7 +742,8 @@ namespace {
             note.color = theme::fg4;
             note.tracking = theme::trackingWide;
             r.text(inner.x, y,
-                m_five ? "a line about every 4 spins" : "a line about every 3 spins",
+                m_five ? tr("a line about every 4 spins")
+                       : tr("a line about every 3 spins"),
                 note);
         }
 
@@ -773,7 +775,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingSnug;
-            r.text(inner.x, y, "The bandit", title);
+            r.text(inner.x, y, tr("The bandit"), title);
             y += title.size * theme::leadingSnug + 4.0f;
 
             TextStyle body;
@@ -781,7 +783,7 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 80.0f },
-                format("A coin a spin, and %u to spend. X changes machines.",
+                format(tr("A coin a spin, and %u to spend. X changes machines."),
                     unsigned(coins)),
                 body, 2);
 
@@ -815,18 +817,18 @@ namespace {
             title.leading = theme::leadingSnug;
             std::string headline;
             if (triple) {
-                headline = format("Three %s", symbolName(m_reel[0]));
+                headline = format(tr("Three %s"), tr(symbolName(m_reel[0])));
             } else if (would > 0) {
                 int sevens = 0, bells = 0;
                 for (int i = 0; i < kReels; i++) {
                     sevens += m_reel[i] == Sym_Seven;
                     bells += m_reel[i] == Sym_Bell;
                 }
-                headline = sevens == 2 ? "Two sevens"
-                    : bells == 2       ? "Two bells"
-                                       : "Two the same";
+                headline = sevens == 2 ? tr("Two sevens")
+                    : bells == 2       ? tr("Two bells")
+                                       : tr("Two the same");
             } else {
-                headline = "Nothing";
+                headline = tr("Nothing");
             }
             r.text(inner.x, y, headline, title);
             y += title.size * theme::leadingSnug + 4.0f;
@@ -838,15 +840,16 @@ namespace {
             std::string line;
             if (m_staked) {
                 line = m_paid > 0
-                    ? format("%u back, and %u to spend.", unsigned(m_paid),
+                    ? format(tr("%u back, and %u to spend."), unsigned(m_paid),
                           unsigned(Wallet::get().balance()))
-                    : format("That coin is gone. %u left.",
+                    : format(tr("That coin is gone. %u left."),
                           unsigned(Wallet::get().balance()));
             } else {
                 line = would > 0
-                    ? format("Nothing staked, so nothing won - it would have paid %u.",
+                    ? format(tr("Nothing staked, so nothing won - it would have "
+                                "paid %u."),
                           unsigned(would))
-                    : "Nothing staked, and nothing to stake it on.";
+                    : tr("Nothing staked, and nothing to stake it on.");
             }
             y += r.textWrapped(Rect { inner.x, y, inner.w, 80.0f }, line, body, 2);
 
@@ -860,7 +863,7 @@ namespace {
         void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
             bool canStake)
         {
-            std::string staked = format("Bet %u coin", unsigned(kStake));
+            std::string staked = format(tr("Bet %u coin"), unsigned(kStake));
             float plainW = ui::actionButtonWidth(r, plainLabel);
             float stakeW = ui::actionButtonWidth(r, staked);
 

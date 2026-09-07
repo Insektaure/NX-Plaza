@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/pieces.h"
 #include "core/store.h"
 #include "core/util.h"
@@ -353,8 +354,8 @@ namespace {
             Wallet& wallet = Wallet::get();
             if (staked) {
                 if (!wallet.spend(kStake)) {
-                    app.toast(format("%u coins for a spin", unsigned(kStake)),
-                        "Ten arrive on each new day you open the app.");
+                    app.toast(format(tr("%u coins for a spin"), unsigned(kStake)),
+                        tr("Ten arrive on each new day you open the app."));
                     return;
                 }
                 // Written before the needle moves, so leaving mid-spin still
@@ -566,7 +567,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingSnug;
-            r.text(inner.x, y, "The lantern wheel", title);
+            r.text(inner.x, y, tr("The lantern wheel"), title);
             y += title.size * theme::leadingSnug + 6.0f;
 
             TextStyle body;
@@ -574,9 +575,9 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
-                format("Watch it for nothing, or put %u coins on it. Every lantern "
-                       "pays something and %d of the %d are a puzzle piece. You "
-                       "have %u.",
+                format(tr("Watch it for nothing, or put %u coins on it. Every "
+                          "lantern pays something and %d of the %d are a puzzle "
+                          "piece. You have %u."),
                     unsigned(kStake), pieceLanterns(), kLanterns, unsigned(coins)),
                 body, 2);
 
@@ -608,12 +609,12 @@ namespace {
             title.leading = theme::leadingSnug;
             std::string headline;
             if (m_piece)
-                headline = format("A piece of %s", m_pieceName.c_str());
+                headline = format(tr("A piece of %s"), m_pieceName.c_str());
             else if (m_staked)
                 headline.clear(); // the coin and the number, drawn below
             else
-                headline = onPiece ? std::string("The piece lantern")
-                                   : format("The %u lantern",
+                headline = onPiece ? std::string(tr("The piece lantern"))
+                                   : format(tr("The %u lantern"),
                                          unsigned(kPrize[size_t(m_landed)]));
             if (headline.empty())
                 ui::coinAmount(r, inner.x, y, m_paid, title);
@@ -627,18 +628,20 @@ namespace {
             body.leading = theme::leadingNormal;
             std::string line;
             if (m_piece) {
-                line = format("Piece %d, and the panel will say the wheel brought "
-                              "it. %u coins left.",
+                line = format(tr("Piece %d, and the panel will say the wheel "
+                                 "brought it. %u coins left."),
                     m_pieceIndex + 1, unsigned(Wallet::get().balance()));
             } else if (m_staked) {
-                line = format("%u coins to spend. A spin costs %u.",
+                line = format(tr("%u coins to spend. A spin costs %u."),
                     unsigned(Wallet::get().balance()), unsigned(kStake));
             } else {
                 // The honest version of a free spin: it says what it landed on
                 // and that nothing was on it.
                 line = onPiece
-                    ? "Nothing was on it - that one only pays when you have staked."
-                    : format("Nothing staked, so nothing won. It would have paid %u.",
+                    ? tr("Nothing was on it - that one only pays when you have "
+                         "staked.")
+                    : format(tr("Nothing staked, so nothing won. It would have paid "
+                                "%u."),
                           unsigned(kPrize[size_t(m_landed)]));
             }
             y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f }, line, body, 2);
@@ -656,7 +659,7 @@ namespace {
         void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
             bool canStake)
         {
-            std::string staked = format("Bet %u coins", unsigned(kStake));
+            std::string staked = format(tr("Bet %u coins"), unsigned(kStake));
             Rect plain { row.x, row.y, ui::actionButtonWidth(r, plainLabel), row.h };
             Rect stake { plain.right() + theme::s4, row.y,
                 ui::actionButtonWidth(r, staked), row.h };

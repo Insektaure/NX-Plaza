@@ -2,6 +2,7 @@
 #include "core/identity.h"
 #include "core/place.h"
 #include "core/play_history.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -176,7 +177,7 @@ public:
         // it and the 520px card sits inside. Measuring it is what stops
         // "This is what they see" from running under the editor.
         TextStyle titleStyle = passTitleStyle();
-        float leftWidth = std::max(kCardWidth, r.measure(kPassTitle, titleStyle));
+        float leftWidth = std::max(kCardWidth, r.measure(tr(kPassTitle), titleStyle));
 
         Rect left { content.x, content.y, leftWidth, content.h };
         Rect right { left.right() + theme::s9, content.y,
@@ -229,13 +230,14 @@ private:
         std::string value;
         switch (m_selected) {
         case Row_Handle:
-            if (app.textInput("The name on your pass", m_pass.handle, 16, value, false)) {
+            if (app.textInput(tr("The name on your pass"), m_pass.handle, 16, value,
+                    false)) {
                 m_pass.handle = value;
                 commit(app);
             }
             break;
         case Row_Greeting:
-            if (app.textInput("Up to 60 characters", m_pass.greeting, 60, value)) {
+            if (app.textInput(tr("Up to 60 characters"), m_pass.greeting, 60, value)) {
                 m_pass.greeting = value;
                 commit(app);
             }
@@ -326,11 +328,11 @@ private:
         eyebrow.color = theme::accent;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(box.x, box.y, "your pass", eyebrow);
+        r.text(box.x, box.y, tr("your pass"), eyebrow);
 
         TextStyle title = passTitleStyle();
         float titleY = box.y + theme::textSm * theme::leadingNormal + theme::s2;
-        r.text(box.x, titleY, kPassTitle, title);
+        r.text(box.x, titleY, tr(kPassTitle), title);
 
         Rect card { box.x, titleY + title.size * theme::leadingTight + theme::s6,
             kCardWidth, kCardHeight };
@@ -366,7 +368,7 @@ private:
             pillText.tracking = theme::trackingWide;
             pillText.uppercase = true;
 
-            std::string label = std::string(cardTheme.name) + " theme";
+            std::string label = format(tr("%s theme"), cardTheme.name);
             float width = r.measure(label, pillText) + 32.0f;
             Rect pill { card.x + theme::s6, card.y + theme::s6, width,
                 pillText.size * theme::leadingNormal + 12.0f };
@@ -391,7 +393,7 @@ private:
         greeting.leading = theme::leadingSnug;
 
         std::string quote = m_pass.greeting.empty()
-            ? std::string("(no greeting yet)")
+            ? std::string(tr("(no greeting yet)"))
             : "\xE2\x80\x9C" + m_pass.greeting + "\xE2\x80\x9D";
         float greetingHeight = r.measureWrapped(body.w, quote, greeting, 3);
 
@@ -450,13 +452,13 @@ private:
         // The two rows that cycle say so. "Edit" on a row that used to open a
         // keyboard and now steps through a list is a button that does something
         // other than what it says.
-        const char* accept = "edit";
+        const char* accept = tr("edit");
         if (m_onCard)
-            accept = "edit your mii";
+            accept = tr("edit your mii");
         else if (m_selected == Row_Theme)
-            accept = "next theme";
+            accept = tr("next theme");
         else if (m_selected == Row_Playing)
-            accept = recentlyPlayed().empty() ? "-" : "next title";
+            accept = recentlyPlayed().empty() ? "-" : tr("next title");
 
         app.hint("A", accept);
         // Crossing between the card and this column is the one thing on the
@@ -473,29 +475,32 @@ private:
         const theme::CardTheme& cardTheme = theme::cardTheme(m_pass.theme);
 
         RowSpec rows[Row_Count];
-        rows[Row_Handle] = { "Name", m_pass.handle.empty() ? "not set yet" : m_pass.handle };
-        rows[Row_Greeting] = { "Greeting",
-            format("%zu of 60 characters", utf8Length(m_pass.greeting)) };
-        rows[Row_Theme] = { "Card theme", format("%s - 6 unlocked", cardTheme.name) };
-        rows[Row_Carrying] = { "What you carry",
-            m_pass.carrying.empty() ? std::string("nothing yet") : joinList(m_pass.carrying) };
+        rows[Row_Handle]
+            = { tr("Name"), m_pass.handle.empty() ? tr("not set yet") : m_pass.handle };
+        rows[Row_Greeting] = { tr("Greeting"),
+            format(tr("%zu of 60 characters"), utf8Length(m_pass.greeting)) };
+        rows[Row_Theme]
+            = { tr("Card theme"), format(tr("%s - 6 unlocked"), cardTheme.name) };
+        rows[Row_Carrying] = { tr("What you carry"),
+            m_pass.carrying.empty() ? std::string(tr("nothing yet"))
+                                    : joinList(m_pass.carrying) };
         std::vector<PlayedTitle> played = recentlyPlayed();
         std::string playingValue;
         if (!settings.sharePlaying)
-            playingValue = "hidden by privacy settings";
+            playingValue = tr("hidden by privacy settings");
         else if (!playHistoryReady())
-            playingValue = "reading the play history...";
+            playingValue = tr("reading the play history...");
         else if (played.empty())
-            playingValue = "nothing played on this console yet";
+            playingValue = tr("nothing played on this console yet");
         else if (m_pass.playing.empty())
-            playingValue = "hidden";
+            playingValue = tr("hidden");
         else if (m_pass.hours > 0)
             // The hours travel with the title, so the row shows both: this is
             // what the other console's card will read.
-            playingValue = format("%s - %uh", m_pass.playing.c_str(), m_pass.hours);
+            playingValue = format(tr("%s - %uh"), m_pass.playing.c_str(), m_pass.hours);
         else
             playingValue = m_pass.playing;
-        rows[Row_Playing] = { "Title on your pass", playingValue };
+        rows[Row_Playing] = { tr("Title on your pass"), playingValue };
 
         // The artboard offsets this column by 150px so its three rows line up
         // under the pass card's title block. This editor has five - the name
@@ -585,8 +590,9 @@ private:
         noteText.leading = theme::leadingSnug;
         r.textWrapped(Rect { noteInner.x + 36.0f + theme::s4, noteInner.y,
                           noteInner.w - 36.0f - theme::s4, noteInner.h },
-            "Your pass never carries your account name, your friend code, or a precise "
-            "position - only what you typed and, if you allow it, the place you named.",
+            tr("Your pass never carries your account name, your friend code, or a "
+               "precise position - only what you typed and, if you allow it, the "
+               "place you named."),
             noteText, 3);
 
         r.popClip();

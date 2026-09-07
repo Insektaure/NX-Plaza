@@ -2,6 +2,7 @@
 
 #include "core/json.h"
 #include "core/log.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "gfx/picture.h"
 #include "net/http.h"
@@ -559,7 +560,7 @@ void Update::beginCheck(bool announce)
 
     g_announce.store(announce);
     g_job.store(Job::Check);
-    setState(UpdateState::Checking, "Checking for updates");
+    setState(UpdateState::Checking, tr("Checking for updates"));
     spawn();
 }
 
@@ -569,7 +570,7 @@ void Update::beginInstall()
         return;
     g_job.store(Job::Install);
     g_progress.store(0.0f);
-    setState(UpdateState::Downloading, "Downloading");
+    setState(UpdateState::Downloading, tr("Downloading"));
     spawn();
 }
 
@@ -581,7 +582,7 @@ bool Update::beginArtDownload()
     // Not an update check, so the launch-check plumbing must not narrate it.
     g_announce.store(false);
     g_progress.store(0.0f);
-    setState(UpdateState::Downloading, "Downloading puzzle art");
+    setState(UpdateState::Downloading, tr("Downloading puzzle art"));
     return spawn();
 }
 
@@ -689,17 +690,19 @@ void Update::checkNow()
 
     if (compareVersions(latest, APP_VERSION) <= 0) {
         LOG("update: %s is current (latest %s)", APP_VERSION, latest.c_str());
-        setState(UpdateState::UpToDate, format("nx-plaza %s is the latest version.", APP_VERSION));
+        setState(UpdateState::UpToDate,
+        format(tr("nx-plaza %s is the latest version."), APP_VERSION));
         return;
     }
     if (url.empty()) {
         setState(UpdateState::Failed,
-            format("Release %s has no .nro to install.", latest.c_str()));
+            format(tr("Release %s has no .nro to install."), latest.c_str()));
         return;
     }
 
     LOG("update: %s is available (running %s)", latest.c_str(), APP_VERSION);
-    setState(UpdateState::Available, format("Version %s is available.", latest.c_str()));
+    setState(UpdateState::Available,
+        format(tr("Version %s is available."), latest.c_str()));
 }
 
 void Update::installNow()
@@ -755,7 +758,7 @@ void Update::installNow()
     remove(stagedPack.c_str());
     bool havePack = false;
     if (zipped) {
-        setState(UpdateState::Downloading, "Unpacking");
+        setState(UpdateState::Downloading, tr("Unpacking"));
         bool unpacked = extractMember(download, staged, wantNro, "nx-plaza build");
         // Optional, and its absence means "keep the artwork already on the card"
         havePack = extractMember(download, stagedPack, wantPictures, "pictures.bin");
@@ -782,7 +785,7 @@ void Update::installNow()
         remove(staged.c_str());
         remove(stagedPack.c_str());
         setState(UpdateState::Failed,
-            format("The download is version %s, not %s.", stagedVersion.c_str(),
+            format(tr("The download is version %s, not %s."), stagedVersion.c_str(),
                 wanted.c_str()));
         return;
     }
@@ -831,7 +834,7 @@ void Update::installNow()
     } releaseRomfs;
 
     // Keep a copy of what works before overwriting it.
-    setState(UpdateState::Downloading, "Installing");
+    setState(UpdateState::Downloading, tr("Installing"));
     if (!copyFile(exe, backup)) {
         remove(staged.c_str());
         setState(UpdateState::Failed, "The current version could not be backed up.");
@@ -872,7 +875,7 @@ void Update::installNow()
     g_progress.store(1.0f);
     g_restart.store(true);
     setState(UpdateState::Installed,
-        format("Version %s is installed. Restart to run it.", wanted.c_str()));
+        format(tr("Version %s is installed. Restart to run it."), wanted.c_str()));
 }
 
 void Update::artNow()
@@ -953,7 +956,7 @@ void Update::artNow()
     }
 
     if (!loose) {
-        setState(UpdateState::Downloading, "Unpacking");
+        setState(UpdateState::Downloading, tr("Unpacking"));
         bool unpacked = extractMember(download, staged, wantPictures, "pictures.bin");
         remove(download.c_str());
         if (!unpacked) {
@@ -991,7 +994,7 @@ void Update::artNow()
     LOG("update: fetched %d pictures into %s", count, packPath.c_str());
     g_progress.store(1.0f);
     setState(UpdateState::Installed,
-        format("%d puzzle pictures downloaded. Restart to see them.", count));
+        format(tr("%d puzzle pictures downloaded. Restart to see them."), count));
 }
 
 void Update::restartIntoUpdate()

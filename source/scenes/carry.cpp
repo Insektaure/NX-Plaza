@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
@@ -199,7 +200,7 @@ public:
         eyebrow.color = theme::teal;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(inner.x, y, "on your pass", eyebrow);
+        r.text(inner.x, y, tr("on your pass"), eyebrow);
         y += eyebrow.size * theme::leadingNormal + theme::s3;
 
         TextStyle title;
@@ -207,7 +208,7 @@ public:
         title.weight = FontWeight::Bold;
         title.color = theme::fg1;
         title.tracking = theme::trackingTight;
-        r.text(inner.x, y, "What you carry", title);
+        r.text(inner.x, y, tr("What you carry"), title);
 
         // The count, right-aligned against the title. Four is the limit and
         // knowing where you are against it is the whole question here.
@@ -216,7 +217,7 @@ public:
         count.weight = FontWeight::Medium;
         count.color = m_chosen.size() >= kMaxCarry ? theme::accent : theme::fg3;
         r.text(Rect { inner.x, y, inner.w, title.size },
-            format("%zu of %d", m_chosen.size(), kMaxCarry), count, Align::Right,
+            format(tr("%zu of %d"), m_chosen.size(), kMaxCarry), count, Align::Right,
             VAlign::Middle);
         y += title.size * theme::leadingTight + theme::s5;
 
@@ -290,8 +291,8 @@ private:
         if (m_chosen.size() >= kMaxCarry) {
             // Refused rather than silently dropping the oldest: a pass that
             // quietly rewrites itself is worse than one that says no.
-            app.toast("Four is the limit",
-                "Put something back before picking this up.");
+            app.toast(tr("Four is the limit"),
+                tr("Put something back before picking this up."));
             return;
         }
         m_chosen.emplace_back(item);

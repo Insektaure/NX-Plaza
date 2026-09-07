@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
@@ -188,7 +189,7 @@ namespace {
                 const Crossing& c = crossings[randomBelow(uint32_t(crossings.size()))];
                 m_theirs = c.pass;
                 if (m_theirs.handle.empty())
-                    m_theirs.handle = "A stranger";
+                    m_theirs.handle = tr("A stranger");
                 return;
             }
             // Nobody crossed yet: a seeded face, the way the race fills a
@@ -197,7 +198,7 @@ namespace {
             uint32_t seed = 0;
             randomBytes(&seed, sizeof(seed));
             stranger.portrait = seed;
-            stranger.handle = "A stranger";
+            stranger.handle = tr("A stranger");
             m_theirs = stranger;
         }
 
@@ -206,8 +207,8 @@ namespace {
             Wallet& wallet = Wallet::get();
             if (staked) {
                 if (!wallet.spend(kStake)) {
-                    app.toast(format("Two coins to play"),
-                        "Ten arrive on each new day you open the app.");
+                    app.toast(format(tr("%u coins to play"), unsigned(kStake)),
+                        tr("Ten arrive on each new day you open the app."));
                     return;
                 }
                 // On the card before the dice move, so walking out on a bad
@@ -313,7 +314,7 @@ namespace {
             name.weight = FontWeight::Bold;
             name.color = mine ? theme::accent : theme::fg2;
             std::string label = mine
-                ? (m_mine.handle.empty() ? std::string("You") : m_mine.handle)
+                ? (m_mine.handle.empty() ? std::string(tr("You")) : m_mine.handle)
                 : m_theirs.handle;
             r.text(Rect { x - 150.0f, box.y - 34.0f, 300.0f, 28.0f },
                 r.ellipsize(label, name, 300.0f), name, Align::Center, VAlign::Top);
@@ -421,7 +422,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(inner.x, y, "One roll each", title);
+            r.text(inner.x, y, tr("One roll each"), title);
 
             TextStyle purse;
             purse.size = theme::textSm;
@@ -436,7 +437,7 @@ namespace {
             body.size = theme::textBase;
             body.color = theme::fg3;
             y += r.textWrapped(Rect { inner.x, y, inner.w, 60.0f },
-                format("Highest roll takes it. A draw hands your %u back.",
+                format(tr("Highest roll takes it. A draw hands your %u back."),
                     unsigned(kStake)),
                 body, 1);
 
@@ -471,9 +472,9 @@ namespace {
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
             std::string headline = drawn()
-                ? format("%d all - nobody takes it", m_myFace)
-                : (won() ? format("%d beats %d", m_myFace, m_theirFace)
-                         : format("%d loses to %d", m_myFace, m_theirFace));
+                ? format(tr("%d all - nobody takes it"), m_myFace)
+                : (won() ? format(tr("%d beats %d"), m_myFace, m_theirFace)
+                         : format(tr("%d loses to %d"), m_myFace, m_theirFace));
             r.text(inner.x, y, headline, title);
             y += title.size * theme::leadingTight + theme::s3;
 
@@ -484,18 +485,19 @@ namespace {
             if (m_staked) {
                 uint32_t left = Wallet::get().balance();
                 if (won())
-                    line = format("The bet paid %u - %u coins to spend.",
+                    line = format(tr("The bet paid %u - %u coins to spend."),
                         unsigned(m_paid), unsigned(left));
                 else if (drawn())
-                    line = format("Your %u came back. %u to spend.",
+                    line = format(tr("Your %u came back. %u to spend."),
                         unsigned(kRefund), unsigned(left));
                 else
-                    line = format("The bet cost you %u. %u left.", unsigned(kStake),
+                    line = format(tr("The bet cost you %u. %u left."), unsigned(kStake),
                         unsigned(left));
             } else {
-                line = drawn() ? "Nothing bet, and nothing decided."
-                               : (won() ? "Nothing bet, but a win is a win."
-                                        : "Nothing bet, nothing lost.");
+                line = drawn()
+                    ? tr("Nothing bet, and nothing decided.")
+                    : (won() ? tr("Nothing bet, but a win is a win.")
+                             : tr("Nothing bet, nothing lost."));
             }
             r.text(inner.x, y, line, body);
             y += body.size * theme::leadingNormal;
@@ -508,7 +510,7 @@ namespace {
                 run.tracking = theme::trackingWide;
                 r.text(Rect { inner.x, inner.y, inner.w,
                           title.size * theme::leadingTight },
-                    format("%u in a row", unsigned(m_streak)), run, Align::Right,
+                    format(tr("%u in a row"), unsigned(m_streak)), run, Align::Right,
                     VAlign::Middle);
             }
 
@@ -522,7 +524,7 @@ namespace {
         void drawButtons(App& app, Renderer& r, const Rect& row, const char* plainLabel,
             bool canStake)
         {
-            std::string staked = format("Bet %u coins - %u back", unsigned(kStake),
+            std::string staked = format(tr("Bet %u coins - %u back"), unsigned(kStake),
                 unsigned(kPayout));
             Rect plain { row.x, row.y, ui::actionButtonWidth(r, plainLabel), row.h };
             Rect stake { plain.right() + theme::s4, row.y,

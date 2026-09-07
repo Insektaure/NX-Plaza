@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "scenes/scene.h"
@@ -355,7 +356,8 @@ namespace {
             style.tracking = theme::trackingTight;
             style.leading = theme::leadingTight;
             r.text(Rect { 0.0f, 54.0f, Renderer::DesignWidth - theme::edge, 100.0f },
-                format("%u m", unsigned(metres())), style, Align::Right, VAlign::Top);
+                format(tr("%u m"), unsigned(metres())), style, Align::Right,
+                VAlign::Top);
 
             if (m_best > 0) {
                 TextStyle best;
@@ -364,7 +366,8 @@ namespace {
                 best.tracking = theme::trackingWide;
                 r.text(Rect { 0.0f, 54.0f + theme::text3xl * theme::leadingTight,
                           Renderer::DesignWidth - theme::edge, 30.0f },
-                    metres() > m_best ? "a new best" : format("best %u m", unsigned(m_best)),
+                    metres() > m_best ? std::string(tr("a new best"))
+                                      : format(tr("best %u m"), unsigned(m_best)),
                     best, Align::Right, VAlign::Top);
             }
         }
@@ -397,7 +400,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(inner.x, y, "Jump the market", title);
+            r.text(inner.x, y, tr("Jump the market"), title);
 
             if (m_best > 0) {
                 TextStyle best;
@@ -405,7 +408,7 @@ namespace {
                 best.color = theme::fg3;
                 best.tracking = theme::trackingWide;
                 r.text(Rect { inner.x, y, inner.w, title.size * theme::leadingTight },
-                    format("best %u m", unsigned(m_best)), best, Align::Right,
+                    format(tr("best %u m"), unsigned(m_best)), best, Align::Right,
                     VAlign::Middle);
             }
             y += title.size * theme::leadingTight + theme::s3;
@@ -418,8 +421,8 @@ namespace {
             // version ended in an ellipsis where its own last clause should
             // have been. What is not at stake is on the shelf row already.
             y += r.textWrapped(Rect { inner.x, y, inner.w, 90.0f },
-                "A to jump, and hold it to jump higher. It gets quicker until you "
-                "hit something.",
+                tr("A to jump, and hold it to jump higher. It gets quicker until "
+                   "you hit something."),
                 body, 2);
 
             // Below the text or on the floor of the plate, whichever is lower.
@@ -450,7 +453,7 @@ namespace {
             title.color = m_beatBest ? theme::accent : theme::fg1;
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
-            r.text(inner.x, y, format("%u m", unsigned(metres())), title);
+            r.text(inner.x, y, format(tr("%u m"), unsigned(metres())), title);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;
@@ -458,8 +461,8 @@ namespace {
             body.color = theme::fg3;
             body.leading = theme::leadingNormal;
             r.text(inner.x, y,
-                m_beatBest ? "A new best."
-                           : format("Best is %u m.", unsigned(m_best)),
+                m_beatBest ? std::string(tr("A new best."))
+                           : format(tr("Best is %u m."), unsigned(m_best)),
                 body);
             y += body.size * theme::leadingNormal;
 

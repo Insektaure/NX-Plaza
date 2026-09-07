@@ -1,6 +1,7 @@
 #include "app.h"
 #include "core/identity.h"
 #include "core/place.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/theme.h"
@@ -62,9 +63,11 @@ public:
             if (m_action == 0) {
                 Pass pass = app.store().myPass();
                 std::string value;
-                if (app.textInput("The name on your pass", m_handle, 16, value, false))
+                if (app.textInput(tr("The name on your pass"), m_handle, 16, value,
+                        false))
                     pass.handle = value;
-                if (app.textInput("A greeting, up to 60 characters", pass.greeting, 60, value))
+                if (app.textInput(tr("A greeting, up to 60 characters"), pass.greeting,
+                        60, value))
                     pass.greeting = value;
                 app.store().setMyPass(pass);
                 app.store().flush();
@@ -152,7 +155,7 @@ private:
         float titleY = markY + 44.0f + theme::s6;
         // Short on purpose. The box holds two lines at this size.
         float titleUsed = r.textWrapped(Rect { box.x, titleY, 760.0f, title.size * 2.4f },
-            "Leave it open.", title, 2);
+            tr("Leave it open."), title, 2);
 
         TextStyle body;
         body.size = theme::textBase;
@@ -160,16 +163,16 @@ private:
         body.leading = theme::leadingNormal;
         float bodyY = titleY + titleUsed + theme::s6;
         float bodyUsed = r.textWrapped(Rect { box.x, bodyY, 700.0f, 200.0f },
-            "While this is open, your console swaps a small pass with the others that are "
-            "open too - a face, a greeting, whatever you chose to carry. Who you meet is "
-            "whoever is awake within the reach you set.",
+            tr("While this is open, your console swaps a small pass with the others "
+               "that are open too - a face, a greeting, whatever you chose to carry. "
+               "Who you meet is whoever is awake within the reach you set."),
             body, 4);
 
         // Three steps: a 56px numbered dot, the first in accent.
         const char* steps[3] = {
-            "Make your pass - a face, a greeting, one thing to trade",
-            "Leave it open; it checks in on its own",
-            "Open the plaza and see who you crossed",
+            tr("Make your pass - a face, a greeting, one thing to trade"),
+            tr("Leave it open; it checks in on its own"),
+            tr("Open the plaza and see who you crossed"),
         };
 
         float y = bodyY + bodyUsed + theme::s6;
@@ -227,7 +230,7 @@ private:
         eyebrow.uppercase = true;
 
         float y = panel.y + theme::s9;
-        r.text(Rect { panel.x, y, panel.w, 40.0f }, "pair this console", eyebrow,
+        r.text(Rect { panel.x, y, panel.w, 40.0f }, tr("pair this console"), eyebrow,
             Align::Center, VAlign::Top);
 
         // The code, letter-spaced, on its own --bg-2 plate.
@@ -274,8 +277,8 @@ private:
         caption.leading = theme::leadingNormal;
         r.textWrapped(Rect { panel.centerX() - 180.0f, grid.bottom() + theme::s6, 360.0f,
                           130.0f },
-            "A picture of this console's id. It lives on the SD card, is tied to nothing "
-            "about the hardware, and you can throw it away.",
+            tr("A picture of this console's id. It lives on the SD card, is tied to "
+               "nothing about the hardware, and you can throw it away."),
             caption, 4, Align::Center);
     }
 

@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/mii_file.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -120,7 +121,7 @@ public:
         eyebrow.color = theme::teal;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(inner.x, y, "faces on the sd card", eyebrow);
+        r.text(inner.x, y, tr("faces on the sd card"), eyebrow);
         y += eyebrow.size * theme::leadingNormal + theme::s3;
 
         TextStyle title;
@@ -128,7 +129,7 @@ public:
         title.weight = FontWeight::Bold;
         title.color = theme::fg1;
         title.tracking = theme::trackingTight;
-        r.text(inner.x, y, "Save and load", title);
+        r.text(inner.x, y, tr("Save and load"), title);
         y += title.size * theme::leadingTight + theme::s3;
 
         // The path, because a file the user cannot find is a file they did not
@@ -177,7 +178,7 @@ private:
             std::string why;
             Mii ignored;
             loadMii(file.path, ignored, &why);
-            app.toast("Cannot load that one", why);
+            app.toast(tr("Cannot load that one"), why);
             return;
         }
         if (m_onPick)
@@ -196,16 +197,17 @@ private:
 
         MiiFilesScene* self = this;
         App* appPtr = &app;
-        app.askConfirm("Delete " + name + "?",
-            "It is removed from the SD card for good. Anyone you sent it to still has "
-            "their copy.",
-            "Delete", [self, appPtr, name, path]() {
+        app.askConfirm(format(tr("Delete %s?"), name.c_str()),
+            tr("It is removed from the SD card for good. Anyone you sent it to still "
+               "has their copy."),
+            tr("Delete"), [self, appPtr, name, path]() {
                 std::string err;
                 if (deleteSavedMii(path, &err)) {
-                    appPtr->toast("Deleted", name + " is gone from the export folder.");
+                    appPtr->toast(tr("Deleted"),
+                        format(tr("%s is gone from the export folder."), name.c_str()));
                     self->refresh();
                 } else {
-                    appPtr->toast("Not deleted", err);
+                    appPtr->toast(tr("Not deleted"), err);
                 }
             });
     }
@@ -237,8 +239,8 @@ private:
             empty.leading = theme::leadingNormal;
             r.textWrapped(Rect { box.x + theme::s5, box.y + kRowHeight + kRowGap + theme::s5,
                               box.w - theme::s5 * 2.0f, 100.0f },
-                "Nothing saved yet. Faces you save show up here, and so does anything you "
-                "drop into the folder yourself.",
+                tr("Nothing saved yet. Faces you save show up here, and so does "
+                   "anything you drop into the folder yourself."),
                 empty, 2);
         }
 
@@ -305,7 +307,7 @@ private:
             ui::icon(r, Rect { inner.x, inner.centerY() - glyph * 0.5f, glyph, glyph },
                 ui::Icon::Plus, focused ? theme::accent : theme::fg2, 2.5f);
             r.text(Rect { inner.x + glyph + theme::s4, inner.y, inner.w, inner.h },
-                "Save this face...", label, Align::Left, VAlign::Middle);
+                tr("Save this face..."), label, Align::Left, VAlign::Middle);
             return;
         }
 
@@ -327,7 +329,7 @@ private:
 
         std::string detail;
         if (!file.readable)
-            detail = "Not a face this version can read";
+            detail = tr("Not a face this version can read");
         else if (!file.handle.empty())
             detail = file.handle;
 
@@ -368,12 +370,13 @@ void promptSaveMii(App& app, const Mii& face, const std::string& defaultName,
     std::function<void()> onSaved)
 {
     std::string typed;
-    if (!app.textInput("Name this face", defaultName, 48, typed, false))
+    if (!app.textInput(tr("Name this face"), defaultName, 48, typed, false))
         return;
 
     std::string name = sanitizeMiiName(typed);
     if (name.empty()) {
-        app.toast("Needs a name", "That name has nothing in it a file can be called.");
+        app.toast(tr("Needs a name"),
+            tr("That name has nothing in it a file can be called."));
         return;
     }
 
@@ -381,10 +384,11 @@ void promptSaveMii(App& app, const Mii& face, const std::string& defaultName,
     auto write = [appPtr, name, face, defaultName, onSaved]() {
         std::string err;
         if (!saveMii(name, face, defaultName, &err)) {
-            appPtr->toast("Not saved", err);
+            appPtr->toast(tr("Not saved"), err);
             return;
         }
-        appPtr->toast("Saved", name + " is in the export folder.");
+        appPtr->toast(tr("Saved"),
+            format(tr("%s is in the export folder."), name.c_str()));
         if (onSaved)
             onSaved();
     };
@@ -396,9 +400,10 @@ void promptSaveMii(App& app, const Mii& face, const std::string& defaultName,
         write();
         return;
     }
-    app.askConfirm("Replace " + name + "?",
-        "There is already a face saved under that name. Replacing it cannot be undone.",
-        "Replace", write);
+    app.askConfirm(format(tr("Replace %s?"), name.c_str()),
+        tr("There is already a face saved under that name. Replacing it cannot be "
+           "undone."),
+        tr("Replace"), write);
 }
 
 std::unique_ptr<Scene> makeMiiFilesScene(const Mii& current, const std::string& defaultName,

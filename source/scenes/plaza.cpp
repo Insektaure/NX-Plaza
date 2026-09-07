@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
@@ -106,7 +107,8 @@ public:
 
         if (input.pressed(HidNpadButton_X)) {
             app.sync().kick();
-            app.toast("Looking for passes", "Asking the plaza who else has been around.");
+            app.toast(tr("Looking for passes"),
+                tr("Asking the plaza who else has been around."));
         }
 
         if (input.pressed(HidNpadButton_Y) && count > 0) {
@@ -204,7 +206,7 @@ private:
         eyebrow.color = theme::accent;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(text.x, text.y, "the plaza - today", eyebrow);
+        r.text(text.x, text.y, tr("the plaza - today"), eyebrow);
 
         TextStyle title;
         title.size = theme::text3xl;
@@ -218,20 +220,20 @@ private:
 
         std::string headline;
         if (stats.uniquePeople == 0)
-            headline = "Nobody has crossed you yet";
+            headline = tr("Nobody has crossed you yet");
         else if (stats.today == 1)
-            headline = "1 person crossed your path";
+            headline = tr("1 person crossed your path");
         else if (stats.today > 0)
-            headline = format("%u people crossed your path", stats.today);
+            headline = format(tr("%u people crossed your path"), stats.today);
         else if (stats.unopened == 1)
-            headline = "1 pass waiting for you";
+            headline = tr("1 pass waiting for you");
         else if (stats.unopened > 0)
-            headline = format("%u passes waiting for you", stats.unopened);
+            headline = format(tr("%u passes waiting for you"), stats.unopened);
         else
             // Nothing today and nothing unread. The waiting line used to cover
             // this too and said "0 passes waiting for you", which reads as a
             // fault rather than as a quiet day.
-            headline = "Nothing new today";
+            headline = tr("Nothing new today");
 
         float titleUsed = r.textWrapped(Rect { text.x, titleY, text.w, title.size * 2.2f },
             headline, title, 2);
@@ -322,8 +324,8 @@ private:
     std::string subtitleText(App& app)
     {
         if (m_crossings.empty())
-            return "Take the console outside, or join a busier network. Passes arrive on "
-                   "their own.";
+            return tr("Take the console outside, or join a busier network. Passes "
+                      "arrive on their own.");
 
         std::vector<std::string> places;
         for (const Crossing& crossing : m_crossings) {
@@ -337,13 +339,14 @@ private:
 
         if (places.empty()) {
             Sync::Status status = app.sync().status();
-            return status.message.empty() ? "Somewhere out there." : status.message;
+            return status.message.empty() ? tr("Somewhere out there.")
+                                          : status.message;
         }
 
         std::string out;
         for (size_t i = 0; i < places.size(); i++) {
             if (i > 0)
-                out += i + 1 == places.size() ? ", and " : ", ";
+                out += i + 1 == places.size() ? tr(", and ") : tr(", ");
             out += places[i];
         }
         return out + ".";
@@ -366,7 +369,7 @@ private:
 
         float headerHeight = theme::textLg * theme::leadingSnug;
         drawSectionHeader(app, r, Rect { content.x, content.y, content.w, headerHeight },
-            "Unopened passes", unopenedCaption(app));
+            tr("Unopened passes"), unopenedCaption(app));
 
         Rect strip { content.x, content.y + headerHeight + theme::s4, content.w, kTileHeight };
 
@@ -424,18 +427,20 @@ private:
 
         std::string detail;
         if (stats.unopened == 0) {
-            detail = m_crossings.empty() ? "nothing yet" : "all caught up";
+            detail = m_crossings.empty() ? tr("nothing yet") : tr("all caught up");
         } else {
-            detail = format("%u waiting", stats.unopened);
+            detail = format(tr("%u waiting"), stats.unopened);
             if (stats.oldestUnopened != 0) {
-                detail += " - oldest ";
-                detail += relativeTime(stats.oldestUnopened, nowUnix());
+                detail += format(tr(" - oldest %s"),
+                    relativeTime(stats.oldestUnopened, nowUnix()).c_str());
             }
         }
 
-        if (stats.totalCrossings > 0)
-            detail += format(" - %u crossings, %u place%s", stats.totalCrossings, stats.places,
-                stats.places == 1 ? "" : "s");
+        if (stats.totalCrossings > 0) {
+            detail += format(stats.places == 1 ? tr(" - %u crossings, %u place")
+                                               : tr(" - %u crossings, %u places"),
+                stats.totalCrossings, stats.places);
+        }
         return detail;
     }
 
@@ -495,11 +500,11 @@ private:
             flag.tracking = theme::trackingWide;
             flag.uppercase = true;
 
-            float width = r.measure("new", flag) + 24.0f;
+            float width = r.measure(tr("new"), flag) + 24.0f;
             Rect pill { stage.x + theme::s4, stage.y + theme::s4, width,
                 theme::textXs * theme::leadingNormal + 8.0f };
             r.roundRect(pill, pill.h * 0.5f, theme::tealTint);
-            r.text(pill, "new", flag, Align::Center, VAlign::Middle);
+            r.text(pill, tr("new"), flag, Align::Center, VAlign::Middle);
         }
 
         Rect text { tile.x + theme::s5, stage.bottom() + theme::s4,
@@ -516,7 +521,8 @@ private:
         game.color = theme::fg2;
         float gameY = text.y + name.size * theme::leadingSnug + 6.0f;
         r.text(text.x, gameY,
-            r.ellipsize(crossing.pass.playing.empty() ? "hidden title" : crossing.pass.playing,
+            r.ellipsize(crossing.pass.playing.empty() ? tr("hidden title")
+                                                      : crossing.pass.playing,
                 game, text.w),
             game);
 
@@ -525,7 +531,7 @@ private:
         when.color = theme::fg3;
         std::string stamp = relativeTime(crossing.lastSeen, nowUnix());
         if (!crossing.place.empty())
-            stamp = crossing.place + " - " + stamp;
+            stamp = format(tr("%s - %s"), crossing.place.c_str(), stamp.c_str());
         r.text(text.x, gameY + game.size * theme::leadingNormal + 6.0f,
             r.ellipsize(stamp, when, text.w), when);
 
@@ -544,7 +550,7 @@ private:
         label.size = theme::textSm;
         label.color = theme::fg3;
         r.text(Rect { box.x, box.centerY() + theme::s3, box.w, 40.0f },
-            format("%d more", hidden), label, Align::Center, VAlign::Top);
+            format(tr("%d more"), hidden), label, Align::Center, VAlign::Top);
     }
 
     void drawEmptyState(Renderer& r, const Rect& box)
@@ -553,15 +559,16 @@ private:
         title.size = theme::textMd;
         title.weight = FontWeight::Bold;
         title.color = theme::fg2;
-        r.text(box.x, box.y, "The plaza is empty", title);
+        r.text(box.x, box.y, tr("The plaza is empty"), title);
 
         TextStyle body;
         body.size = theme::textBase;
         body.color = theme::fg3;
         r.textWrapped(Rect { box.x, box.y + theme::textMd * theme::leadingSnug + theme::s4,
                           box.w, 160.0f },
-            "Your console trades a pass with anyone whose Switch is on the same network, "
-            "or nearby on the internet. Leave it running and come back.",
+            tr("Your console trades a pass with anyone whose Switch is on the same "
+               "network, or nearby on the internet. Leave it running and come "
+               "back."),
             body, 3);
     }
 

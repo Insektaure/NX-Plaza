@@ -1,4 +1,5 @@
 #include "app.h"
+#include "core/i18n.h"
 #include "core/util.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
@@ -258,7 +259,7 @@ private:
     {
         const Part& p = part(index);
         if (p.bit)
-            return (m_mii.flags & p.bit) ? "yes" : "no";
+            return (m_mii.flags & p.bit) ? tr("yes") : tr("no");
         if (p.offset)
             return format("%+d", static_cast<int>(m_mii.*(p.offset)));
 
@@ -270,8 +271,8 @@ private:
             && (p.value == &Mii::glasses || p.value == &Mii::mustache
                 || p.value == &Mii::beard || p.value == &Mii::wrinkles
                 || p.value == &Mii::makeup || p.value == &Mii::headwear))
-            return "none";
-        return format("%d of %d", value + 1, p.count);
+            return tr("none");
+        return format(tr("%d of %d"), value + 1, p.count);
     }
 
     void reveal()
@@ -297,7 +298,7 @@ private:
         eyebrow.color = theme::accent;
         eyebrow.tracking = theme::trackingWider;
         eyebrow.uppercase = true;
-        r.text(box.x, box.y, "your face", eyebrow);
+        r.text(box.x, box.y, tr("your face"), eyebrow);
 
         TextStyle title;
         title.size = theme::text2xl;
@@ -305,7 +306,7 @@ private:
         title.color = theme::fg1;
         title.tracking = theme::trackingTight;
         float titleY = box.y + theme::textSm * theme::leadingNormal + theme::s2;
-        r.text(box.x, titleY, "Make your Mii", title);
+        r.text(box.x, titleY, tr("Make your Mii"), title);
 
         Rect card { box.x, titleY + title.size * theme::leadingTight + theme::s6,
             box.w, box.h - (titleY - box.y) - title.size * theme::leadingTight - theme::s6
@@ -343,7 +344,7 @@ private:
         caption.size = theme::textXs;
         caption.color = theme::fg3;
         r.text(Rect { x + theme::s2, strip.y, strip.right() - x, strip.h },
-            "how others see you", caption, Align::Left, VAlign::Middle);
+            tr("how others see you"), caption, Align::Left, VAlign::Middle);
     }
 
     void drawParts(App& app, Renderer& r, const Rect& box)
@@ -385,7 +386,8 @@ private:
         label.size = theme::textBase;
         label.weight = FontWeight::Bold;
         label.color = theme::fg1;
-        r.text(Rect { inner.x, inner.y, inner.w * 0.5f, inner.h }, p.label, label, Align::Left,
+        r.text(Rect { inner.x, inner.y, inner.w * 0.5f, inner.h }, tr(p.label), label,
+            Align::Left,
             VAlign::Middle);
 
         // A swatch where the part is a colour, the option number otherwise.

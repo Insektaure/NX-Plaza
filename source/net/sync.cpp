@@ -2,6 +2,7 @@
 
 #include "core/identity.h"
 #include "core/json.h"
+#include "core/i18n.h"
 #include "core/log.h"
 #include "core/place.h"
 #include "core/store.h"
@@ -311,7 +312,7 @@ bool Sync::failed(const HttpResponse& response, const char* what)
         m_publishWanted = true;
     }
     setError(response.error.empty()
-            ? format("Server said %ld on %s", response.status, what)
+            ? format(tr("Server said %ld on %s"), response.status, what)
             : response.error);
     return false;
 }
@@ -320,7 +321,7 @@ bool Sync::doHello()
 {
     std::string url = endpoint("/v1/hello");
     if (url.empty()) {
-        setError("No plaza server set yet. Settings > Plaza server.");
+        setError(tr("No plaza server set yet. Settings > Plaza server."));
         return false;
     }
 
@@ -338,7 +339,7 @@ bool Sync::doHello()
     HttpResponse response = Http::postJson(url, body, identity().id, identity().token);
     if (!response.ok()) {
         setError(response.error.empty()
-                ? format("Server said %ld on hello", response.status)
+                ? format(tr("Server said %ld on hello"), response.status)
                 : response.error);
         return false;
     }
@@ -390,7 +391,7 @@ bool Sync::doCheckin()
 
     json_t* reply = js::parse(response.body);
     if (!reply) {
-        setError("Server sent something that was not JSON");
+        setError(tr("Server sent something that was not JSON"));
         return false;
     }
 
@@ -480,7 +481,7 @@ bool Sync::doExchange()
 
     json_t* reply = js::parse(response.body);
     if (!reply) {
-        setError("Server sent something that was not JSON");
+        setError(tr("Server sent something that was not JSON"));
         return false;
     }
 
@@ -656,7 +657,7 @@ void Sync::run()
 
             bool exchangeDue = settings.autoExchange && now >= m_nextExchangeMs;
             if (m_running && !failed && (exchangeDue || m_exchangeWanted)) {
-                setState(State::Working, "Trading passes...");
+                setState(State::Working, tr("Trading passes..."));
                 if (doExchange())
                     m_nextExchangeMs = monotonicMs() + kExchangeIntervalMs;
                 else
@@ -669,12 +670,16 @@ void Sync::run()
                 Status snapshot = status();
                 std::string message;
                 if (!snapshot.placeKnown) {
-                    message = "Connected over LAN: matching by network area only.";
+                    message = tr("Connected over LAN: matching by network area "
+                                 "only.");
                 } else if (snapshot.awake > 0) {
-                    message = format("%d console%s awake near you", snapshot.awake,
-                        snapshot.awake == 1 ? "" : "s");
+                    // Two whole sentences rather than a stitched-on "s": the
+                    // plural changes more than one word in most languages.
+                    message = snapshot.awake == 1
+                        ? std::string(tr("1 console awake near you"))
+                        : format(tr("%d consoles awake near you"), snapshot.awake);
                 } else {
-                    message = "Nobody else is awake here yet.";
+                    message = tr("Nobody else is awake here yet.");
                 }
                 setState(State::Idle, message);
             }

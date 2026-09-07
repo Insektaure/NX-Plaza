@@ -438,8 +438,9 @@ private:
         case Sec_Appearance:
             segmented(Id_Theme, "Theme",
                 theme::mode() == theme::Mode::System
-                    ? format("following the console, currently %s",
-                          theme::resolvedMode() == theme::Mode::Dark ? "dark" : "light")
+                    ? format(tr("following the console, currently %s"),
+                          theme::resolvedMode() == theme::Mode::Dark ? tr("dark")
+                                                                     : tr("light"))
                     : std::string("light by default"),
                 themeOptions, 3, settings.themeMode);
             toggle(Id_ReduceMotion, "Hold the scenery still",
@@ -474,7 +475,8 @@ private:
             value(Id_PlaceToken, "Wi-Fi match token",
                 status.placeToken.empty()
                     ? std::string("no Wi-Fi name to match on - wired, or not connected")
-                    : format("consoles on \"%s\" share this", status.networkName.c_str()),
+                    : format(tr("consoles on \"%s\" share this"),
+                          status.networkName.c_str()),
                 status.placeToken.empty() ? std::string("(none)") : status.placeToken);
             value(Id_TestConnection, "Check in now", status.message,
                 identity().shortCode(), Kind::Action);
@@ -502,11 +504,16 @@ private:
                     // The code is there even when the name is: two people can
                     // pick the same handle, and it is what the list looked like
                     // before names were kept.
+                    // Assembled, so each piece is translated on its own: the
+                    // row builder only ever sees the finished sentence, and a
+                    // finished sentence is not in any language's table.
                     std::string hint = shortCodeFor(who.id);
-                    if (who.when != 0)
-                        hint += " - blocked " + relativeTime(who.when, nowUnix());
-                    hint = reachable ? hint + ". A lets them cross you again"
-                                     : hint + ". Offline - unblocking needs the plaza";
+                    if (who.when != 0) {
+                        hint += format(tr(" - blocked %s"),
+                            relativeTime(who.when, nowUnix()).c_str());
+                    }
+                    hint += reachable ? tr(". A lets them cross you again")
+                                      : tr(". Offline - unblocking needs the plaza");
                     value(static_cast<Id>(Id_BlockedFirst + int(b)), name, hint,
                         "unblock", Kind::Action, reachable);
                     // A handle is data, not a label: put it back over whatever
@@ -515,8 +522,9 @@ private:
                 }
                 value(Id_Unblock, "Clear the whole list",
                     reachable
-                        ? format("Clears all %zu at once, on this console and on the "
-                                 "plaza", settings.blocked.size())
+                        ? format(tr("Clears all %zu at once, on this console and on "
+                                    "the plaza"),
+                              settings.blocked.size())
                         : std::string("Offline - clearing the list needs the plaza, or "
                                       "the two would disagree"),
                     "", Kind::Action, reachable);
@@ -751,19 +759,21 @@ private:
             Update& updater = Update::get();
             switch (updater.state()) {
             case UpdateState::Available:
-                app.askConfirm("Install version " + updater.version() + "?",
-                    "The new version is downloaded, checked, and only then written over "
-                    "this one. The copy you are running now is kept until the new one has "
-                    "been verified.",
-                    "Install", [] { Update::get().beginInstall(); });
+                app.askConfirm(
+                    format(tr("Install version %s?"), updater.version().c_str()),
+                    tr("The new version is downloaded, checked, and only then written "
+                       "over this one. The copy you are running now is kept until the "
+                       "new one has been verified."),
+                    tr("Install"), [] { Update::get().beginInstall(); });
                 break;
             case UpdateState::Installed:
                 if (updater.fetchingArt())
                     return; // artwork, not a build: nothing to restart into
-                app.askConfirm("Restart into version " + updater.version() + "?",
-                    "The app closes and opens again on the new version. Your passes and "
-                    "your collection are untouched.",
-                    "Restart", [&app] {
+                app.askConfirm(
+                    format(tr("Restart into version %s?"), updater.version().c_str()),
+                    tr("The app closes and opens again on the new version. Your passes "
+                       "and your collection are untouched."),
+                    tr("Restart"), [&app] {
                         Update::restartIntoUpdate();
                         app.requestExit();
                     });
@@ -823,19 +833,20 @@ private:
             adjust(app, id, 1);
             return;
         case Id_District:
-            if (app.textInput("Where are you? A district, a station, a shop",
+            if (app.textInput(tr("Where are you? A district, a station, a shop"),
                     settings.districtLabel, 24, value))
                 settings.districtLabel = value;
             break;
         case Id_City:
-            if (app.textInput("Which city", settings.cityLabel, 24, value))
+            if (app.textInput(tr("Which city"), settings.cityLabel, 24, value))
                 settings.cityLabel = value;
             break;
         case Id_ServerUrl:
             // Nothing to edit in a released build: one plaza, compiled in.
             if (!kServerIsEditable)
                 break;
-            if (app.textInput("Plaza server address", settings.serverUrl, 120, value, false)) {
+            if (app.textInput(tr("Plaza server address"), settings.serverUrl, 120, value,
+                    false)) {
                 settings.serverUrl = value;
                 app.sync().publishPass();
                 app.sync().kick();
@@ -855,42 +866,43 @@ private:
             // these decisions at once, and they were made one at a time.
             size_t count = settings.blocked.size();
             std::string question = count == 0
-                ? std::string("Clear any block the plaza still has?")
-                : format("Clear all %zu?", count);
+                ? std::string(tr("Clear any block the plaza still has?"))
+                : format(tr("Clear all %zu?"), count);
             std::string detail = count == 0
-                ? std::string("This console has none listed, but the plaza keeps its own "
-                              "copy and a restored backup can leave the two disagreeing. "
-                              "Nothing happens if it has none either.")
-                : std::string("Every console you have blocked can cross you again, except "
-                              "any that blocked you as well. Their old passes are not "
-                              "coming back; only the block is lifted.");
-            app.askConfirm(question, detail, "Clear them", [appPtr = &app]() {
+                ? std::string(tr("This console has none listed, but the plaza keeps its "
+                                 "own copy and a restored backup can leave the two "
+                                 "disagreeing. Nothing happens if it has none either."))
+                : std::string(tr("Every console you have blocked can cross you again, "
+                                 "except any that blocked you as well. Their old passes "
+                                 "are not coming back; only the block is lifted."));
+            app.askConfirm(question, detail, tr("Clear them"), [appPtr = &app]() {
                 // Asked by owner, not by id: the list on this card may be
                 // missing entries the plaza still holds, and those are the ones
                 // this is for.
                 appPtr->sync().unblockAllPeers();
                 appPtr->store().unblockAll();
-                appPtr->toast("Block list cleared",
-                    "This console has none left, and the plaza has been asked to drop "
-                    "the blocks it was holding for you.");
+                appPtr->toast(tr("Block list cleared"),
+                    tr("This console has none left, and the plaza has been asked to "
+                       "drop the blocks it was holding for you."));
             });
             return;
         }
         case Id_DeleteAll:
-            app.askConfirm("Delete every pass?",
-                "Every pass you have collected is removed from this console. Your own pass "
-                "and your identity stay.",
-                "Delete them all",
+            app.askConfirm(tr("Delete every pass?"),
+                tr("Every pass you have collected is removed from this console. Your "
+                   "own pass and your identity stay."),
+                tr("Delete them all"),
                 [appPtr = &app]() {
                     appPtr->store().deleteAllCrossings();
-                    appPtr->toast("Collection cleared", "The plaza is empty again.");
+                    appPtr->toast(tr("Collection cleared"),
+                        tr("The plaza is empty again."));
                 });
             return;
         case Id_NewIdentity:
-            app.askConfirm("Start over as someone new?",
-                "This console gets a brand new id. Passes you already handed out can no "
-                "longer be linked to you, and your collection is deleted.",
-                "Start over",
+            app.askConfirm(tr("Start over as someone new?"),
+                tr("This console gets a brand new id. Passes you already handed out can "
+                   "no longer be linked to you, and your collection is deleted."),
+                tr("Start over"),
                 [appPtr = &app]() {
                     appPtr->sync().forgetMe();
                     identityRotate();
@@ -898,8 +910,9 @@ private:
                     appPtr->store().setMyPass(Pass::makeDefault(suggestedHandle()));
                     appPtr->store().flush();
                     appPtr->sync().publishPass();
-                    appPtr->toast("You are someone new",
-                        format("Your code is now %s", identity().shortCode().c_str()));
+                    appPtr->toast(tr("You are someone new"),
+                        format(tr("Your code is now %s"),
+                            identity().shortCode().c_str()));
                 });
             return;
         default:
