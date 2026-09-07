@@ -368,7 +368,7 @@ private:
             pillText.tracking = theme::trackingWide;
             pillText.uppercase = true;
 
-            std::string label = format(tr("%s theme"), cardTheme.name);
+            std::string label = format(tr("%s theme"), tr(cardTheme.name));
             float width = r.measure(label, pillText) + 32.0f;
             Rect pill { card.x + theme::s6, card.y + theme::s6, width,
                 pillText.size * theme::leadingNormal + 12.0f };
@@ -480,7 +480,7 @@ private:
         rows[Row_Greeting] = { tr("Greeting"),
             format(tr("%zu of 60 characters"), utf8Length(m_pass.greeting)) };
         rows[Row_Theme]
-            = { tr("Card theme"), format(tr("%s - 6 unlocked"), cardTheme.name) };
+            = { tr("Card theme"), format(tr("%s - 6 unlocked"), tr(cardTheme.name)) };
         rows[Row_Carrying] = { tr("What you carry"),
             m_pass.carrying.empty() ? std::string(tr("nothing yet"))
                                     : joinList(m_pass.carrying) };

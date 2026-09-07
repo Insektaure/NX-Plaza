@@ -1,6 +1,7 @@
 #include "core/backup.h"
 
 #include "core/log.h"
+#include "core/i18n.h"
 #include "core/util.h"
 
 #include <ctime>
@@ -71,7 +72,7 @@ bool createBackup(std::string& whereOut, std::string& errorOut)
         folder = root + "/" + stem + "-" + std::to_string(n);
 
     if (mkdir(folder.c_str(), 0777) != 0) {
-        errorOut = "could not make the backup folder";
+        errorOut = tr("could not make the backup folder");
         return false;
     }
 
@@ -85,7 +86,7 @@ bool createBackup(std::string& whereOut, std::string& errorOut)
             // Whatever was copied stays: a partial backup is still a copy of
             // the files that made it, and deleting them would be throwing away
             // the identity we may have just saved.
-            errorOut = std::string("could not copy ") + kContents[i];
+            errorOut = format(tr("could not copy %s"), kContents[i]);
             LOG("backup: failed on %s after %zu files", kContents[i], copied);
             return false;
         }
@@ -94,7 +95,7 @@ bool createBackup(std::string& whereOut, std::string& errorOut)
 
     if (copied == 0) {
         rmdir(folder.c_str());
-        errorOut = "there was nothing to back up";
+        errorOut = tr("there was nothing to back up");
         return false;
     }
 

@@ -342,8 +342,8 @@ void App::drawHintBar(Renderer& r)
         // confirm label is a sentence the caller wrote ("Block and forget"), so
         // it is left exactly as given.
         hints.emplace_back("A", m_dialog.index == 0 ? m_dialog.confirmLabel
-                                                    : titleCase("keep everything"));
-        hints.emplace_back("B", titleCase("cancel"));
+                                                    : titleCase(tr("keep everything")));
+        hints.emplace_back("B", titleCase(tr("cancel")));
     } else {
         for (const HintEntry& entry : m_hints)
             hints.emplace_back(entry.button, entry.label);
@@ -351,7 +351,7 @@ void App::drawHintBar(Renderer& r)
         // The controls that belong to the app rather than to a view. Tabs only
         // move when nothing is layered over them.
         if (m_overlays.empty())
-            hints.emplace_back("L/R", titleCase("switch tab"));
+            hints.emplace_back("L/R", titleCase(tr("switch tab")));
         // Not offered while it would not work: a strip that lists a button
         // doing nothing is worse than one that does not list it.
         if (!whole || !whole->blocksExit())
@@ -469,8 +469,9 @@ void App::pumpArrivals()
         if (!body.empty())
             body += " - ";
         body += found == 1
-            ? format(tr("a piece of %s"), sets[size_t(foundSet)].name)
-            : format(tr("%d pieces of %s"), found, sets[size_t(foundSet)].name);
+            ? format(tr("a piece of %s"), tr(sets[size_t(foundSet)].name))
+            : format(tr("%d pieces of %s"), found,
+                  tr(sets[size_t(foundSet)].name));
     } else if (!first.pass.carrying.empty()) {
         if (!body.empty())
             body += " - ";

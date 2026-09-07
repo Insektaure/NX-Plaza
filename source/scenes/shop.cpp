@@ -51,7 +51,7 @@ namespace {
         // not need reading differently.
         const std::vector<PieceSet>& sets = pieceSets();
         app.toast(format(tr("Piece %d of %s"), bought.piece + 1,
-                      sets[size_t(bought.set)].name),
+                      tr(sets[size_t(bought.set)].name)),
             format(tr("%u coins left."), unsigned(wallet.balance())));
     }
 
@@ -217,17 +217,17 @@ namespace {
             chosen.icon = ui::Icon::Puzzle;
             chosen.price = Wallet::kChosenPiecePrice;
             chosen.activeOnly = true;
-            chosen.label = format(tr("A piece of %s"), set.name);
+            chosen.label = format(tr("A piece of %s"), tr(set.name));
             chosen.stocked = !pieces.complete(active);
             chosen.caption = chosen.stocked
                 ? format(tr("A piece you do not have yet of %s - the puzzle your "
                             "crossings are filling, %d of %u so far. Twice the "
                             "price, because you get to say which picture it goes "
                             "into."),
-                      set.name, pieces.countHeld(active), unsigned(set.count))
+                      tr(set.name), pieces.countHeld(active), unsigned(set.count))
                 : format(tr("%s is finished. Choose another to fill on the puzzles "
                             "screen, or take your chances with any puzzle."),
-                      set.name);
+                      tr(set.name));
             m_items.push_back(chosen);
 
             // The same goods without the choice. Cheaper for exactly that

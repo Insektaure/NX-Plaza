@@ -543,7 +543,8 @@ bool Update::spawn()
     if (R_FAILED(rc)) {
         LOG("update: no worker thread (0x%x)", rc);
         g_busy.store(false);
-        setState(UpdateState::Failed, "This console would not start the update worker.");
+        setState(UpdateState::Failed,
+            tr("This console would not start the update worker."));
         return false;
     }
 
@@ -621,14 +622,14 @@ void Update::checkNow()
     std::string parseError;
     json_t* root = js::parse(response.body, &parseError);
     if (!root) {
-        setState(UpdateState::Failed, "The release list could not be read.");
+        setState(UpdateState::Failed, tr("The release list could not be read."));
         return;
     }
 
     std::string tag = js::getStr(root, "tag_name");
     if (tag.empty()) {
         json_decref(root);
-        setState(UpdateState::Failed, "The release list carried no version.");
+        setState(UpdateState::Failed, tr("The release list carried no version."));
         return;
     }
 
@@ -718,7 +719,8 @@ void Update::installNow()
     const std::string exe = executablePath();
     if (exe.empty()) {
         setState(UpdateState::Failed,
-            "This build does not know its own path, so it cannot replace itself.");
+            tr("This build does not know its own path, so it cannot replace "
+               "itself."));
         return;
     }
 
@@ -747,7 +749,8 @@ void Update::installNow()
     if (!ok) {
         remove(download.c_str());
         LOG("update: download failed: %s", error.c_str());
-        setState(UpdateState::Failed, "The download did not finish: " + error);
+        setState(UpdateState::Failed,
+            format(tr("The download did not finish: %s"), error.c_str()));
         return;
     }
 
@@ -766,7 +769,8 @@ void Update::installNow()
         if (!unpacked) {
             remove(staged.c_str());
             remove(stagedPack.c_str());
-            setState(UpdateState::Failed, "The downloaded archive held no nx-plaza build.");
+            setState(UpdateState::Failed,
+                tr("The downloaded archive held no nx-plaza build."));
             return;
         }
     }
@@ -776,7 +780,8 @@ void Update::installNow()
     if (stagedVersion.empty()) {
         remove(staged.c_str());
         remove(stagedPack.c_str());
-        setState(UpdateState::Failed, "The downloaded file is not a valid nx-plaza build.");
+        setState(UpdateState::Failed,
+            tr("The downloaded file is not a valid nx-plaza build."));
         return;
     }
     if (compareVersions(stagedVersion, wanted) != 0) {
@@ -837,7 +842,8 @@ void Update::installNow()
     setState(UpdateState::Downloading, tr("Installing"));
     if (!copyFile(exe, backup)) {
         remove(staged.c_str());
-        setState(UpdateState::Failed, "The current version could not be backed up.");
+        setState(UpdateState::Failed,
+            tr("The current version could not be backed up."));
         return;
     }
 
@@ -855,7 +861,8 @@ void Update::installNow()
     if (!overwriteFile(staged, exe, &why)) {
         restore("the new version could not be written");
         setState(UpdateState::Failed,
-            "The update could not be written over the current one - " + why);
+            format(tr("The update could not be written over the current one - %s"),
+                why.c_str()));
         return;
     }
 
@@ -864,7 +871,8 @@ void Update::installNow()
     std::string installed = nroDisplayVersion(exe);
     if (compareVersions(installed, wanted) != 0) {
         restore("the installed file did not verify");
-        setState(UpdateState::Failed, "The installed update did not verify, so it was rolled back.");
+        setState(UpdateState::Failed,
+            tr("The installed update did not verify, so it was rolled back."));
         return;
     }
 
@@ -899,7 +907,7 @@ void Update::artNow()
 
     json_t* root = js::parse(response.body, nullptr);
     if (!root) {
-        setState(UpdateState::Failed, "The release list could not be read.");
+        setState(UpdateState::Failed, tr("The release list could not be read."));
         return;
     }
 
@@ -929,7 +937,7 @@ void Update::artNow()
     json_decref(root);
 
     if (url.empty()) {
-        setState(UpdateState::Failed, "That release publishes no puzzle art.");
+        setState(UpdateState::Failed, tr("That release publishes no puzzle art."));
         return;
     }
 
@@ -951,7 +959,8 @@ void Update::artNow()
     if (!ok) {
         remove(download.c_str());
         remove(staged.c_str());
-        setState(UpdateState::Failed, "The download did not finish: " + error);
+        setState(UpdateState::Failed,
+            format(tr("The download did not finish: %s"), error.c_str()));
         return;
     }
 
@@ -961,7 +970,8 @@ void Update::artNow()
         remove(download.c_str());
         if (!unpacked) {
             remove(staged.c_str());
-            setState(UpdateState::Failed, "That release's archive holds no puzzle art.");
+            setState(UpdateState::Failed,
+                tr("That release's archive holds no puzzle art."));
             return;
         }
     }
@@ -969,7 +979,8 @@ void Update::artNow()
     int count = PictureStore::validate(staged);
     if (count <= 0) {
         remove(staged.c_str());
-        setState(UpdateState::Failed, "The puzzle art that arrived was not readable.");
+        setState(UpdateState::Failed,
+            tr("The puzzle art that arrived was not readable."));
         return;
     }
 
@@ -977,12 +988,14 @@ void Update::artNow()
     std::string why;
     if (!ensureParentDir(packPath)) {
         remove(staged.c_str());
-        setState(UpdateState::Failed, "The folder for the puzzle art could not be made.");
+        setState(UpdateState::Failed,
+            tr("The folder for the puzzle art could not be made."));
         return;
     }
     if (!overwriteFile(staged, packPath, &why)) {
         remove(staged.c_str());
-        setState(UpdateState::Failed, "The puzzle art could not be written - " + why);
+        setState(UpdateState::Failed,
+            format(tr("The puzzle art could not be written - %s"), why.c_str()));
         return;
     }
     remove(staged.c_str());

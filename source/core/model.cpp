@@ -1,6 +1,7 @@
 #include "core/model.h"
 
 #include "core/json.h"
+#include "core/i18n.h"
 #include "core/util.h"
 
 #include <algorithm>
@@ -117,8 +118,11 @@ Pass Pass::fromJson(json_t* obj)
 Pass Pass::makeDefault(const std::string& suggestedHandle)
 {
     Pass p;
-    p.handle = suggestedHandle.empty() ? std::string("Traveller") : suggestedHandle;
-    p.greeting = "Just passing through.";
+    // A stand-in name and greeting, in the language the app is set to: this is
+    // the owner's own text from the moment it is written, and it travels with
+    // the pass, so it is theirs to have in their own words.
+    p.handle = suggestedHandle.empty() ? std::string(tr("Traveller")) : suggestedHandle;
+    p.greeting = tr("Just passing through.");
     p.activity = "";
     p.playing = "";
     p.district = "";

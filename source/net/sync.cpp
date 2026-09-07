@@ -454,7 +454,7 @@ bool Sync::doExchange()
 
     int budget = settings.dailyLimit - store.acceptedToday();
     if (budget <= 0) {
-        setState(State::Idle, "Daily crossing limit reached. Back tomorrow.");
+        setState(State::Idle, tr("Daily crossing limit reached. Back tomorrow."));
         m_exchangeWanted = false;
         return true;
     }
@@ -566,9 +566,9 @@ void Sync::run()
         bool failed = false;
 
         if (!Http::available()) {
-            setState(State::Offline, "Networking is unavailable.");
+            setState(State::Offline, tr("Networking is unavailable."));
         } else if (!place.online) {
-            setState(State::Offline, "No internet connection.");
+            setState(State::Offline, tr("No internet connection."));
             std::lock_guard<std::mutex> lock(m_mutex);
             m_status.networkName = place.networkName;
             m_status.placeToken = place.token;
@@ -580,7 +580,7 @@ void Sync::run()
                 blocks.swap(m_blockQueue);
             }
             for (Pending& item : blocks) {
-                setState(State::Working, "Blocking a console...");
+                setState(State::Working, tr("Blocking a console..."));
                 if (!doSimple("/v1/block", "target", item.id)) {
                     // Put back rather than dropped. The local half of a block
                     // has already been applied, so losing this one leaves this
@@ -599,7 +599,7 @@ void Sync::run()
                 unblocks.swap(m_unblockQueue);
             }
             for (Pending& item : unblocks) {
-                setState(State::Working, "Unblocking a console...");
+                setState(State::Working, tr("Unblocking a console..."));
                 if (!doSimple("/v1/unblock", "target", item.id)) {
                     // Same reasoning inverted: the entry is already gone from
                     // profile.json, so dropping this leaves the plaza holding a
@@ -617,7 +617,7 @@ void Sync::run()
                 std::swap(clearBlocks, m_unblockAllWanted);
             }
             if (clearBlocks) {
-                setState(State::Working, "Clearing the block list...");
+                setState(State::Working, tr("Clearing the block list..."));
                 if (!doSimple("/v1/unblock-all", std::string(), std::string())) {
                     // Put back, unlike a single unblock: this is the recovery
                     // for a card whose list is already incomplete, so losing it
@@ -631,7 +631,7 @@ void Sync::run()
             }
 
             if (m_forgetWanted) {
-                setState(State::Working, "Asking the server to forget us...");
+                setState(State::Working, tr("Asking the server to forget us..."));
                 if (doSimple("/v1/forget", std::string(), std::string()))
                     m_forgetWanted = false;
                 else
@@ -640,14 +640,14 @@ void Sync::run()
             }
 
             if (m_running && m_publishWanted) {
-                setState(State::Working, "Publishing your pass...");
+                setState(State::Working, tr("Publishing your pass..."));
                 if (!doHello())
                     failed = true;
                 didWork = true;
             }
 
             if (m_running && !failed && now >= m_nextCheckinMs) {
-                setState(State::Working, "Looking around...");
+                setState(State::Working, tr("Looking around..."));
                 if (doCheckin())
                     m_nextCheckinMs = monotonicMs() + kCheckinIntervalMs;
                 else

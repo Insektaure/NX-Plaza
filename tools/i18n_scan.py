@@ -13,6 +13,7 @@ This finds both.
     tools/i18n_scan.py --lang fr       the same, said out loud
     tools/i18n_scan.py --check         exit 1 if anything is stale
     tools/i18n_scan.py --stub          print the missing entries as C++ rows
+    tools/i18n_scan.py --loose         also guess at labels no sink can see
 
 Strings reach tr() two ways, and both are collected here:
 
@@ -30,7 +31,14 @@ than as silence.
 import argparse
 import os
 import re
+import signal
 import sys
+
+# Piping into head should end quietly rather than in a traceback.
+try:
+    signal.signal(signal.SIGPIPE, signal.SIG_DFL)
+except (AttributeError, ValueError):
+    pass
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SOURCE = os.path.join(ROOT, "source")
@@ -58,6 +66,12 @@ SINKS = {
     "value": (1, 2, 3),
     "segmented": (1, 2),
 }
+
+# Files whose literals are data rather than words, for the loose pass. The
+# things a pass can carry travel to other consoles and are compared between
+# them - two people "carrying the same thing" is a trophy - so translating that
+# catalogue would break the comparison rather than help anybody.
+LOOSE_SKIP_FILES = ("carry.cpp",)
 
 # A named constant whose literal is a label, used through the name: the pass
 # card's own title is drawn twice and measured once, so it is written down once.
@@ -90,11 +104,29 @@ TABLES = (
     {"file": "util.cpp", "name": "days", "fields": None},
     # The Mii editor's rows: a label, then which part of the Mii it moves.
     {"file": "mii_editor.cpp", "name": "kParts", "fields": (0,)},
+    # The card themes, which sit in the palettes beside their colours. Both
+    # palettes name them the same; listing one is enough for the tool, and the
+    # names are translated where the pass card draws them.
+    {"file": "theme.cpp", "name": "kDark", "fields": None},
+    # The settings scene's three segmented rows. The pills are translated by
+    # ui::segmented, so the arrays themselves stay in English.
+    {"file": "settings.cpp", "name": "placeOptions", "fields": None},
+    {"file": "settings.cpp", "name": "reachOptions", "fields": None},
+    {"file": "settings.cpp", "name": "themeOptions", "fields": None},
+    # The puzzles: a name, then the picture file it needs. The file name is not
+    # shown and must not change.
+    {"file": "pieces.cpp", "name": "kSets", "fields": (0,)},
 )
 
 # A string literal, with escapes, and the C++ habit of writing a long one as
 # several adjacent literals across lines.
 LITERAL = re.compile(r'"((?:[^"\\]|\\.)*)"')
+
+# A C++ character literal: 'a', '\n', '\'', '"'.
+CHAR_LITERAL = re.compile(r"'(?:[^'\\]|\\.)'")
+
+# A run of adjacent literals, which C++ joins into one string.
+LITERAL_RUN = re.compile(r'(?:"(?:[^"\\]|\\.)*"\s*)+')
 
 
 def unescape(text):
@@ -135,6 +167,19 @@ def strip_comments(text):
                 continue
             out.append(m.group(0))
             i = m.end()
+        elif text[i] == "'":
+            # A character literal, normalised to 'x'. What it held is never a
+            # label, and `c == '"'` or `c == '('` would otherwise look like the
+            # start of a string or an unbalanced bracket to everything
+            # downstream of here - which is how one such line in mii_file.cpp
+            # made half that file look like one enormous string.
+            m = CHAR_LITERAL.match(text, i)
+            if m:
+                out.append("'x'")
+                i = m.end()
+            else:
+                out.append(text[i])
+                i += 1
         else:
             out.append(text[i])
             i += 1
@@ -295,9 +340,16 @@ def scan_table(text, name, fields, path, found):
     for entry in entries:
         if entry is None:
             continue
+        if fields is None:
+            # Every literal in the row, however deeply it sits: a flat table of
+            # month names, or the card themes buried in a palette next to their
+            # colours.
+            for literal in literals_in(entry):
+                if literal:
+                    found.setdefault(literal, set()).add(os.path.basename(path))
+            continue
         columns = split_args(entry)
-        wanted = range(len(columns)) if fields is None else fields
-        for pos in wanted:
+        for pos in fields:
             if pos >= len(columns):
                 continue
             literal = whole_literal(columns[pos])
@@ -357,6 +409,56 @@ def scan_file(path, found):
                         found.setdefault(literal, set()).add(os.path.basename(path))
 
 
+INCLUDE_LINE = re.compile(r"^\s*#\s*include.*$", re.MULTILINE)
+
+
+def loose_labels(said, catalog_keys):
+    """Every literal that reads like a sentence, minus the ones already known.
+
+    The precise scan above follows the code: a literal handed to a sink, or to
+    tr(), or sitting in a table it knows about. What it cannot see is a literal
+    parked in a local variable that reaches a sink several lines later - which
+    is exactly how the update row in Settings was left in English. This is the
+    net for that: a guess, printed only when asked for, and noisy on purpose.
+    """
+    out = {}
+    for folder, _, names in os.walk(SOURCE):
+        for name in sorted(names):
+            if not name.endswith((".cpp", ".h")):
+                continue
+            if name.startswith("lang_") or name in LOOSE_SKIP_FILES:
+                continue
+            path = os.path.join(folder, name)
+            with open(path, encoding="utf-8") as handle:
+                text = INCLUDE_LINE.sub("", strip_comments(handle.read()))
+            for run in LITERAL_RUN.findall(text):
+                label = whole_literal(run)
+                if label is None:
+                    continue
+                if label in said or label in catalog_keys:
+                    continue
+                if not looks_like_a_label(label):
+                    continue
+                out.setdefault(label, set()).add(name)
+    return out
+
+
+def looks_like_a_label(text):
+    stripped = text.strip()
+    if len(stripped) < 4:
+        return False
+    if "/" in stripped or "\\" in stripped or ":" in stripped:
+        return False  # a path, a url, a log prefix
+    if not re.search(r"[A-Za-z]{3}", stripped):
+        return False
+    words = [w for w in re.split(r"\s+", stripped) if w]
+    if len(words) == 1:
+        # One word is usually a key or an id; a capitalised one may be a label.
+        return bool(re.fullmatch(r"[A-Z][a-z]{3,}", words[0]))
+    # A sentence in the app's voice, not a format template or an sql-ish blob.
+    return bool(re.search(r"[a-z]{3}", stripped))
+
+
 def scan_sources():
     found = {}
     for folder, _, names in os.walk(SOURCE):
@@ -394,6 +496,9 @@ def main():
                         help="exit 1 on a stale or duplicated entry")
     parser.add_argument("--stub", action="store_true",
                         help="print missing strings as C++ rows to paste in")
+    parser.add_argument("--loose", action="store_true",
+                        help="also list literals that read like labels but reach "
+                             "no sink this tool knows about")
     args = parser.parse_args()
 
     said = scan_sources()
@@ -443,6 +548,18 @@ def main():
         print("\n%s (%d):" % (label, len(items)))
         for item in items:
             print("  %s" % escape(item))
+
+    loose = loose_labels(said, set(seen))
+    if loose:
+        if args.loose:
+            print("\nnot going through any sink this tool knows about (%d) - some of "
+                  "these are labels parked in a variable, most are not labels at all:"
+                  % len(loose))
+            for label in sorted(loose):
+                print("  %-60s %s" % (escape(label)[:60], ", ".join(sorted(loose[label]))))
+        else:
+            print("\n%d literals read like labels but reach no sink this tool knows "
+                  "about; --loose lists them." % len(loose))
 
     if args.check and (stale or duplicates or mismatched):
         print("\nstale, duplicated or mismatched entries: fix lang_%s.cpp"

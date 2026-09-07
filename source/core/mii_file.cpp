@@ -1,5 +1,6 @@
 #include "core/mii_file.h"
 
+#include "core/i18n.h"
 #include "core/json.h"
 #include "core/util.h"
 
@@ -83,7 +84,7 @@ bool saveMii(const std::string& name, const Mii& face, const std::string& handle
     }
     if (!ensureMiiExportDir()) {
         if (errOut)
-            *errOut = "Could not make the export folder on the SD card.";
+            *errOut = tr("Could not make the export folder on the SD card.");
         return false;
     }
 
@@ -103,7 +104,7 @@ bool saveMii(const std::string& name, const Mii& face, const std::string& handle
     json_decref(root);
 
     if (!ok && errOut)
-        *errOut = "Could not write to the SD card.";
+        *errOut = tr("Could not write to the SD card.");
     return ok;
 }
 
@@ -112,7 +113,7 @@ bool loadMii(const std::string& path, Mii& out, std::string* errOut)
     json_t* root = js::readFile(path);
     if (!root) {
         if (errOut)
-            *errOut = "That file could not be read.";
+            *errOut = tr("That file could not be read.");
         return false;
     }
 
@@ -122,7 +123,7 @@ bool loadMii(const std::string& path, Mii& out, std::string* errOut)
 
     if (format != kFormat) {
         if (errOut)
-            *errOut = "That is not a face this app saved.";
+            *errOut = tr("That is not a face this app saved.");
         return false;
     }
     if (!Mii::fromHex(hex, out)) {
@@ -130,7 +131,7 @@ bool loadMii(const std::string& path, Mii& out, std::string* errOut)
         // the same rule the wire uses - an older face cannot be read into this
         // layout without turning into somebody else.
         if (errOut)
-            *errOut = "That face was saved by a different version of the app.";
+            *errOut = tr("That face was saved by a different version of the app.");
         return false;
     }
     return true;
@@ -143,7 +144,7 @@ bool deleteSavedMii(const std::string& path, std::string* errOut)
     if (remove(path.c_str()) == 0)
         return true;
     if (errOut)
-        *errOut = "Could not delete that file from the SD card.";
+        *errOut = tr("Could not delete that file from the SD card.");
     return false;
 }
 

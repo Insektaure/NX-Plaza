@@ -101,7 +101,7 @@ namespace {
         { "Something to do", "De quoi s'occuper" },
         { "Played with the faces and names in your collection, so the more people "
           "you have crossed, the more there is here.",
-            "Joué avec les visages et les noms de votre collection : plus vous "
+            "Jouer avec les visages et les noms de votre collection : plus vous "
             "croisez de monde, plus il y a à faire ici." },
 
         { "The Mii race", "La course de Mii" },
@@ -822,8 +822,8 @@ namespace {
         { "live - trading", "en direct - échange" },
         { "offline", "hors ligne" },
         { "cannot reach the plaza", "le plaza est injoignable" },
-        { "1 console awake near you", "1 console éveillée près de vous" },
-        { "%d consoles awake near you", "%d consoles éveillées près de vous" },
+        { "1 console awake near you", "1 console active près de vous" },
+        { "%d consoles awake near you", "%d consoles actives près de vous" },
         { "Passes exchange on their own. You do not have to sit here.",
             "Les cartes s'échangent toutes seules. Rien ne vous oblige à rester "
             "là." },
@@ -845,7 +845,7 @@ namespace {
             " - sur \"%s\", aucun nom sur lequel s'accorder" },
 
         // ----------------------------------------------------- a peer nearby
-        { "awake near you", "éveillé près de vous" },
+        { "awake near you", "active près de vous" },
         { "Someone", "Quelqu'un" },
         { "How close", "Distance" },
         { "Playing", "En train de jouer" },
@@ -1104,8 +1104,8 @@ namespace {
           "Who you meet is whoever is awake within the reach you set.",
             "Tant que ceci est ouvert, votre console échange une petite carte avec "
             "les autres qui le sont aussi - un visage, un message, ce que vous "
-            "avez choisi de transporter. Vous croisez qui est éveillé dans la "
-            "portée que vous avez réglée." },
+            "avez choisi de transporter. Vous croisez toutes les consoles actives "
+            "dans la portée que vous avez réglée." },
         { "Make your pass - a face, a greeting, one thing to trade",
             "Créez votre carte - un visage, un message, une chose à échanger" },
         { "Leave it open; it checks in on its own",
@@ -1213,7 +1213,7 @@ namespace {
         { "Connected over LAN: matching by network area only.",
             "Connecté en réseau local : accord par zone réseau seulement." },
         { "Nobody else is awake here yet.",
-            "Personne d'autre n'est éveillé ici pour l'instant." },
+            "Aucune autre console active ici pour l'instant." },
         { "No plaza server set yet. Settings > Plaza server.",
             "Aucun serveur de plaza défini. Paramètres > Serveur du plaza." },
         { "Server sent something that was not JSON",
@@ -1236,6 +1236,128 @@ namespace {
         { "%d puzzle pictures downloaded. Restart to see them.",
             "%d images de puzzle téléchargées. Relancez pour les voir." },
 
+        // ------------------------------------------- the last of the settings
+        { "Asking GitHub for the latest release",
+            "On demande à GitHub la dernière version" },
+        { "Press A to download and install it",
+            "Appuyez sur A pour la télécharger et l'installer" },
+        { "Press A to restart into it", "Appuyez sur A pour relancer dessus" },
+        { "You are on the latest release", "Vous avez la dernière version" },
+        { "up to date", "à jour" },
+        { "Looks at the releases on GitHub",
+            "Consulte les versions publiées sur GitHub" },
+        { "If the puzzles show numbered squares, get the pictures here and "
+          "restart",
+            "Si les puzzles affichent des cases numérotées, récupérez les images "
+            "ici et relancez" },
+        { "failed", "échec" },
+        { "Somebody", "Quelqu'un" },
+        { "keep everything", "ne rien toucher" },
+        { "switch tab", "changer d'onglet" },
+
+        // ------------------------------------------------- the puzzle pictures
+        { "Forest in the Rain", "Forêt sous la pluie" },
+        { "Mountain in the Fog", "Montagne dans la brume" },
+        { "Mystical Swamp", "Marais mystique" },
+        { "Old Farm", "Vieille ferme" },
+        { "Castle Blue", "Château bleu" },
+        { "Beach at Dusk", "Plage au crépuscule" },
+
+        // --------------------------------------------------- the card themes
+        { "Amber lantern", "Lanterne d'ambre" },
+        { "Dusk market", "Marché au crépuscule" },
+        { "Tidepool", "Bassin de marée" },
+        { "Paper lantern", "Lanterne de papier" },
+        { "Rose market", "Marché rose" },
+        { "Night express", "Express de nuit" },
+
+        // ----------------------------------------------- the pass you start with
+        { "Traveller", "Voyageur" },
+        { "Just passing through.", "Juste de passage." },
+
+        // ------------------------------------------- what the plaza is saying
+        { "Looking around...", "Recherche autour de vous..." },
+        { "Publishing your pass...", "Publication de votre carte..." },
+        { "Blocking a console...", "Blocage d'une console..." },
+        { "Unblocking a console...", "Déblocage d'une console..." },
+        { "Clearing the block list...", "Effacement de la liste de blocage..." },
+        { "Asking the server to forget us...",
+            "On demande au serveur de nous oublier..." },
+        { "Daily crossing limit reached. Back tomorrow.",
+            "Limite de croisements du jour atteinte. À demain." },
+        { "Networking is unavailable.", "Le réseau est indisponible." },
+        { "No internet connection.", "Aucune connexion internet." },
+
+        // ------------------------------------------- when an update goes wrong
+        { "This console would not start the update worker.",
+            "Cette console n'a pas pu démarrer le processus de mise à jour." },
+        { "The release list could not be read.",
+            "La liste des versions n'a pas pu être lue." },
+        { "The release list carried no version.",
+            "La liste des versions ne contenait aucune version." },
+        { "The download did not finish: %s",
+            "Le téléchargement n'a pas abouti : %s" },
+        { "The downloaded archive held no nx-plaza build.",
+            "L'archive téléchargée ne contenait aucune version de nx-plaza." },
+        { "The downloaded file is not a valid nx-plaza build.",
+            "Le fichier téléchargé n'est pas une version valide de nx-plaza." },
+        { "This build does not know its own path, so it cannot replace itself.",
+            "Cette version ne connaît pas son propre chemin, elle ne peut donc pas "
+            "se remplacer." },
+        { "The current version could not be backed up.",
+            "La version actuelle n'a pas pu être sauvegardée." },
+        { "The update could not be written over the current one - %s",
+            "La mise à jour n'a pas pu être écrite par-dessus l'actuelle - %s" },
+        { "The installed update did not verify, so it was rolled back.",
+            "La mise à jour installée n'a pas été vérifiée, elle a donc été "
+            "annulée." },
+        { "That release publishes no puzzle art.",
+            "Cette version ne publie aucune image de puzzle." },
+        { "That release's archive holds no puzzle art.",
+            "L'archive de cette version ne contient aucune image de puzzle." },
+        { "The puzzle art that arrived was not readable.",
+            "Les images de puzzle reçues n'étaient pas lisibles." },
+        { "The folder for the puzzle art could not be made.",
+            "Le dossier des images de puzzle n'a pas pu être créé." },
+        { "The puzzle art could not be written - %s",
+            "Les images de puzzle n'ont pas pu être écrites - %s" },
+
+        // ------------------------------------------ the settings sections
+        //
+        // The eight names down the left of the screen, and the pills on the
+        // rows that offer a choice.
+        { "Privacy", "Confidentialité" },
+        { "Exchange", "Échange" },
+        { "Appearance", "Apparence" },
+        { "Languages", "Langues" },
+        { "This console", "Cette console" },
+        { "Data", "Données" },
+        { "About", "À propos" },
+        { "Off", "Désactivé" },
+        { "District", "Quartier" },
+        { "City", "Ville" },
+        { "Same network", "Même réseau" },
+        { "Anywhere", "Partout" },
+        { "Light", "Clair" },
+        { "Dark", "Sombre" },
+
+        // -------------------------------------- when the SD card says no
+        { "Could not make the export folder on the SD card.",
+            "Le dossier d'export n'a pas pu être créé sur la carte SD." },
+        { "Could not write to the SD card.",
+            "Écriture impossible sur la carte SD." },
+        { "That file could not be read.", "Ce fichier n'a pas pu être lu." },
+        { "That is not a face this app saved.",
+            "Ce n'est pas un visage sauvé par cette app." },
+        { "That face was saved by a different version of the app.",
+            "Ce visage a été sauvé par une autre version de l'app." },
+        { "Could not delete that file from the SD card.",
+            "Ce fichier n'a pas pu être supprimé de la carte SD." },
+        { "could not make the backup folder",
+            "le dossier de sauvegarde n'a pas pu être créé" },
+        { "could not copy %s", "impossible de copier %s" },
+        { "there was nothing to back up", "il n'y avait rien à sauvegarder" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a
@@ -1252,6 +1374,8 @@ namespace {
         { "m", "m" },
         { "-", "-" },
         { "%d", "%d" },
+        { "Notifications", "Notifications" },
+        { "Console", "Console" },
         { "nx-plaza ", "nx-plaza " },
         { "(none)", "(none)" },
         { "NX Plaza - Online StreetPass | ", "NX Plaza - Online StreetPass | " },

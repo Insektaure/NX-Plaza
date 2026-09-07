@@ -281,7 +281,7 @@ namespace {
             title.tracking = theme::trackingTight;
             r.text(back.right() + theme::s4,
                 content.y + (back.h - title.size * theme::leadingTight) * 0.5f,
-                spec.name, title);
+                tr(spec.name), title);
 
             // Who it took, and when it came together. Both read off the
             // provenance rather than stored: the sources are already there.
@@ -390,18 +390,18 @@ namespace {
             // saying "crossings go into this one" would be false before the day
             // is out. Say what will actually happen instead.
             if (m_inventory.complete(set)) {
-                app.toast(format(tr("%s is finished"), sets[size_t(set)].name),
+                app.toast(format(tr("%s is finished"), tr(sets[size_t(set)].name)),
                     tr("Pieces go into the first puzzle that is not."));
                 return;
             }
             if (set == m_inventory.active) {
-                app.toast(format(tr("Already filling %s"), sets[size_t(set)].name),
+                app.toast(format(tr("Already filling %s"), tr(sets[size_t(set)].name)),
                     tr("Every crossing brings a piece of this one."));
                 return;
             }
             app.store().setActivePieceSet(set);
             m_inventory = app.store().pieces();
-            app.toast(format(tr("Filling %s"), sets[size_t(set)].name),
+            app.toast(format(tr("Filling %s"), tr(sets[size_t(set)].name)),
                 tr("Crossings go into this one until you pick another."));
         }
 
@@ -498,7 +498,7 @@ namespace {
             label.weight = FontWeight::Bold;
             label.color = theme::fg1;
             float nameWidth = r.text(inner.x, inner.y,
-                r.ellipsize(spec.name, label, inner.w * 0.6f), label);
+                r.ellipsize(tr(spec.name), label, inner.w * 0.6f), label);
 
             // The tags, on the title's own line so the eye reads name and state
             // together: which puzzle is being filled, and how far along it is.
@@ -567,7 +567,8 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             float nameWidth = r.text(back.right() + theme::s4,
-                y + (back.h - title.size * theme::leadingTight) * 0.5f, spec.name, title);
+                y + (back.h - title.size * theme::leadingTight) * 0.5f, tr(spec.name),
+                title);
 
             if (active && !complete) {
                 TextStyle badgeText;

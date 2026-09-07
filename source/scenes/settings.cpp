@@ -155,36 +155,36 @@ private:
     {
         switch (std::min(std::max(index, 0), static_cast<int>(Sec_Count) - 1)) {
         case Sec_Exchange:
-            return { "Exchange", ui::Icon::Radar, "Exchange",
+            return { tr("Exchange"), ui::Icon::Radar, tr("Exchange"),
                 tr("How passes find their way to you.") };
         case Sec_Notifications:
-            return { "Notifications", ui::Icon::Bell, "Notifications",
+            return { tr("Notifications"), ui::Icon::Bell, tr("Notifications"),
                 tr("Nothing interrupts a game. The plaza waits.") };
         case Sec_Appearance:
-            return { "Appearance", ui::Icon::Sun, "Appearance",
+            return { tr("Appearance"), ui::Icon::Sun, tr("Appearance"),
                 tr("The app opens in daylight. Dark is for a dim room, or match "
                    "whatever the console is set to.") };
         case Sec_Languages:
-            return { "Languages", ui::Icon::Globe, "Languages",
+            return { tr("Languages"), ui::Icon::Globe, tr("Languages"),
                 tr("The app is written in English and says what it has been taught "
                    "to say in anything else. Whatever a language is missing stays "
                    "in English.") };
         case Sec_Console:
-            return { "This console", ui::Icon::Monitor, "This console",
+            return { tr("This console"), ui::Icon::Monitor, tr("This console"),
                 tr("Where your passes go, and how another console recognises this "
                    "one.") };
         case Sec_Data:
-            return { "Data", ui::Icon::Trash, "Data",
+            return { tr("Data"), ui::Icon::Trash, tr("Data"),
                 tr("Everything the app keeps lives on the SD card, and all of it "
                    "can go.") };
         case Sec_About:
-            return { "About", ui::Icon::Info, "About",
+            return { tr("About"), ui::Icon::Info, tr("About"),
                 format(tr("What this build of %s is, who made it, and where it came "
                           "from."),
                     kAppName) };
         case Sec_Privacy:
         default:
-            return { "Privacy", ui::Icon::Shield, "Privacy",
+            return { tr("Privacy"), ui::Icon::Shield, tr("Privacy"),
                 format(tr("%s never sends your name or an exact position. You choose "
                           "how much of a pass leaves the console."),
                     kAppName) };
@@ -499,7 +499,7 @@ private:
                 for (size_t b = 0; b < settings.blocked.size(); b++) {
                     const BlockedConsole& who = settings.blocked[b];
                     std::string name = who.name.empty()
-                        ? std::string("Somebody")
+                        ? std::string(tr("Somebody"))
                         : who.name;
                     // The code is there even when the name is: two people can
                     // pick the same handle, and it is what the list looked like
@@ -552,15 +552,15 @@ private:
                 bool done = mine && updater.state() == UpdateState::Installed;
                 bool failed = mine && updater.state() == UpdateState::Failed;
 
-                std::string hint = "If the puzzles show numbered squares, get the "
-                                   "pictures here and restart";
+                std::string hint = tr("If the puzzles show numbered squares, get "
+                                      "the pictures here and restart");
                 std::string shown;
                 if (working) {
                     hint = updater.message();
                     shown = format("%.0f%%", updater.progress() * 100.0f);
                 } else if (done || failed) {
                     hint = updater.message();
-                    shown = done ? "done" : "failed";
+                    shown = done ? tr("done") : tr("failed");
                 }
                 value(Id_GetArt, "Download puzzle art", hint, shown, Kind::Action);
             }
@@ -580,11 +580,11 @@ private:
                 std::string shown;
                 switch (updater.state()) {
                 case UpdateState::Checking:
-                    hint = "Asking GitHub for the latest release";
+                    hint = tr("Asking GitHub for the latest release");
                     shown = "...";
                     break;
                 case UpdateState::Available:
-                    hint = "Press A to download and install it";
+                    hint = tr("Press A to download and install it");
                     shown = updater.version();
                     break;
                 case UpdateState::Downloading:
@@ -598,7 +598,7 @@ private:
                 case UpdateState::Installed:
                     if (updater.fetchingArt())
                         break;
-                    hint = "Press A to restart into it";
+                    hint = tr("Press A to restart into it");
                     shown = updater.version();
                     break;
                 case UpdateState::Failed:
@@ -608,11 +608,11 @@ private:
                     shown = "-";
                     break;
                 case UpdateState::UpToDate:
-                    hint = "You are on the latest release";
-                    shown = "up to date";
+                    hint = tr("You are on the latest release");
+                    shown = tr("up to date");
                     break;
                 default:
-                    hint = "Looks at the releases on GitHub";
+                    hint = tr("Looks at the releases on GitHub");
                     shown = "";
                     break;
                 }
@@ -964,7 +964,7 @@ private:
             label.weight = current ? FontWeight::Bold : FontWeight::Regular;
             label.color = current ? theme::accent : theme::fg2;
             r.text(Rect { iconBox.right() + theme::s4, item.y, item.w, item.h },
-                tr(info.label), label, Align::Left, VAlign::Middle);
+                info.label, label, Align::Left, VAlign::Middle);
 
             y += itemHeight + theme::s2;
         }
@@ -987,7 +987,7 @@ private:
         title.weight = FontWeight::Bold;
         title.color = theme::fg1;
         title.tracking = theme::trackingTight;
-        r.text(box.x, box.y, tr(info.title), title);
+        r.text(box.x, box.y, info.title, title);
 
         TextStyle blurb;
         blurb.size = theme::textBase;
