@@ -9,136 +9,6 @@ console quietly swaps a small **pass** with other consoles that share your
 network or your corner of the internet, and you come back later to a stack of
 them.
 
-## Screenshots
-
-**The plaza.** What you come back to. The headline counts the crossings since
-you last looked and names the places they happened in; the row underneath is
-everything still unopened, newest first, each one badged **NEW** until you have
-read it.
-
-![The plaza, with six unopened passes waiting](screenshots/001.jpg)
-
-**A pass, opened.** The greeting they typed, what they are carrying, and the
-numbers that build up as you keep running into each other. **L** and **R** walk
-the rest of the stack without going back out to the list, and the middle action
-stars the card - the same star the collection sorts by, and the one that keeps a
-card when the collection reaches its cap.
-
-![An opened pass showing a greeting, carried items and crossing stats](screenshots/002.jpg)
-
-**The radar.** Who else has the app awake right now, in the reach you chose.
-Trades happen on their own while this sits open.
-
-![The radar screen scanning for other consoles](screenshots/003.jpg)
-
-**The collection.** Everyone you have met, each card carrying when you last
-crossed and, once it is more than one, how many times. **Y** stars a card, and a
-starred card survives the cull when the collection reaches its cap; **X** sorts
-by recent, by name, or starred first.
-
-![The collection grid of everyone met so far](screenshots/004.jpg)
-
-**The Square.** The same people, standing about in one place. Twenty of them at
-a time, drawn from the collection and always including your own Mii, so the
-square is never empty even on a console that has met nobody. They wander, they
-occasionally say what their pass says, and **A** opens whoever the cursor is on.
-
-![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg)
-
-**Puzzles.** What you take away from crossing people. Six pictures, fifteen
-pieces each, one piece per console you pass. The list says how full each
-puzzle is and which one the pieces are going into.
-
-![The puzzles list, with the first picture filling](screenshots/013.jpg)
-
-Opening one shows the board, and every tile you have remembers who brought it
-and when - the panel beside the grid says who, for whichever piece the cursor is
-on. Finish one and **A** puts the picture on the screen on its own.
-
-![A puzzle board with two pieces found, and the panel naming the piece under the cursor](screenshots/014.jpg)
-
-**Games.** Six things to play with the people you have crossed. All of them
-can be played for nothing; where there is a bet it is optional, and the odds
-are honest and against you, so the games are a way to spend coins rather than a
-way to make them.
-
-- **The Mii race** - three people you have met against your own Mii, over four
-  lanes. Back your Mii for a coin, or call first and second for more.
-- **The dice duel** - one roll each against somebody you crossed, highest takes
-  it, a draw hands your bet back.
-- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
-  something and two of them pay a puzzle piece.
-- **The bandit** - a slot machine in a casino room, two sets of reels with
-  **X** to switch, and a board on the wall listing every line it pays.
-- **The Mii tower** - drop the people you have met on top of each other, one
-  floor at a time, and keep the tower standing.
-- **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
-  gets quicker until you hit something. Nothing staked and nothing won: it
-  keeps a best distance and that is all.
-
-|                                                                            | |
-|----------------------------------------------------------------------------| --- |
-| ![The games shelf, with the Mii race on it](screenshots/017.jpg)           | ![Four runners on the start line, and the three ways to play](screenshots/018.jpg) |
-| *The shelf - what there is to play, and the coins you have.*               | *Race for nothing, a coin on your own Mii, or call first and second.* |
-| ![Mid-race, four Miis running between the lamp posts](screenshots/019.jpg) | ![The finishing order, with everybody's time](screenshots/20.jpg) |
-| *The run - a parallax race track, and who is in front.*                    | *The order at the line, to the hundredth of a second.* |
-| ![The dice duel, two Miis facing each other with a die in front of each](screenshots/21.jpg) | ![The lantern wheel under its big top, with what each lantern pays written beside it](screenshots/22.jpg) |
-| *The dice duel - roll for nothing, or two coins for three back.*            | *The wheel - what every lantern pays, written up before you spin.* |
-| ![The bandit's cabinet on its pedestal, with the paytable on the wall beside it](screenshots/23.jpg) | ![The Mii tower, somebody swinging above the base](screenshots/24.jpg) |
-| *The bandit - three symbols or five, and the board listing every line.*     | *The tower - whoever is swinging drops where you let go.* |
-| ![Plaza dash, your own Mii on the start of a run](screenshots/25.jpg)       | |
-| *Plaza dash - your own Mii, the market to jump, and a best distance.*       | |
-
-**The shop.** Ten coins for every new day you open the app, granted by the
-plaza's clock so the console's own cannot mint them.
-Spending works offline; the totals are checksummed against your console's plaza token.
-
-![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg)
-
-**Trophies.** What this console has done: 72 of them, in bronze, silver,
-gold and one platinum for the lot.
-
-Some are meant to be tripped over in the first hour - cross a pass with 
-nothing written on it, cross somebody wearing
-the same card look as you. Others are not: a year of opening the app, a
-thousand different consoles, a puzzle finished without buying a piece.
-
-**X** filters to what is earned or what is left.
-
-Nothing is scored or kept: every line is a question asked of your collection,
-your puzzles and your wallet when the screen draws, so it always agrees with
-them.
-The only thing written down is the date each one first came back true -
-lose that and you lose a date, never a trophy.
-
-![The trophy list, ten of fifty-three earned, with the tier tally](screenshots/016.jpg)
-
-**Your pass.** The left half is exactly what lands on someone else's console:
-nothing on this screen leaves without you having typed or picked it.
-
-![Your own pass, with the card preview and the fields that fill it](screenshots/005.jpg)
-
-**The Mii maker.** Every part the wire format can carry, with the portrait
-redrawing as you go. The strip underneath shows the sizes other screens will
-render you at.
-
-![The Mii maker with face parts and a live portrait](screenshots/006.jpg)
-
-**Faces on the SD card.** Saving and loading Miis as files, so a face you liked
-on someone else's pass can become one of yours.
-
-![The save and load overlay listing faces stored on the SD card](screenshots/011.jpg)
-
-**Settings.** Six sections, each one page, no page longer than a screen. Four
-of them:
-
-| | |
-| --- | --- |
-| ![Privacy settings](screenshots/007.jpg) | ![Exchange settings](screenshots/008.jpg) |
-| *Privacy - how much of a place you attach, and whether a title rides along at all.* | *Exchange - how far a crossing reaches, and how many you will take in a day.* |
-| ![Notification settings](screenshots/009.jpg) | ![Appearance settings](screenshots/010.jpg) |
-| *Notifications - a card in the corner, or nothing.* | *Appearance - light, dark, or whatever the console is set to, and whether the scenery moves.* |
-
 ## What a pass is
 
 About 450 bytes of JSON. A chosen name, a greeting of at most 60 characters, a
@@ -180,6 +50,34 @@ you can wear both.
 
 A pass that has never been through the maker still shows a face: one derived
 from the portrait seed the pass already carries. Nobody is a blank silhouette.
+
+## Games
+
+Seven things to play with the people you have crossed. All of them can be
+played for nothing; where there is a bet it is optional, and the odds are
+honest and against you, so the games are a way to spend coins rather than a way
+to make them.
+
+- **The Mii race** - three people you have met against your own Mii, over four
+  lanes. Back your Mii for a coin, or call first and second for more.
+- **The dice duel** - one roll each against somebody you crossed, highest takes
+  it, a draw hands your bet back.
+- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
+  something and two of them pay a puzzle piece.
+- **The bandit** - a slot machine in a casino room, two sets of reels with
+  **X** to switch, and a board on the wall listing every line it pays.
+- **The Mii tower** - drop the people you have met on top of each other, one
+  floor at a time, and keep the tower standing.
+- **The quest** - a tower with no top, climbed by a party drawn from your
+  collection: what everybody is worth comes off their Mii and how often you
+  have crossed them. The fight runs itself, and what it is for is the gear the
+  shadows drop, common up to godlike. A floor pays one coin the first time you
+  reach it in a week and the tower resets every Monday, so the ground you have
+  already covered is worth climbing again. **Y** to equip the party, **ZR**
+  opens the bag.
+- **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
+  gets quicker until you hit something. Nothing staked and nothing won: it
+  keeps a best distance and that is all.
 
 ## Identity
 
@@ -307,6 +205,8 @@ sdmc:/switch/nx-plaza/
   data/assets/     the puzzle artwork, delivered with the app by the updater
   pending.json     blocks the plaza has not been told about yet; gone once it has
   wallet.dat       coins earned and spent, checked against your own token
+  quest.dat        how deep the quest has been, this week's progress and the
+                   gear it turned up, checked the same way
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
@@ -354,13 +254,13 @@ are compared between them.
 
 ## Trophies
 
-All 72 of them, as the app lists them. Nearly every one is worked out from
+All 80 of them, as the app lists them. Nearly every one is worked out from
 your collection, your puzzles and your wallet at the moment the screen draws,
 so it cannot disagree with what actually happened; the three about the plaza
 dash read the best distance that game keeps. None of them pays a coin, and
 none unlocks anything.
 
-### Bronze (23)
+### Bronze (25)
 
 | | |
 | --- | --- |
@@ -387,8 +287,10 @@ none unlocks anything.
 | **Matching outfits** | Cross somebody whose card wears the same look as yours. |
 | **Same taste** | Cross somebody carrying something you carry too. |
 | **The strong silent type** | Cross a pass with nothing written on it. |
+| **A shadow on the stair** | Clear a floor of the quest. |
+| **Something to wear** | Find your first piece of gear in the quest. |
 
-### Silver (29)
+### Silver (32)
 
 | | |
 | --- | --- |
@@ -421,8 +323,11 @@ none unlocks anything.
 | **Steady hands** | Land five floors in a row dead centre. |
 | **Talked it down** | Lean a tower to the edge of going over, and bring it back. |
 | **A good run** | Run five hundred metres in the plaza dash. |
+| **Ten floors up** | Reach the tenth floor of the quest. |
+| **Well turned out** | Have somebody wearing a weapon, armour, a ring and an accessory at once. |
+| **A full stair** | Take five up the tower at once. |
 
-### Gold (19)
+### Gold (22)
 
 | | |
 | --- | --- |
@@ -445,6 +350,9 @@ none unlocks anything.
 | **Seven in a row** | Win seven duels at the dice in a row. |
 | **The bookmaker's problem** | Win two hundred coins betting in the games tab. |
 | **Fifty contributors** | Take pieces from fifty different people. |
+| **Twenty floors up** | Reach the twentieth floor of the quest. |
+| **Legendary** | Hold a legendary piece of gear. |
+| **Godlike** | Hold a godlike piece of gear. |
 
 ### Platinum (1)
 
@@ -457,6 +365,56 @@ none unlocks anything.
 This is a homebrew app. It is not affiliated with Nintendo, and it is not
 officially supported. Use at your own risk. The author is not responsible for
 any damage or loss of data that may occur from using this app.
+
+## Screenshots
+
+**Around the plaza.**
+
+| | |
+| --- | --- |
+| ![The plaza, with six unopened passes waiting](screenshots/001.jpg) | ![An opened pass showing a greeting, carried items and crossing stats](screenshots/002.jpg) |
+| *What is waiting, newest first, each one badged until you read it.* | *A pass opened - their greeting, what they carry, how often you have met.* |
+| ![The radar screen scanning for other consoles](screenshots/003.jpg) | ![The collection grid of everyone met so far](screenshots/004.jpg) |
+| *The radar - who has the app awake right now, in the reach you chose.* | *The collection - everyone you have met, by recent, name or starred.* |
+| ![The Square, a crowd of Miis milling about on a tiled floor](screenshots/012.jpg) |  |
+| *The Square - twenty of them standing about, yourself among them.* |  |
+
+**Puzzles, the shop and the record.**
+
+| | |
+| --- | --- |
+| ![The puzzles list, with the first picture filling](screenshots/013.jpg) | ![A puzzle board with two pieces found, and the panel naming the piece under the cursor](screenshots/014.jpg) |
+| *Six pictures, fifteen pieces each, one piece a crossing.* | *A board - every tile says who brought it and when.* |
+| ![The shop: a piece of the puzzle being filled at 100 coins, a piece of any puzzle at 50](screenshots/015.jpg) | ![The trophy list, with the tier tally](screenshots/016.jpg) |
+| *The shop - ten coins a day, and two things to spend them on.* | *The trophies - eighty of them, all worked out from the collection.* |
+
+**The games.**
+
+| | |
+| --- | --- |
+| ![The games shelf, with the Mii race on it](screenshots/017.jpg) | ![Four runners on the start line, and the three ways to play](screenshots/018.jpg) |
+| *The shelf - what there is to play, and the coins you have.* | *Race for nothing, a coin on your own Mii, or call first and second.* |
+| ![Mid-race, four Miis running between the lamp posts](screenshots/019.jpg) | ![The finishing order, with everybody's time](screenshots/20.jpg) |
+| *The run - a parallax track, and who is in front.* | *The order at the line, to the hundredth of a second.* |
+| ![The dice duel, two Miis facing each other with a die in front of each](screenshots/21.jpg) | ![The lantern wheel under its big top, with what each lantern pays written beside it](screenshots/22.jpg) |
+| *The dice duel - roll for nothing, or two coins for three back.* | *The wheel - what every lantern pays, written up before you spin.* |
+| ![The bandit's cabinet on its pedestal, with the paytable on the wall beside it](screenshots/23.jpg) | ![The Mii tower, somebody swinging above the base](screenshots/24.jpg) |
+| *The bandit - three symbols or five, and every line it pays.* | *The tower - whoever is swinging drops where you let go.* |
+| ![Plaza dash, your own Mii on the start of a run](screenshots/25.jpg) |  |
+| *Plaza dash - the market to jump, and a best distance.* |  |
+
+**Your pass, your Mii, your settings.**
+
+| | |
+| --- | --- |
+| ![Your own pass, with the card preview and the fields that fill it](screenshots/005.jpg) | ![The Mii maker with face parts and a live portrait](screenshots/006.jpg) |
+| *Your pass - the left half is exactly what lands on somebody else.* | *The Mii maker - every part the wire format can carry.* |
+| ![The save and load overlay listing faces stored on the SD card](screenshots/011.jpg) | ![Privacy settings](screenshots/007.jpg) |
+| *Faces on the card - saved as files, yours to copy off.* | *Privacy - how much of a place you attach, and what rides along.* |
+| ![Exchange settings](screenshots/008.jpg) | ![Notification settings](screenshots/009.jpg) |
+| *Exchange - how far a crossing reaches, and how many a day.* | *Notifications - a card in the corner, or nothing.* |
+| ![Appearance settings](screenshots/010.jpg) |  |
+| *Appearance - light, dark or the console's, and whether things move.* |  |
 
 ## Credits
 
