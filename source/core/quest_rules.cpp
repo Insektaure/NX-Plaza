@@ -264,6 +264,22 @@ Sheet itemBonus(const Item& item)
     return bonus;
 }
 
+std::string itemSummary(const Item& item)
+{
+    Sheet b = itemBonus(item);
+    const char* names[5] = { "HP", "MP", "ATK", "DEF", "SPD" };
+    uint16_t values[5] = { b.hp, b.mp, b.atk, b.def, b.spd };
+    std::string out;
+    for (int i = 0; i < 5; i++) {
+        if (values[i] == 0)
+            continue;
+        if (!out.empty())
+            out += "   ";
+        out += format("+%u %s", unsigned(values[i]), names[i]);
+    }
+    return out;
+}
+
 uint32_t itemRating(const Item& item)
 {
     Sheet b = itemBonus(item);
@@ -272,12 +288,12 @@ uint32_t itemRating(const Item& item)
     return uint32_t(b.hp) / kHpPerPoint + b.atk + b.def + b.spd + b.mp;
 }
 
-Item rollDrop(int floor, uint16_t nextId)
+Item rollDrop(int floor, uint16_t nextId, int chance)
 {
     Item item;
     // Half the time the shadow leaves nothing, on every floor and every
-    // climb alike.
-    if (randomBelow(100) < 50)
+    // climb alike, unless the run is carrying something that says otherwise.
+    if (int(randomBelow(100)) >= std::max(0, std::min(100, chance)))
         return item;
 
     int f = std::min(999, std::max(1, floor));

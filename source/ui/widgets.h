@@ -161,6 +161,13 @@ void segmented(Renderer& r, const Rect& box, const char* const* labels, int coun
 // The width one of those pills needs, so a scene can put a touch zone on it.
 float segmentWidth(Renderer& r, const char* label);
 
+// The colour of a loot tier, common through godlike.
+//
+// Fixed hexes rather than palette entries, and the same in both themes, the
+// way the dice are ivory in both: a rare that went grey in the light theme
+// would read as a different rank rather than as a different shade.
+Color qualityColour(uint8_t tier);
+
 // Vertical scrollbar. `fraction` is the scroll position in 0..1, `visible` the
 // fraction of content on screen.
 void scrollbar(Renderer& r, const Rect& track, float fraction, float visible);

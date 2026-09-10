@@ -16,6 +16,16 @@ namespace nxp::ui {
 void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f,
     const Color* flat = nullptr);
 
+// The box to hand miiHead() when the whole head has to stay inside `box`.
+//
+// miiHead fits the *skull* to what it is given and draws everything above
+// the skull above that, so hair reaches out of the top of the box and a
+// tall hat reaches further still. On an open background nobody notices; in
+// a card it looks like the Mii is climbing out. This keeps the top fifth
+// clear and sits the smaller face on the same floor - the same margin
+// StageFigure::topMargin exists for, for the same reason.
+Rect headroom(const Rect& box);
+
 // Head and shoulders, standing on the bottom edge of `box`.
 void miiFigure(Renderer& r, const Rect& box, const Mii& mii, float opacity = 1.0f,
     bool spotlight = false, const Color* flat = nullptr);

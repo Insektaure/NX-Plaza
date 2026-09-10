@@ -473,6 +473,15 @@ Color miiShirt(const Mii& mii)
     return kFavourite[mii.favouriteColour % MiiPartCounts::favouriteColour];
 }
 
+Rect headroom(const Rect& box)
+{
+    // A fifth, which clears every hairstyle and every hat in the catalogue
+    // with a little to spare. Taken off the top and not the bottom, so the
+    // face keeps standing where the caller put it.
+    constexpr float kHair = 0.20f;
+    return Rect { box.x, box.y + box.h * kHair, box.w, box.h * (1.0f - kHair) };
+}
+
 void miiHead(Renderer& r, const Rect& box, const Mii& mii, float opacity, const Color* flat)
 {
     const MiiParts& parts = miiParts();

@@ -893,6 +893,19 @@ void divider(Renderer& r, float x, float y, float width)
     r.rect(Rect { x, y, width, theme::stroke }, theme::stroke1);
 }
 
+Color qualityColour(uint8_t tier)
+{
+    static const Color kTiers[6] = {
+        Color::hex(0x9A938A), // common, the colour of nothing special
+        Color::hex(0x6FAE5B), // uncommon
+        Color::hex(0x4E8FD6), // rare
+        Color::hex(0x9B6BC7), // epic
+        Color::hex(0xD8A33A), // legendary
+        Color::hex(0xD1574B), // godlike
+    };
+    return kTiers[tier < 6 ? tier : 0];
+}
+
 std::string groupedNumber(uint32_t value)
 {
     std::string digits = format("%u", value);

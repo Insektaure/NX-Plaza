@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/i18n.h"
+#include "core/quest_boons.h"
 #include "core/quest_record.h"
 #include "core/quest_rules.h"
 #include "core/store.h"
@@ -31,6 +32,9 @@ namespace {
     // falls out of one - are in core/quest_rules.h, because the screen where
     // gear is moved around needs the same numbers as the climb does.
 
+    // What a shadow is made of.
+    const Color kShadowInk = Color::hex(0x2E2733);
+
     int partySlots(uint32_t peopleMet)
     {
         if (peopleMet >= 25)
@@ -44,7 +48,7 @@ namespace {
     public:
         enum Zone : int {
             Zone_Roster = Touch_SceneBase,
-            Zone_Climb,
+            Zone_Boon,
             Zone_Back,
         };
 
@@ -53,12 +57,16 @@ namespace {
         // A climb runs itself, so + waits until it is over one way or another.
         bool blocksExit() const override
         {
-            return m_phase == Phase_Fight || m_phase == Phase_Cleared;
+            return m_phase == Phase_Fight || m_phase == Phase_Won
+                || m_phase == Phase_Boon;
         }
 
         void onEnter(App& app) override
         {
+            m_floor = 1;
             buildRoster(app);
+            syncUnits();
+            previewFloor();
             m_phase = Phase_Party;
             m_clock = 0.0f;
             m_best = QuestRecord::get().deepest();
@@ -78,11 +86,36 @@ namespace {
                 if (input.back())
                     stop();
                 return;
-            case Phase_Cleared:
-                if (m_clock >= kFloorBeat)
+            case Phase_Won:
+                agePops(dt);
+                if (input.accept()) {
+                    // Every fifth floor, the tower offers something before
+                    // it offers the next floor.
+                    if (m_floor % 5 == 0 && offer())
+                        return;
                     nextFloor();
-                if (input.back())
+                } else if (input.back()) {
                     stop();
+                }
+                return;
+            case Phase_Boon:
+                if (m_offer.empty()) {
+                    takeBoon(-1);
+                    return;
+                }
+                if (tapped && tap.is(Zone_Boon) && tap.index >= 0
+                    && tap.index < int(m_offer.size())) {
+                    m_boonPick = tap.index;
+                    takeBoon(m_boonPick);
+                    return;
+                }
+                if (input.navLeft)
+                    m_boonPick = (m_boonPick + int(m_offer.size()) - 1)
+                        % int(m_offer.size());
+                if (input.navRight)
+                    m_boonPick = (m_boonPick + 1) % int(m_offer.size());
+                if (input.accept())
+                    takeBoon(m_boonPick);
                 return;
             default:
                 break;
@@ -91,8 +124,6 @@ namespace {
             if (tapped) {
                 if (tap.is(Zone_Back))
                     app.popOverlay();
-                else if (tap.is(Zone_Climb))
-                    startOrAgain();
                 else if (tap.is(Zone_Roster) && tap.index >= 0
                     && tap.index < int(m_roster.size())) {
                     m_cursor = tap.index;
@@ -107,8 +138,13 @@ namespace {
             }
 
             if (m_phase == Phase_Over) {
+                // Back to the party screen rather than straight up the
+                // tower again. A run that has just ended is exactly when
+                // somebody wants to change who goes and what they are
+                // carrying, and starting the next one for them takes that
+                // away at the only moment it matters.
                 if (input.accept())
-                    startOrAgain();
+                    regroup(app);
                 return;
             }
 
@@ -121,6 +157,7 @@ namespace {
                 if (index >= 0 && index < int(m_roster.size()))
                     dress(m_roster[size_t(index)]);
             }
+            syncUnits();
 
             if (input.navLeft)
                 moveCursor(-1);
@@ -132,6 +169,8 @@ namespace {
                 startOrAgain();
             if (input.pressed(HidNpadButton_Y))
                 app.pushOverlay(makeQuestGearScene(party()));
+            if (input.pressed(HidNpadButton_ZR))
+                app.pushOverlay(makeQuestBagScene());
         }
 
         void draw(App& app, Renderer& r) override
@@ -142,31 +181,59 @@ namespace {
 
             drawHeader(r);
 
+            // One field in two states. Choosing a party is done on the
+            // same ground the fight happens on, in the same formation, with
+            // the same shadow waiting on the left - so what you arrange is
+            // what you watch, and nothing moves when the fight begins.
             if (m_phase == Phase_Party) {
-                drawShadow(r, m_floor, false, 1.0f);
-                drawParty(r, true);
+                drawBossSide(r);
+                drawField(r);
+                drawPanel(r, true);
                 drawRoster(app, r);
                 drawPartyHints(app, r);
                 return;
             }
 
-            drawShadow(r, m_floor, m_bossHp <= 0, m_bossShake);
-            drawBossBar(r);
-            drawLog(r);
-            drawParty(r, false);
+            drawTurnOrder(r);
+            drawBossSide(r);
+            drawField(r);
+            drawPanel(r, false);
+            drawSay(r);
+            drawPops(r);
 
-            if (m_phase == Phase_Over)
+            if (m_phase == Phase_Boon) {
+                drawBoons(app, r);
+                return;
+            }
+            if (m_phase == Phase_Won) {
+                drawWon(app, r);
+                return;
+            }
+            if (m_phase == Phase_Over) {
                 drawOver(app, r);
-            else
-                app.hint("B", m_phase == Phase_Cleared ? "stop here" : "stop");
+                return;
+            }
+            app.hint("B", "stop");
         }
 
     private:
         enum Phase : int {
             Phase_Party = 0, // choosing who goes
             Phase_Fight,     // a floor resolving itself
-            Phase_Cleared,   // the beat between floors
+            Phase_Won,       // the floor's spoils, waiting on you
+            Phase_Boon,      // three blessings, waiting on you
             Phase_Over,      // wiped or stopped; there is no top
+        };
+
+        // A number rising off whoever it happened to, which is how a fight
+        // says what it did now that there is no line of text saying it.
+        struct Pop {
+            float x = 0.0f;
+            float y = 0.0f;
+            float life = 1.0f; // 1 at the target, 0 gone
+            int amount = 0;
+            bool heal = false;
+            bool crit = false;
         };
 
         struct Member {
@@ -175,6 +242,7 @@ namespace {
             Mii face;
             Sheet base;  // what they are worth with nothing on
             Sheet sheet; // and with their gear folded in
+            int maxHp = 1;       // their own, times whatever Hale did to it
             int hp = 1;          // during a climb
             int mp = 0;
             float lunge = 0.0f;  // a step forward when they act
@@ -196,17 +264,52 @@ namespace {
         // pays nothing at all.
         static constexpr uint32_t kFloorCoins = 1;
 
-        static constexpr float kHorizon = 380.0f;
-        static constexpr float kGround = 430.0f;
-        static constexpr float kBeat = 0.55f;      // one action
-        static constexpr float kFloorBeat = 1.30f; // the pause between floors
-        static constexpr int kSkillCost = 6;
+        // The field, laid out the way a turn-based battle has been laid out
+        // since Final Fantasy: the thing you are fighting stands alone on
+        // the left, your party is ranged down the right in a stagger so
+        // nobody hides behind anybody, and their condition is in a panel
+        // under them rather than on cards across the middle of the fight.
+        static constexpr float kHorizon = 300.0f;
+        static constexpr float kBossX = 560.0f;
+        static constexpr float kBossGround = 560.0f;
+        static constexpr float kBossFigure = 320.0f;
 
-        static constexpr float kCardH = 250.0f;
-        static constexpr float kCardY = 590.0f;
-        static constexpr float kRosterY = 862.0f;
-        static constexpr float kRosterH = 110.0f;
-        static constexpr float kRosterCell = 104.0f;
+        static constexpr float kPartyX = 1210.0f; // the front of the line
+        static constexpr float kPartyStepX = 78.0f;
+        static constexpr float kPartyGround = 430.0f;
+        static constexpr float kPartyStepY = 40.0f;
+        static constexpr float kPartyFigure = 190.0f;
+
+        static constexpr float kPanelX = 1150.0f;
+        static constexpr float kPanelY = 648.0f;
+        static constexpr float kPanelRow = 56.0f;
+        static constexpr float kOrderY = 24.0f;
+        // The box a head sits in, and how much of it the face may take.
+        //
+        // Solved rather than guessed, for the worst aspect the artwork
+        // uses, with the chin standing on kOrderFloor:
+        //
+        //     hair top    = chin - faceHeight * 1.20  >= 0
+        //     beard foot  = chin + faceHeight * 0.10  <= the card
+        static constexpr float kOrderCard = 84.0f;
+        static constexpr float kOrderCardH = 104.0f;
+        static constexpr float kOrderHead = 56.0f;
+        static constexpr float kOrderFloor = 88.0f; // where the chin rests
+        // The pitch, twelve wider than the card, so no two cards touch.
+        // Six of these span 576px of a 1920 screen, centred, well clear of
+        // the floor number on the left and the week on the right.
+        static constexpr float kOrderCell = 96.0f;
+
+        static constexpr float kBeat = 0.55f; // one action
+        static constexpr float kPopLife = 0.9f;
+        static constexpr float kLunge = 30.0f; // how far a step forward goes
+
+        static constexpr float kRosterY = 700.0f;
+        static constexpr float kRosterH = 162.0f;
+        // Wide enough for the longest class in any of the eleven: the
+        // Portuguese Mender is CURANDEIRO, ten uppercase characters, and
+        // at 104 it ran straight out of its card.
+        static constexpr float kRosterCell = 124.0f;
 
         // ------------------------------------------------------- the roster
 
@@ -316,6 +419,7 @@ namespace {
             auto it = std::find(m_chosen.begin(), m_chosen.end(), m_cursor);
             if (it != m_chosen.end()) {
                 m_chosen.erase(it);
+                syncUnits();
                 return;
             }
             // The party opens full: buildRoster fills every place with the
@@ -328,20 +432,33 @@ namespace {
             if (int(m_chosen.size()) >= m_slots - 1 && !m_chosen.empty())
                 m_chosen.erase(m_chosen.begin());
             m_chosen.push_back(m_cursor);
+            syncUnits();
         }
 
         // -------------------------------------------------------- the climb
 
-        void startOrAgain()
+        // Back to choosing. The roster is rebuilt because a climb can have
+        // changed what people are carrying, and their sheets with it.
+        void regroup(App& app)
         {
+            m_pops.clear();
+            m_say.clear();
+            m_spoils = Item {};
             m_floor = 1;
-            m_deepest = 0;
-            m_earned = 0;
-            m_found = 0;
-            m_bestFound = 0;
-            m_stopped = false;
-            QuestRecord::get().noteClimb();
+            buildRoster(app); // a climb can have changed what people carry
+            syncUnits();
+            previewFloor();
+            m_phase = Phase_Party;
+            m_clock = 0.0f;
+        }
 
+        // The party as it stands, standing. Kept up to date while you are
+        // still choosing, so the party screen and the fight draw the same
+        // people from the same list in the same formation - the whole point
+        // of the two screens looking alike is that they are the same screen
+        // with the shadow awake.
+        void syncUnits()
+        {
             m_units.clear();
             m_units.push_back(m_you);
             for (int index : m_chosen) {
@@ -349,9 +466,58 @@ namespace {
                     m_units.push_back(m_roster[size_t(index)]);
             }
             for (Member& u : m_units) {
-                u.hp = int(u.sheet.hp);
+                u.maxHp = std::max(1, int(float(u.sheet.hp) * m_boons.hp));
+                u.hp = u.maxHp;
                 u.mp = int(u.sheet.mp);
             }
+        }
+
+        // What is waiting on the floor you are about to climb to, so the
+        // party screen can show it without the fight having started.
+        void previewFloor()
+        {
+            m_boss = bossFor(m_floor);
+            m_bossHp = int(m_boss.hp);
+            m_bossAtk = float(m_boss.atk);
+            m_bossShake = 1.0f;
+        }
+
+        void startOrAgain()
+        {
+            m_floor = 1;
+            m_deepest = 0;
+            m_earned = 0;
+            m_paidNow = 0;
+            m_found = 0;
+            m_bestFound = 0;
+            m_stopped = false;
+            m_wiped = false;
+            m_fallen = 0;
+            m_pops.clear();
+            m_say.clear();
+            m_spoils = Item {};
+            QuestRecord::get().noteClimb();
+
+            m_boons = Boons {};
+            m_held.clear();
+            syncUnits();
+
+            // Straight up. Blessings come after the fifth floor and every
+            // fifth after that, and not before the first: a climb should
+            // open on the tower rather than on a menu, and a party that has
+            // not cleared anything has not earned anything.
+            //
+            // It costs a thin collection the only blessing it would ever
+            // have seen - measured, six hundred climbs a party:
+            //
+            //     party        bare   every 5   with one at the door
+            //     four met      3.1     3.1            3.4
+            //     fifteen met   7.1     7.5            7.9
+            //     twenty-five  12.2    13.8           14.8
+            //
+            // which is the trade: the shallow end of the tower is now
+            // plain, and gear is the only thing that moves it.
+            m_floor = 1;
             beginFloor();
         }
 
@@ -366,9 +532,46 @@ namespace {
             m_beatClock = 0.0f;
             m_bossShake = 1.0f;
             m_guard = -1;
-            m_log.clear();
+            m_say.clear();
             m_phase = Phase_Fight;
             m_clock = 0.0f;
+        }
+
+        // True when there was something to offer, which is the caller's
+        // cue to stop and let it be chosen.
+        bool offer()
+        {
+            uint32_t classes = 0;
+            for (const Member& u : m_units)
+                classes |= 1u << u.sheet.cls;
+            m_offer = offerBoons(m_held, classes);
+            if (m_offer.empty())
+                return false;
+            m_boonPick = 0;
+            m_phase = Phase_Boon;
+            m_clock = 0.0f;
+            return true;
+        }
+
+        void takeBoon(int which)
+        {
+            if (which >= 0 && which < int(m_offer.size())) {
+                uint8_t id = m_offer[size_t(which)];
+                m_held.push_back(id);
+                applyBoon(m_boons, id);
+                // Hale is the one that has to reach into people rather than
+                // sit in the run's numbers: everybody's ceiling moves, and
+                // the room it opens is given to them straight away.
+                for (Member& u : m_units) {
+                    int was = u.maxHp;
+                    u.maxHp = std::max(1, int(float(u.sheet.hp) * m_boons.hp));
+                    if (u.hp > 0 && u.maxHp > was)
+                        u.hp += u.maxHp - was;
+                }
+            }
+            m_offer.clear();
+
+            nextFloor();
         }
 
         void nextFloor()
@@ -379,9 +582,12 @@ namespace {
             for (Member& u : m_units) {
                 if (u.hp <= 0)
                     continue;
-                u.hp = std::min(int(u.sheet.hp), u.hp + int(u.sheet.hp) / 3);
-                u.mp = std::min(int(u.sheet.mp), u.mp + 4);
+                u.hp = std::min(u.maxHp, u.hp + u.maxHp / 3);
+                u.mp = m_boons.fullMp
+                    ? int(u.sheet.mp)
+                    : std::min(int(u.sheet.mp), u.mp + m_boons.mpPerFloor);
             }
+            m_boons.since++;
             m_floor++;
             beginFloor();
         }
@@ -393,11 +599,30 @@ namespace {
             m_clock = 0.0f;
         }
 
+        void agePops(float dt)
+        {
+            for (Pop& p : m_pops)
+                p.life -= dt / kPopLife;
+            m_pops.erase(std::remove_if(m_pops.begin(), m_pops.end(),
+                             [](const Pop& p) { return p.life <= 0.0f; }),
+                m_pops.end());
+        }
+
+        // Spawned over whoever it happened to, so a sweep puts a number on
+        // every head at once and you can see the shape of the round without
+        // reading a word of it.
+        void popOver(const Rect& who, int amount, bool heal, bool crit)
+        {
+            m_pops.push_back(Pop { who.centerX(), who.y + 24.0f, 1.0f, amount, heal,
+                crit });
+        }
+
         void runFight(App& app, float dt)
         {
             m_bossShake = std::min(1.0f, m_bossShake + dt * 4.0f);
             for (Member& u : m_units)
                 u.lunge = std::max(0.0f, u.lunge - dt * 4.0f);
+            agePops(dt);
 
             m_beatClock += dt;
             if (m_beatClock < kBeat)
@@ -420,13 +645,15 @@ namespace {
                 return;
             }
             if (!anyoneStanding()) {
+                m_wiped = true;
                 m_phase = Phase_Over;
                 m_clock = 0.0f;
                 return;
             }
-            // Thirty rounds is not a fight any more, it is two walls. The
-            // shadow keeps the floor.
+            // Thirty rounds is not a fight any more, it is two walls, and
+            // the shadow is the one that can wait.
             if (m_round > 30) {
+                m_wiped = true;
                 m_phase = Phase_Over;
                 m_clock = 0.0f;
             }
@@ -442,11 +669,35 @@ namespace {
             }
             m_order.push_back(-1); // the shadow
             std::stable_sort(m_order.begin(), m_order.end(), [this](int a, int b) {
-                int sa = a < 0 ? int(m_boss.spd) : int(m_units[size_t(a)].sheet.spd);
-                int sb = b < 0 ? int(m_boss.spd) : int(m_units[size_t(b)].sheet.spd);
+                int sa = a < 0 ? int(m_boss.spd) : spdOf(m_units[size_t(a)]);
+                int sb = b < 0 ? int(m_boss.spd) : spdOf(m_units[size_t(b)]);
                 return sa > sb;
             });
             m_turn = 0;
+        }
+
+        // A sheet is what somebody is; these are what they are *now*. Read
+        // through here everywhere a fight uses a number, so a blessing
+        // never has to be written into anybody.
+        int atkOf(const Member& u) const
+        {
+            float gain = (1.0f + m_boons.rally * float(m_fallen))
+                * (1.0f + m_boons.perFloor * float(m_boons.since));
+            if (m_boons.lastStand && standing() == 1)
+                gain *= 2.0f;
+            return std::max(1, int(float(u.sheet.atk) * m_boons.atk * gain));
+        }
+
+        int spdOf(const Member& u) const { return int(u.sheet.spd) + m_boons.spd; }
+
+        int standing() const
+        {
+            int up = 0;
+            for (const Member& u : m_units) {
+                if (u.hp > 0)
+                    up++;
+            }
+            return up;
         }
 
         bool anyoneStanding() const
@@ -462,14 +713,17 @@ namespace {
         // The spread is what makes two runs of the same party different, and
         // it is small enough that it decides a close floor rather than a
         // whole climb.
-        static int hitFor(int atk, int def, float mult)
+        static int hitFor(int atk, int def, float mult, bool* crit = nullptr)
         {
             int base = int(float(atk) - float(def) * 0.5f);
             base = std::max(1, int(float(base) * mult));
             int wobble = std::max(1, base / 4);
             int out = base + int(randomBelow(uint32_t(wobble * 2 + 1))) - wobble;
-            if (randomBelow(100) < 12)
+            bool big = randomBelow(100) < 12;
+            if (big)
                 out = int(float(out) * 1.7f);
+            if (crit)
+                *crit = big;
             return std::max(1, out);
         }
 
@@ -480,49 +734,46 @@ namespace {
                 return;
             u.lunge = 1.0f;
 
-            bool hasMp = u.mp >= kSkillCost;
+            bool hasMp = u.mp >= m_boons.skillCost;
+            bool crit = false;
             switch (u.sheet.cls) {
             case Class_Blade:
                 if (hasMp) {
-                    u.mp -= kSkillCost;
-                    int dealt = hitFor(u.sheet.atk, m_boss.def, 1.8f);
-                    m_bossHp -= dealt;
-                    m_bossShake = 0.0f;
-                    m_log = format(tr("%s strikes for %d"), u.name.c_str(), dealt);
+                    u.mp -= m_boons.skillCost;
+                    strike(hitFor(atkOf(u), m_boss.def, 1.8f, &crit), crit);
                     return;
                 }
                 break;
             case Class_Mender:
                 if (hasMp) {
                     Member* hurt = weakest();
-                    if (hurt && hurt->hp < int(hurt->sheet.hp) * 3 / 5) {
-                        u.mp -= kSkillCost;
-                        int given = int(u.sheet.atk) * 3;
-                        hurt->hp = std::min(int(hurt->sheet.hp), hurt->hp + given);
-                        m_log = format(tr("%s patches up %s"), u.name.c_str(),
-                            hurt->name.c_str());
+                    if (hurt && float(hurt->hp) < float(hurt->maxHp) * m_boons.mendAt) {
+                        u.mp -= m_boons.skillCost;
+                        int given = int(float(atkOf(u)) * m_boons.mendPower);
+                        int before = hurt->hp;
+                        hurt->hp = std::min(hurt->maxHp, hurt->hp + given);
+                        popOver(unitRect(int(hurt - m_units.data())),
+                            hurt->hp - before, true, false);
                         return;
                     }
                 }
                 break;
             case Class_Spark:
                 if (hasMp) {
-                    u.mp -= kSkillCost;
-                    int dealt = hitFor(u.sheet.atk, m_boss.def, 1.3f);
-                    m_bossHp -= dealt;
-                    m_bossShake = 0.0f;
+                    u.mp -= m_boons.skillCost;
+                    strike(hitFor(atkOf(u), m_boss.def, 1.3f, &crit), crit);
                     // Worn down rather than out-hit: the shadow's arm is
                     // what a Spark takes away, and it does not come back.
-                    m_bossAtk = std::max(float(m_boss.atk) * 0.6f, m_bossAtk * 0.92f);
-                    m_log = format(tr("%s wears it down, %d"), u.name.c_str(), dealt);
+                    m_bossAtk = std::max(float(m_boss.atk) * 0.6f,
+                        m_bossAtk * (1.0f - m_boons.sparkBite));
                     return;
                 }
                 break;
             case Class_Guard:
                 if (hasMp && m_guard != index) {
-                    u.mp -= kSkillCost;
+                    u.mp -= m_boons.skillCost;
                     m_guard = index;
-                    m_log = format(tr("%s stands in front"), u.name.c_str());
+                    m_say = format(tr("%s stands in front"), u.name.c_str());
                     return;
                 }
                 break;
@@ -530,10 +781,15 @@ namespace {
                 break;
             }
 
-            int dealt = hitFor(u.sheet.atk, m_boss.def, 1.0f);
+            strike(hitFor(atkOf(u), m_boss.def, 1.0f, &crit), crit);
+        }
+
+        void strike(int dealt, bool crit)
+        {
             m_bossHp -= dealt;
             m_bossShake = 0.0f;
-            m_log = format(tr("%s hits for %d"), u.name.c_str(), dealt);
+            m_say.clear();
+            popOver(bossRect(), dealt, false, crit);
         }
 
         Member* weakest()
@@ -543,7 +799,7 @@ namespace {
             for (Member& u : m_units) {
                 if (u.hp <= 0)
                     continue;
-                float share = float(u.hp) / float(std::max<uint16_t>(1, u.sheet.hp));
+                float share = float(u.hp) / float(std::max(1, u.maxHp));
                 if (share < worst) {
                     worst = share;
                     out = &u;
@@ -556,17 +812,26 @@ namespace {
         {
             int atk = int(m_bossAtk);
 
-            // Every fourth round it swings at the lot for a little over half.
+            // Every fourth round it swings at the lot for a little over
+            // half, and a number lands on every head at once - which is the
+            // whole reason the numbers are better than a line of text.
             if (m_round % 4 == 0) {
-                int total = 0;
-                for (Member& u : m_units) {
+                m_say.clear();
+                for (size_t i = 0; i < m_units.size(); i++) {
+                    Member& u = m_units[i];
                     if (u.hp <= 0)
                         continue;
-                    int dealt = hitFor(atk, u.sheet.def, 0.55f);
+                    bool crit = false;
+                    float bite = 0.55f * m_boons.taken
+                        * (m_boons.guardSweep && m_guard >= 0 ? 0.5f : 1.0f);
+                    int dealt = hitFor(atk, u.sheet.def, bite, &crit);
                     u.hp = std::max(0, u.hp - dealt);
-                    total += dealt;
+                    popOver(unitRect(int(i)), dealt, false, crit);
+                    if (u.hp == 0)
+                        m_fallen++;
+                    if (u.hp == 0)
+                        m_say = format(tr("%s falls"), u.name.c_str());
                 }
-                m_log = format(tr("The shadow sweeps, %d"), total);
                 return;
             }
 
@@ -588,15 +853,28 @@ namespace {
             // Standing in front is worth half the blow, which is the whole
             // job: a Guard turns the shadow's best round into its dullest.
             bool guarded = m_guard >= 0 && target == &m_units[size_t(m_guard)];
-            int dealt = hitFor(atk, target->sheet.def, guarded ? 0.5f : 1.0f);
+            bool crit = false;
+            float bite = (guarded ? 0.5f : 1.0f) * m_boons.taken;
+            int dealt = hitFor(atk, target->sheet.def, bite, &crit);
             target->hp = std::max(0, target->hp - dealt);
+            popOver(unitRect(int(target - m_units.data())), dealt, false, crit);
             if (target->hp == 0) {
+                // Back up once, if this run was blessed with it.
+                if (m_boons.secondWind && !m_boons.spentWind) {
+                    m_boons.spentWind = true;
+                    target->hp = std::max(1, target->maxHp / 3);
+                    popOver(unitRect(int(target - m_units.data())), target->hp, true,
+                        false);
+                    m_say = format(tr("%s gets back up"), target->name.c_str());
+                    return;
+                }
+                m_fallen++;
                 if (guarded)
                     m_guard = -1;
-                m_log = format(tr("%s falls"), target->name.c_str());
+                m_say = format(tr("%s falls"), target->name.c_str());
                 return;
             }
-            m_log = format(tr("The shadow hits %s for %d"), target->name.c_str(), dealt);
+            m_say.clear();
         }
 
         void clearedFloor(App& app)
@@ -612,6 +890,7 @@ namespace {
 
             // First time up here this week? That is the coin, and only the
             // coin: the loot is a flat half on every floor and every climb.
+            m_paidNow = 0;
             if (record.notePaidFloor(uint32_t(m_floor))) {
                 // The record goes to the card first. Something has to, and
                 // of the two ways for a console to die between the writes,
@@ -623,18 +902,21 @@ namespace {
                 wallet.award(kFloorCoins);
                 wallet.flush();
                 m_earned += kFloorCoins;
+                m_paidNow = kFloorCoins;
             }
 
-            m_log = format(tr("Floor %d is yours"), m_floor);
+            m_say.clear();
+            m_pops.clear();
             takeDrop(app, record);
 
             m_clock = 0.0f;
-            m_phase = Phase_Cleared;
+            m_phase = Phase_Won;
         }
 
         void takeDrop(App& app, QuestRecord& record)
         {
-            Item fell = rollDrop(m_floor, record.nextId());
+            m_spoils = Item {};
+            Item fell = rollDrop(m_floor, record.nextId(), m_boons.dropChance);
             if (!fell.valid())
                 return;
 
@@ -659,14 +941,9 @@ namespace {
             record.add(fell);
             record.flush();
             m_found++;
+            m_spoils = fell;
             if (fell.quality > m_bestFound)
                 m_bestFound = fell.quality;
-
-            // The noun first and the tier in brackets, in that order in
-            // every language: the two are both %s, so a translation that
-            // swapped them would read wrong with nothing able to catch it.
-            m_log = format(tr("The shadow left a %s (%s)"), tr(itemNoun(fell)),
-                tr(qualityName(fell.quality)));
         }
 
         // ------------------------------------------------------ the painting
@@ -712,159 +989,243 @@ namespace {
             r.text(right, week, note, Align::Right, VAlign::Top);
         }
 
-        void drawShadow(Renderer& r, int floor, bool beaten, float shake) const
+        Rect bossRect() const
         {
-            constexpr float kFigure = 260.0f;
-            float jolt = (1.0f - shake) * 14.0f;
-            Rect box { Renderer::DesignWidth * 0.5f - kFigure * 0.42f + jolt,
-                kGround - kFigure, kFigure * 0.84f, kFigure };
-
-            Color ink = theme::bg0.mix(theme::danger, 0.22f);
-            float opacity = beaten ? 0.28f : 1.0f;
-            if (!beaten) {
-                r.glow(Rect { box.centerX() - 150.0f, box.centerY() - 150.0f, 300.0f,
-                           300.0f },
-                    theme::danger.scaleAlpha(0.16f), 1.8f);
-            }
-            r.ellipse(box.centerX(), kGround + 8.0f, kFigure * 0.34f, 14.0f,
-                theme::bg0.scaleAlpha(0.35f * opacity), 0.0f);
-            ui::miiFigure(r, box, shadowFace(floor), opacity, false, &ink);
+            float jolt = (1.0f - m_bossShake) * 16.0f;
+            return Rect { kBossX - kBossFigure * 0.42f + jolt,
+                kBossGround - kBossFigure, kBossFigure * 0.84f, kBossFigure };
         }
 
-        void drawBossBar(Renderer& r) const
+        // Staggered down and to the right, so the fifth in the line is not
+        // standing behind the first. Lunging is a step to the left, towards
+        // the thing being hit.
+        Rect unitRect(int index) const
         {
-            constexpr float kBarW = 700.0f;
-            Rect bar { Renderer::DesignWidth * 0.5f - kBarW * 0.5f, 468.0f, kBarW,
-                22.0f };
+            float lunge = index >= 0 && index < int(m_units.size())
+                ? m_units[size_t(index)].lunge
+                : 0.0f;
+            float x = kPartyX + float(index) * kPartyStepX - lunge * kLunge;
+            float ground = kPartyGround + float(index) * kPartyStepY;
+            return Rect { x - kPartyFigure * 0.42f, ground - kPartyFigure,
+                kPartyFigure * 0.84f, kPartyFigure };
+        }
+
+        void drawBossSide(Renderer& r) const
+        {
+            Rect box = bossRect();
+            Color ink = kShadowInk;
+            bool beaten = m_bossHp <= 0;
+            float opacity = beaten ? 0.28f : 1.0f;
+            if (!beaten) {
+                r.glow(Rect { box.centerX() - 170.0f, box.centerY() - 170.0f, 340.0f,
+                           340.0f },
+                    theme::danger.scaleAlpha(0.16f), 1.8f);
+            }
+            r.ellipse(box.centerX(), kBossGround + 8.0f, kBossFigure * 0.34f, 15.0f,
+                theme::bg0.scaleAlpha(0.35f * opacity), 0.0f);
+            ui::miiFigure(r, box, shadowFace(m_floor), opacity, false, &ink);
+
+            constexpr float kBarW = 620.0f;
+            Rect bar { kBossX - kBarW * 0.5f, kBossGround + 40.0f, kBarW, 24.0f };
             float share = m_boss.hp > 0
                 ? std::max(0.0f, float(m_bossHp) / float(m_boss.hp))
                 : 0.0f;
-            r.roundRect(bar, 11.0f, theme::bg2);
+            r.roundRect(bar, 12.0f, theme::bg2);
             if (share > 0.0f) {
-                r.roundRect(Rect { bar.x, bar.y, bar.w * share, bar.h }, 11.0f,
+                r.roundRect(Rect { bar.x, bar.y, bar.w * share, bar.h }, 12.0f,
                     theme::danger);
             }
 
+            TextStyle count;
+            count.size = theme::textSm;
+            count.weight = FontWeight::Bold;
+            count.color = theme::fg2;
+            r.text(Rect { bar.x, bar.bottom() + theme::s2, bar.w, 28.0f },
+                format("%d / %u", std::max(0, m_bossHp), unsigned(m_boss.hp)), count,
+                Align::Center, VAlign::Top);
+
             TextStyle stat;
-            stat.size = theme::textSm;
+            stat.size = theme::textXs;
             stat.color = theme::fg3;
             stat.tracking = theme::trackingWide;
-            r.text(Rect { bar.x, bar.bottom() + theme::s2, bar.w, 28.0f },
+            r.text(Rect { bar.x, bar.bottom() + 42.0f, bar.w, 26.0f },
                 format("ATK %u   DEF %u   SPD %u", unsigned(int(m_bossAtk)),
                     unsigned(m_boss.def), unsigned(m_boss.spd)),
                 stat, Align::Center, VAlign::Top);
         }
 
-        void drawLog(Renderer& r) const
+        // The party on the field: figures only, because their numbers are
+        // in the panel below and a fight is easier to follow when the thing
+        // moving is the only thing to look at.
+        void drawField(Renderer& r) const
         {
-            if (m_log.empty())
+            for (size_t i = 0; i < m_units.size(); i++) {
+                const Member& u = m_units[i];
+                Rect box = unitRect(int(i));
+                bool down = u.hp <= 0;
+                r.ellipse(box.centerX(), box.bottom() + 8.0f, kPartyFigure * 0.30f,
+                    12.0f, theme::bg0.scaleAlpha(down ? 0.12f : 0.30f), 0.0f);
+                if (u.lunge > 0.01f) {
+                    Color rim = theme::accent.scaleAlpha(0.45f * u.lunge);
+                    ui::miiSilhouette(r, box.inset(-5.0f), u.face, rim);
+                }
+                ui::miiFigure(r, box, u.face, down ? 0.25f : 1.0f);
+            }
+        }
+
+        // Who is up, in the order they go. The one acting is lit; the
+        // rest wait their turn along the top, which is the one thing a
+        // watcher cannot work out from the field itself.
+        //
+        // Every head gets a card of its own, sized so the whole head fits
+        // inside it. Without one the highlight was cut to the cell while
+        // the hair was not, so it missed the top of whoever it was meant
+        // to be pointing at, spilled onto the neighbours, and left a row
+        // of faces whose chins lined up and whose crowns did not.
+        void drawTurnOrder(Renderer& r) const
+        {
+            if (m_order.empty())
+                return;
+            int count = int(m_order.size());
+            float total = float(count) * kOrderCell;
+            float x = Renderer::DesignWidth * 0.5f - total * 0.5f;
+            int acting = m_turn - 1;
+
+            for (int i = 0; i < count; i++) {
+                bool now = i == acting;
+                Rect card { x + float(i) * kOrderCell, kOrderY, kOrderCard,
+                    kOrderCardH };
+                r.roundRect(card, theme::r3,
+                    now ? theme::accent.scaleAlpha(0.30f) : theme::bg2);
+                r.strokeRect(card, theme::r3, now ? theme::stroke * 2.0f : theme::stroke,
+                    now ? theme::accent : theme::stroke1);
+
+                // miiHead stands the face on the bottom of what it is
+                // given, so the well's floor is where the chin goes and
+                // everything else - hair above, beard below - is the room
+                // left around it. 56 across keeps the face clear of the
+                // 52px line where miiHead stops drawing beards at all.
+                Rect well { card.centerX() - kOrderHead * 0.5f, card.y + 8.0f,
+                    kOrderHead, kOrderFloor - 8.0f };
+                // Every face at full strength. Whose turn it is is said
+                // by the card behind them - accent fill, accent border -
+                // and once there was a card to say it, fading the face as
+                // well stopped reading as "waiting" and started reading as
+                // a half-drawn Mii. The same mistake the roster cards made.
+                int slot = m_order[size_t(i)];
+                if (slot < 0) {
+                    Color ink = kShadowInk;
+                    ui::miiHead(r, well, shadowFace(m_floor), 1.0f, &ink);
+                } else if (slot < int(m_units.size())) {
+                    ui::miiHead(r, well, m_units[size_t(slot)].face);
+                }
+            }
+        }
+
+        // One row a head. Before a climb the bars are all full and say
+        // nothing, so the row carries the stat block instead; during one
+        // the numbers that move are the only ones worth the width.
+        void drawPanel(Renderer& r, bool resting) const
+        {
+            if (m_units.empty())
+                return;
+            float height = float(m_units.size()) * kPanelRow + theme::s4 * 2.0f;
+            Rect panel { kPanelX, kPanelY, Renderer::DesignWidth - theme::edge - kPanelX,
+                height };
+            r.roundRect(panel, theme::r3, theme::bg1);
+            r.strokeRect(panel, theme::r3, theme::stroke, theme::stroke1);
+
+            Rect inner = panel.inset(theme::s5, theme::s4);
+            for (size_t i = 0; i < m_units.size(); i++) {
+                const Member& u = m_units[i];
+                float y = inner.y + float(i) * kPanelRow;
+                bool down = u.hp <= 0;
+
+                TextStyle name;
+                name.size = theme::textSm;
+                name.weight = FontWeight::Bold;
+                name.color = down ? theme::fg4 : theme::fg1;
+                r.text(inner.x, y + 2.0f,
+                    r.ellipsize(u.name, name, 230.0f), name);
+
+                TextStyle role;
+                role.size = theme::textXs;
+                role.color = down ? theme::fg4 : theme::accent;
+                role.tracking = theme::trackingWide;
+                role.uppercase = true;
+                r.text(inner.x, y + 28.0f, tr(className(u.sheet.cls)), role);
+
+                if (resting) {
+                    TextStyle stat;
+                    stat.size = theme::textXs;
+                    stat.color = theme::fg3;
+                    stat.tracking = theme::trackingWide;
+                    r.text(Rect { inner.x, y + 4.0f, inner.w, 26.0f },
+                        format("HP %u   ATK %u   DEF %u   SPD %u   MP %u",
+                            unsigned(u.sheet.hp), unsigned(u.sheet.atk),
+                            unsigned(u.sheet.def), unsigned(u.sheet.spd),
+                            unsigned(u.sheet.mp)),
+                        stat, Align::Right, VAlign::Top);
+                    continue;
+                }
+
+                TextStyle count;
+                count.size = theme::textXs;
+                count.color = down ? theme::fg4 : theme::fg3;
+                r.text(Rect { inner.x + 244.0f, y + 4.0f, 110.0f, 24.0f },
+                    format("%d", std::max(0, u.hp)), count, Align::Right, VAlign::Top);
+
+                Rect bar { inner.x + 366.0f, y + 8.0f, inner.right() - inner.x - 366.0f,
+                    14.0f };
+                drawBar(r, bar,
+                    float(std::max(0, u.hp)) / float(std::max(1, u.maxHp)),
+                    down ? theme::bg3 : theme::success);
+                drawBar(r, Rect { bar.x, bar.bottom() + 5.0f, bar.w, 8.0f },
+                    u.sheet.mp == 0
+                        ? 0.0f
+                        : float(u.mp) / float(std::max<uint16_t>(1, u.sheet.mp)),
+                    theme::info);
+            }
+        }
+
+        // The one thing a number cannot say by itself - somebody stepping in
+        // front, somebody going down.
+        void drawSay(Renderer& r) const
+        {
+            if (m_say.empty())
                 return;
             TextStyle line;
-            line.size = theme::textBase;
-            line.weight = FontWeight::Medium;
-            line.color = theme::fg2;
-            r.text(Rect { theme::edge, 534.0f, Renderer::DesignWidth - theme::edge * 2.0f,
-                      36.0f },
-                r.ellipsize(m_log, line, Renderer::DesignWidth - theme::edge * 2.0f),
-                line, Align::Center, VAlign::Top);
+            line.size = theme::textSm;
+            line.color = theme::fg3;
+            line.tracking = theme::trackingWide;
+            r.text(Rect { theme::edge, kOrderY + kOrderCardH + theme::s3,
+                      Renderer::DesignWidth - theme::edge * 2.0f, 30.0f },
+                m_say, line, Align::Center, VAlign::Top);
+        }
+
+        // The numbers, rising and fading off whoever they happened to.
+        void drawPops(Renderer& r) const
+        {
+            for (const Pop& p : m_pops) {
+                float gone = 1.0f - p.life;
+                TextStyle text;
+                text.size = p.crit ? theme::textXl : theme::textLg;
+                text.weight = FontWeight::Bold;
+                text.tracking = theme::trackingTight;
+                Color base = p.heal ? theme::success
+                                    : (p.crit ? theme::accent : theme::fg1);
+                text.color = base.scaleAlpha(std::min(1.0f, p.life * 2.4f));
+                std::string body = p.heal ? format("+%d", p.amount)
+                                          : format("%d", p.amount);
+                r.text(Rect { p.x - 120.0f, p.y - gone * 54.0f, 240.0f, 60.0f }, body,
+                    text, Align::Center, VAlign::Top);
+            }
         }
 
         // The party, as cards along the foot of the screen. In the party
         // phase these are the chosen ones with their stats; during a climb
         // they are the same cards with bars in them, so nothing jumps about
         // between picking somebody and watching them fight.
-        void drawParty(Renderer& r, bool picking) const
-        {
-            std::vector<const Member*> show;
-            if (picking) {
-                show.push_back(&m_you);
-                for (int index : m_chosen) {
-                    if (index >= 0 && index < int(m_roster.size()))
-                        show.push_back(&m_roster[size_t(index)]);
-                }
-            } else {
-                for (const Member& u : m_units)
-                    show.push_back(&u);
-            }
-            if (show.empty())
-                return;
-
-            float gap = theme::s4;
-            float total = Renderer::DesignWidth - theme::edge * 2.0f;
-            float width = (total - gap * float(m_slots - 1)) / float(m_slots);
-            float x = theme::edge;
-            for (int slot = 0; slot < m_slots; slot++) {
-                Rect box { x, kCardY, width, kCardH };
-                if (slot < int(show.size()))
-                    drawMemberCard(r, box, *show[size_t(slot)], picking);
-                else
-                    drawEmptySlot(r, box);
-                x += width + gap;
-            }
-        }
-
-        void drawMemberCard(Renderer& r, const Rect& box, const Member& m,
-            bool picking) const
-        {
-            bool down = !picking && m.hp <= 0;
-            ui::card(r, box, 0.0f, down ? theme::bg1.scaleAlpha(0.6f) : theme::bg1,
-                theme::r3);
-            Rect inner = box.inset(theme::s4, theme::s4);
-
-            float lunge = picking ? 0.0f : m.lunge * 10.0f;
-            Rect head { inner.x - lunge, inner.y, 92.0f, 92.0f };
-            ui::miiHead(r, head, m.face, down ? 0.35f : 1.0f);
-
-            TextStyle name;
-            name.size = theme::textSm;
-            name.weight = FontWeight::Bold;
-            name.color = down ? theme::fg4 : theme::fg1;
-            float textX = head.right() + theme::s3;
-            float textW = inner.right() - textX;
-            r.text(textX, inner.y + 4.0f, r.ellipsize(m.name, name, textW), name);
-
-            TextStyle role;
-            role.size = theme::textXs;
-            role.color = theme::accent;
-            role.tracking = theme::trackingWide;
-            role.uppercase = true;
-            r.text(textX, inner.y + 34.0f, tr(className(m.sheet.cls)), role);
-
-            // Bars: hit points always, and the wind for a special under it.
-            float barY = inner.y + 100.0f;
-            drawBar(r, Rect { inner.x, barY, inner.w, 16.0f },
-                picking ? 1.0f : float(std::max(0, m.hp)) / float(m.sheet.hp),
-                down ? theme::bg3 : theme::success);
-            drawBar(r, Rect { inner.x, barY + 22.0f, inner.w, 10.0f },
-                m.sheet.mp == 0 ? 0.0f
-                                : (picking ? 1.0f : float(m.mp) / float(m.sheet.mp)),
-                theme::info);
-
-            TextStyle stat;
-            stat.size = theme::textXs;
-            stat.color = theme::fg3;
-            stat.tracking = theme::trackingWide;
-            std::string top = picking
-                ? format("HP %u   MP %u", unsigned(m.sheet.hp), unsigned(m.sheet.mp))
-                : format("HP %d/%u", std::max(0, m.hp), unsigned(m.sheet.hp));
-            r.text(inner.x, barY + 40.0f, top, stat);
-            r.text(inner.x, barY + 66.0f,
-                format("ATK %u  DEF %u  SPD %u", unsigned(m.sheet.atk),
-                    unsigned(m.sheet.def), unsigned(m.sheet.spd)),
-                stat);
-        }
-
-        void drawEmptySlot(Renderer& r, const Rect& box) const
-        {
-            r.roundRect(box, theme::r3, theme::bg1.scaleAlpha(0.45f));
-            r.strokeRect(box, theme::r3, theme::stroke, theme::stroke1);
-            TextStyle hint;
-            hint.size = theme::textSm;
-            hint.color = theme::fg4;
-            r.text(box.inset(theme::s5), tr("an empty place"), hint, Align::Center,
-                VAlign::Middle);
-        }
-
         static void drawBar(Renderer& r, const Rect& box, float share, Color fill)
         {
             r.roundRect(box, box.h * 0.5f, theme::bg3);
@@ -878,46 +1239,93 @@ namespace {
         // Everyone you have crossed, as a strip of heads. The party is picked
         // out of this rather than out of a menu, because the faces are the
         // part somebody recognises.
+        // Each one carries a face, a name and a class,
+        // because "who should I bring" is a question
+        // about what they do, and a strip of bare heads made you count
+        // rather than choose.
         void drawRoster(App& app, Renderer& r)
         {
-            Rect strip { theme::edge, kRosterY,
-                Renderer::DesignWidth - theme::edge * 2.0f, kRosterH };
+            Rect strip { theme::edge, kRosterY, kPanelX - theme::s5 - theme::edge,
+                kRosterH };
             if (m_roster.empty()) {
                 TextStyle empty;
                 empty.size = theme::textSm;
                 empty.color = theme::fg3;
-                r.text(strip, tr("Nobody has crossed you yet - you climb alone."), empty,
-                    Align::Center, VAlign::Middle);
+                r.textWrapped(strip, tr("Nobody has crossed you yet - you climb alone."),
+                    empty, 2);
                 return;
             }
 
             int fits = std::max(1, int(strip.w / kRosterCell));
-            int first = std::max(0, std::min(m_cursor - fits / 2,
-                                     int(m_roster.size()) - fits));
-            r.pushClipVertical(strip);
+            int first = std::max(0,
+                std::min(m_cursor - fits / 2, int(m_roster.size()) - fits));
+            // Room for the ring. ui::card draws its focus outside the box,
+            // so a clip tight to the strip sliced the top and bottom off
+            // whichever cell the cursor was on.
+            r.pushClipVertical(strip.inset(0.0f, -theme::focusRoom));
             float x = strip.x;
             for (int i = first; i < int(m_roster.size()) && x < strip.right(); i++) {
+                const Member& m = m_roster[size_t(i)];
                 Rect cell { x, strip.y, kRosterCell - theme::s2, strip.h };
                 bool chosen = inParty(i);
                 bool focused = i == m_cursor;
                 app.touchZone(cell, Zone_Roster, i);
                 ui::card(r, cell, focused ? 0.7f + 0.3f * m_pulse : 0.0f,
                     chosen ? theme::bg2 : theme::bg1, theme::r2);
-                ui::miiHead(r, Rect { cell.x + 14.0f, cell.y + 8.0f, cell.w - 28.0f,
-                                cell.w - 28.0f },
-                    m_roster[size_t(i)].face, chosen ? 1.0f : 0.55f);
-                if (chosen) {
-                    r.circle(cell.right() - 16.0f, cell.y + 16.0f, 7.0f, theme::accent);
-                }
+
+                // Every face at full strength. Whether they are coming is
+                // already said by the card's fill, the dot in its corner and
+                // the colour of the name and the class under it; fading the
+                // face as well read as a half-drawn Mii rather than as a
+                // fifth way of saying the same thing.
+                constexpr float kHead = 80.0f;
+                ui::miiHead(r, Rect { cell.centerX() - kHead * 0.5f, cell.y + 18.0f,
+                                kHead, kHead },
+                    m.face);
+
+                TextStyle name;
+                name.size = theme::textXs;
+                name.weight = FontWeight::Bold;
+                name.color = chosen ? theme::fg1 : theme::fg3;
+                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 26.0f, cell.w - 8.0f,
+                          22.0f },
+                    r.ellipsize(m.name, name, cell.w - 8.0f), name, Align::Center,
+                    VAlign::Top);
+
+                // No wide tracking here, unlike every other small-caps
+                // label in the app: the six per cent it adds is six per
+                // cent this cell has not got. Ellipsized as a backstop, so
+                // a language that grows one of these later loses a letter
+                // rather than painting over the card next to it.
+                TextStyle role;
+                role.size = theme::textXs;
+                role.color = chosen ? theme::accent : theme::fg4;
+                role.uppercase = true;
+                float room = cell.w - 8.0f;
+                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 52.0f, room, 22.0f },
+                    r.ellipsize(tr(className(m.sheet.cls)), role, room), role,
+                    Align::Center, VAlign::Top);
+
+                if (chosen)
+                    r.circle(cell.right() - 15.0f, cell.y + 15.0f, 7.0f, theme::accent);
                 x += kRosterCell;
             }
             r.popClip();
 
-            TextStyle who;
-            who.size = theme::textSm;
-            who.color = theme::fg2;
-            r.text(Rect { strip.x, strip.bottom() - 4.0f, strip.w, 26.0f },
-                m_roster[size_t(m_cursor)].name, who, Align::Center, VAlign::Top);
+            // What the one under the cursor is worth, which is the whole
+            // question when they are not in the party and their row is not
+            // in the panel.
+            const Member& at = m_roster[size_t(m_cursor)];
+            TextStyle line;
+            line.size = theme::textXs;
+            line.color = theme::fg3;
+            line.tracking = theme::trackingWide;
+            r.text(strip.x, strip.bottom() + theme::s3,
+                format("HP %u   ATK %u   DEF %u   SPD %u   MP %u",
+                    unsigned(at.sheet.hp), unsigned(at.sheet.atk),
+                    unsigned(at.sheet.def), unsigned(at.sheet.spd),
+                    unsigned(at.sheet.mp)),
+                line);
         }
 
         void drawPartyHints(App& app, Renderer& r)
@@ -925,6 +1333,7 @@ namespace {
             app.hint("A", inParty(m_cursor) ? "leave behind" : "bring along");
             app.hint("X", "climb");
             app.hint("Y", "gear");
+            app.hint("ZR", "the bag");
             app.hint("B", "back");
 
             std::string label = format(tr("%d of %d places"), int(m_chosen.size()) + 1,
@@ -932,26 +1341,184 @@ namespace {
             TextStyle note;
             note.size = theme::textSm;
             note.color = theme::fg3;
-            r.text(Rect { theme::edge, 552.0f,
-                      Renderer::DesignWidth - theme::edge * 2.0f, 28.0f },
-                label, note, Align::Center, VAlign::Top);
+            r.text(Rect { theme::edge, kRosterY - 34.0f, kPanelX - theme::s5
+                      - theme::edge, 28.0f },
+                label, note, Align::Left, VAlign::Top);
+        }
 
-            Rect climb { Renderer::DesignWidth - theme::edge
-                    - ui::actionButtonWidth(r, tr("Climb")),
-                156.0f, ui::actionButtonWidth(r, tr("Climb")), 64.0f };
-            app.touchZone(climb, Zone_Climb);
-            ui::actionButton(r, climb, tr("Climb"), true,
-                app.touchHeld(Zone_Climb) ? 1.0f : 0.7f + 0.3f * m_pulse);
+        // Three, side by side, and the run keeps whichever one you take.
+        //
+        // Laid out as cards rather than a list because they are meant to be
+        // compared, and because the question is which of these three, not
+        // which of eighteen - the pool is deep so that the three are
+        // different, not so that the screen is long.
+        void drawBoons(App& app, Renderer& r)
+        {
+            app.hint("A", "take it");
+
+            // Over the fight, not instead of it, and behind a veil so the
+            // field stops competing for the eye.
+            r.rect(r.viewport(), theme::scrim);
+
+            constexpr float kW = 420.0f;
+            constexpr float kH = 300.0f;
+            constexpr float kHead = 44.0f;
+            constexpr float kSub = 30.0f;
+
+            int count = std::max(1, int(m_offer.size()));
+            float row = float(count) * kW + float(count - 1) * theme::s5;
+            float boxW = row + theme::s7 * 2.0f;
+            float boxH = kHead + theme::s3 + kSub + theme::s6 + kH
+                + theme::s7 * 2.0f;
+            Rect box { Renderer::DesignWidth * 0.5f - boxW * 0.5f,
+                Renderer::DesignHeight * 0.5f - boxH * 0.5f, boxW, boxH };
+            r.roundRect(box, theme::r5, theme::bg1);
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s7, theme::s7);
+
+            TextStyle head;
+            head.size = theme::textLg;
+            head.weight = FontWeight::Bold;
+            head.color = theme::fg1;
+            head.tracking = theme::trackingTight;
+            r.text(Rect { inner.x, inner.y, inner.w, kHead },
+                tr("The stair offers you something"), head, Align::Center,
+                VAlign::Top);
+
+            TextStyle sub;
+            sub.size = theme::textSm;
+            sub.color = theme::fg3;
+            r.text(Rect { inner.x, inner.y + kHead + theme::s3, inner.w, kSub },
+                tr("It lasts as long as the climb does."), sub, Align::Center,
+                VAlign::Top);
+
+            float y = inner.y + kHead + theme::s3 + kSub + theme::s6;
+            for (int i = 0; i < int(m_offer.size()); i++) {
+                const BoonInfo& boon = boonInfo(m_offer[size_t(i)]);
+                Rect card { inner.x + float(i) * (kW + theme::s5), y, kW, kH };
+                bool here = i == m_boonPick;
+                app.touchZone(card, Zone_Boon, i);
+                // bg2 on bg1, so a card reads as a card inside the box
+                // rather than as a hole in it.
+                ui::card(r, card, here ? 0.7f + 0.3f * m_pulse : 0.0f,
+                    here ? theme::bg3 : theme::bg2, theme::r4);
+                Rect at = card.inset(theme::s6, theme::s6);
+
+                TextStyle name;
+                name.size = theme::textXl;
+                name.weight = FontWeight::Bold;
+                name.color = here ? theme::accent : theme::fg1;
+                name.tracking = theme::trackingTight;
+                name.leading = theme::leadingTight;
+                float used = r.textWrapped(Rect { at.x, at.y, at.w, 120.0f },
+                    tr(boon.name), name, 2);
+
+                TextStyle what;
+                what.size = theme::textBase;
+                what.color = theme::fg3;
+                what.leading = theme::leadingNormal;
+                r.textWrapped(Rect { at.x, at.y + used + theme::s4, at.w, 160.0f },
+                    tr(boon.what), what, 4);
+
+                // The class it wants, when it wants one. It is only ever
+                // offered to a party that has one, but knowing why it is
+                // here is half of deciding whether to take it.
+                if (boon.needs != 0) {
+                    TextStyle tag;
+                    tag.size = theme::textXs;
+                    tag.color = theme::accent;
+                    tag.tracking = theme::trackingWide;
+                    tag.uppercase = true;
+                    r.text(Rect { at.x, at.bottom() - 24.0f, at.w, 24.0f },
+                        tr(className(uint8_t(boon.needs - 1))), tag, Align::Right,
+                        VAlign::Top);
+                }
+            }
+        }
+
+        // What the floor gave up, and whether to go on. A screen rather
+        // than a beat, because a drop nobody had time to read is a drop
+        // that may as well not have fallen.
+        void drawWon(App& app, Renderer& r)
+        {
+            app.hint("A", "next floor");
+            app.hint("B", "stop here");
+
+            constexpr float kW = 860.0f;
+            // Over a veil and fully opaque. At 0.97 the field showed
+            // through, which in the light theme is pale text over a pale
+            // Mii over a pale panel and nothing readable at all.
+            r.rect(r.viewport(), theme::scrim);
+            Rect box { Renderer::DesignWidth * 0.5f - kW * 0.5f, 300.0f, kW, 300.0f };
+            r.roundRect(box, theme::r5, theme::bg1);
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s7, theme::s6);
+            float y = inner.y;
+
+            TextStyle title;
+            title.size = theme::text2xl;
+            title.weight = FontWeight::Bold;
+            title.color = theme::accent;
+            title.tracking = theme::trackingTight;
+            title.leading = theme::leadingTight;
+            r.text(inner.x, y, format(tr("Floor %d is yours"), m_floor), title);
+
+            // This floor's coin, not the climb's purse: the panel is about
+            // the floor it is standing on.
+            if (m_paidNow > 0) {
+                TextStyle purse;
+                purse.size = theme::textBase;
+                purse.weight = FontWeight::Bold;
+                purse.color = theme::fg2;
+                float width = ui::coinAmountWidth(r, m_paidNow, purse);
+                ui::coinAmount(r, inner.right() - width,
+                    y + (title.size * theme::leadingTight - r.lineHeight(purse)) * 0.5f,
+                    m_paidNow, purse);
+            }
+            y += title.size * theme::leadingTight + theme::s5;
+
+            if (!m_spoils.valid()) {
+                TextStyle none;
+                none.size = theme::textBase;
+                none.color = theme::fg4;
+                r.text(inner.x, y, tr("nothing this time"), none);
+                return;
+            }
+
+            // The drop, laid out the way the gear screen lays one out, so
+            // the thing you just found and the thing you are about to put
+            // on read the same.
+            TextStyle noun;
+            noun.size = theme::textXl;
+            noun.weight = FontWeight::Bold;
+            noun.color = theme::fg1;
+            r.text(inner.x, y, tr(itemNoun(m_spoils)), noun);
+
+            TextStyle tier;
+            tier.size = theme::textSm;
+            tier.weight = FontWeight::Bold;
+            tier.color = ui::qualityColour(m_spoils.quality);
+            tier.tracking = theme::trackingWide;
+            tier.uppercase = true;
+            r.text(Rect { inner.x, y + 6.0f, inner.w, 30.0f },
+                tr(qualityName(m_spoils.quality)), tier, Align::Right, VAlign::Top);
+            y += noun.size * theme::leadingSnug + theme::s3;
+
+            TextStyle gain;
+            gain.size = theme::textBase;
+            gain.color = theme::fg3;
+            r.text(inner.x, y, itemSummary(m_spoils), gain);
         }
 
         void drawOver(App& app, Renderer& r)
         {
-            app.hint("A", "climb again");
+            app.hint("A", "pick again");
             app.hint("B", "back");
 
             constexpr float kW = 1000.0f;
+            r.rect(r.viewport(), theme::scrim);
             Rect box { Renderer::DesignWidth * 0.5f - kW * 0.5f, 120.0f, kW, 260.0f };
-            r.roundRect(box, theme::r5, theme::bg1.scaleAlpha(0.96f));
+            r.roundRect(box, theme::r5, theme::bg1);
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s6);
             float y = inner.y;
@@ -963,8 +1530,7 @@ namespace {
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
             r.text(inner.x, y,
-                m_stopped ? tr("You came back down") : tr("The shadow keeps the floor"),
-                title);
+                m_stopped ? tr("You came back down") : tr("The party falls"), title);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;
@@ -985,13 +1551,6 @@ namespace {
                     m_found, tr(qualityName(m_bestFound)));
             }
             y += r.textWrapped(Rect { inner.x, y, inner.w, 70.0f }, line, body, 2);
-
-            Rect again { inner.x,
-                std::max(inner.bottom() - 64.0f, y + theme::s4),
-                ui::actionButtonWidth(r, tr("Climb again")), 64.0f };
-            app.touchZone(again, Zone_Climb);
-            ui::actionButton(r, again, tr("Climb again"), true,
-                app.touchHeld(Zone_Climb) ? 1.0f : 0.7f + 0.3f * m_pulse);
 
             Rect back { box.right() - 60.0f, box.y + 18.0f, 42.0f, 42.0f };
             app.touchZone(back.inset(-theme::s3, -theme::s3), Zone_Back);
@@ -1014,10 +1573,20 @@ namespace {
         int m_floor = 1;
         int m_deepest = 0;
         uint32_t m_best = 0;
-        uint32_t m_earned = 0;
+        uint32_t m_earned = 0;   // the whole climb's purse
+        uint32_t m_paidNow = 0;  // and what the floor just cleared was worth
         int m_found = 0;         // pieces of gear this climb turned up
         uint8_t m_bestFound = 0; // and the best of them
         bool m_stopped = false;
+
+        Boons m_boons;                // what this climb has been blessed with
+        std::vector<uint8_t> m_held;  // and which ones, so none comes twice
+        std::vector<uint8_t> m_offer; // the three on the table
+        int m_boonPick = 0;
+
+        std::vector<Pop> m_pops;
+        Item m_spoils;        // what the floor just now gave up, if anything
+        bool m_wiped = false; // the run ended standing or it did not
 
         Boss m_boss;
         int m_bossHp = 1;
@@ -1026,9 +1595,10 @@ namespace {
         int m_round = 0;
         std::vector<int> m_order; // this round, by speed; -1 is the shadow
         int m_turn = 0;
-        int m_guard = -1; // who is standing in front, if anybody
+        int m_guard = -1;  // who is standing in front, if anybody
+        int m_fallen = 0;  // how many have gone down this climb, for Rally
         float m_beatClock = 0.0f;
-        std::string m_log;
+        std::string m_say; // the odd thing a number cannot say by itself
     };
 }
 

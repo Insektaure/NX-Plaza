@@ -120,6 +120,9 @@ TABLES = (
     {"file": "quest_rules.cpp", "name": "kQualities", "fields": None},
     {"file": "quest_rules.cpp", "name": "kSlots", "fields": None},
     {"file": "quest_rules.cpp", "name": "kNouns", "fields": None},
+    # The blessings a climb can be offered: a name and a line saying what it
+    # does, both read back through boonInfo() and wrapped at the call site.
+    {"file": "quest_boons.cpp", "name": "kPool", "fields": (1, 2)},
     # The Mii editor's rows: a label, then which part of the Mii it moves.
     {"file": "mii_editor.cpp", "name": "kParts", "fields": (0,)},
     # The card themes, which sit in the palettes beside their colours. Both

@@ -93,6 +93,10 @@ struct GearPerson {
 
 // Moving gear around, over the top of the quest's party screen.
 std::unique_ptr<Scene> makeQuestGearScene(std::vector<GearPerson> party);
+
+// Everything the tower has given up, in one list. The gear screen shows
+// one peg for one person; this shows the lot, and needs to know nobody.
+std::unique_ptr<Scene> makeQuestBagScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeStatsScene();
 std::unique_ptr<Scene> makeSettingsScene();

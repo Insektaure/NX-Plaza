@@ -80,8 +80,14 @@ namespace {
                 return;
             }
 
+            // B steps out one level rather than off the screen: out of a
+            // category back to the list of them, and only then out of the
+            // screen. A goes the other way.
             if (input.back()) {
-                app.popOverlay();
+                if (m_focus == Focus_Bag)
+                    m_focus = Focus_Pegs;
+                else
+                    app.popOverlay();
                 return;
             }
             if (m_party.empty())
@@ -133,9 +139,11 @@ namespace {
             app.hint("ZR", "clear out");
             if (wornHere() != 0)
                 app.hint("Y", "take it off");
-            if (m_party.size() > 1)
+            if (m_party.size() > 1 && m_focus == Focus_Pegs)
                 app.hint("L/R", "somebody else");
-            app.hint("B", "back");
+            // Says which way out it is, so nobody has to find out by
+            // losing the screen they were halfway through.
+            app.hint("B", m_focus == Focus_Bag ? "back to the pegs" : "back");
 
             drawHeader(app, r);
             drawWearer(r);
@@ -351,7 +359,9 @@ namespace {
             ui::card(r, box, 0.0f, theme::bg1, theme::r3);
             Rect inner = box.inset(theme::s6, theme::s5);
 
-            ui::miiHead(r, Rect { inner.centerX() - 76.0f, inner.y, 152.0f, 152.0f },
+            ui::miiHead(r,
+                ui::headroom(
+                    Rect { inner.centerX() - 76.0f, inner.y, 152.0f, 152.0f }),
                 who().face);
 
             TextStyle role;
@@ -487,7 +497,7 @@ namespace {
                 TextStyle note;
                 note.size = theme::textXs;
                 note.color = theme::fg3;
-                r.text(inner.x, inner.y + 30.0f, summarise(item), note);
+                r.text(inner.x, inner.y + 30.0f, itemSummary(item), note);
 
                 drawQuality(r,
                     Rect { inner.right() - 160.0f, inner.y, 160.0f, 30.0f },
@@ -506,41 +516,13 @@ namespace {
             }
         }
 
-        // What it does, in the order the stat block shows them.
-        static std::string summarise(const Item& item)
-        {
-            Sheet b = itemBonus(item);
-            std::string out;
-            const char* names[5] = { "HP", "MP", "ATK", "DEF", "SPD" };
-            uint16_t values[5] = { b.hp, b.mp, b.atk, b.def, b.spd };
-            for (int i = 0; i < 5; i++) {
-                if (values[i] == 0)
-                    continue;
-                if (!out.empty())
-                    out += "   ";
-                out += format("+%u %s", unsigned(values[i]), names[i]);
-            }
-            return out;
-        }
-
-        // Six colours that mean the same thing in both palettes, the way the
-        // dice are ivory in both: a rare that went grey in the light theme
-        // would be a different rank, not a different shade.
         static void drawQuality(Renderer& r, const Rect& box, uint8_t quality)
         {
-            static const Color kTiers[Quality_Count] = {
-                Color::hex(0x9A938A), // common, the colour of nothing special
-                Color::hex(0x6FAE5B), // uncommon
-                Color::hex(0x4E8FD6), // rare
-                Color::hex(0x9B6BC7), // epic
-                Color::hex(0xD8A33A), // legendary
-                Color::hex(0xD1574B), // godlike
-            };
             uint8_t tier = quality < Quality_Count ? quality : uint8_t(Quality_Common);
             TextStyle text;
             text.size = theme::textXs;
             text.weight = FontWeight::Bold;
-            text.color = kTiers[tier];
+            text.color = ui::qualityColour(tier);
             text.tracking = theme::trackingWide;
             text.uppercase = true;
             r.text(box, tr(qualityName(tier)), text, Align::Right, VAlign::Top);

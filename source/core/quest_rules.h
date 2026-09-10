@@ -3,6 +3,7 @@
 #include "core/mii.h"
 
 #include <cstdint>
+#include <string>
 
 namespace nxp {
 
@@ -125,14 +126,24 @@ const char* itemNoun(const Item& item);
 // item.
 Sheet itemBonus(const Item& item);
 
+// What it adds, written out - "+12 ATK   +4 SPD" - in the order the stat
+// blocks use. Two screens show this and they have to agree, which is the
+// only reason it is a function rather than four lines in each of them.
+std::string itemSummary(const Item& item);
+
 // One number to sort and compare by. Not a stat, and it does not pretend to
 // be: it is there so a list can put the best first and a card can say which
 // of two is the upgrade.
 uint32_t itemRating(const Item& item);
 
-// What a shadow on this floor leaves behind, if anything. Returns an item
-// with id 0 about half the time; `nextId` is the caller's counter, so ids
-// stay unique across the whole record.
-Item rollDrop(int floor, uint16_t nextId);
+// What a shadow on this floor leaves behind, if anything. `nextId` is the
+// caller's counter, so ids stay unique across the whole record.
+//
+// `chance` is the per cent that anything falls at all - fifty, unless a
+// climb has been blessed with Scavenger. It is the same on every floor and
+// every climb otherwise: the weekly reset pays in coins and nothing else,
+// because a certain drop on reset day would make the first climb of a week
+// worth twice any other.
+Item rollDrop(int floor, uint16_t nextId, int chance = 50);
 
 } // namespace nxp
