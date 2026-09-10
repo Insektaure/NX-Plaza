@@ -1234,6 +1234,7 @@ namespace {
         { "nothing on this peg", "ここには何もない" },
         { "worn", "そうび中" },
         { "wear it", "そうびする" },
+        { "what would fit", "合うもの" },
         { "take it off", "はずす" },
         { "throw away", "すてる" },
         { "somebody else", "ほかの人" },

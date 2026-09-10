@@ -1422,6 +1422,7 @@ namespace {
         { "nothing on this peg", "nichts an diesem Haken" },
         { "worn", "getragen" },
         { "wear it", "anlegen" },
+        { "what would fit", "was hier passt" },
         { "take it off", "ablegen" },
         { "throw away", "wegwerfen" },
         { "somebody else", "jemand anderes" },

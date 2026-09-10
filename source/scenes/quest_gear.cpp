@@ -49,6 +49,7 @@ namespace {
             m_who = 0;
             m_peg = 0;
             m_pick = 0;
+            m_focus = Focus_Pegs;
         }
 
         void update(App& app, const Input& input, float dt) override
@@ -69,9 +70,11 @@ namespace {
                     && tap.index < Slot_Count) {
                     m_peg = tap.index;
                     m_pick = 0;
+                    m_focus = Focus_Pegs;
                 } else if (tap.is(Zone_Bag) && tap.index >= 0
                     && tap.index < int(m_fits.size())) {
                     m_pick = tap.index;
+                    m_focus = Focus_Bag;
                     wear();
                 }
                 return;
@@ -89,18 +92,28 @@ namespace {
             if (input.pressed(HidNpadButton_R))
                 stepWho(1);
             if (input.navLeft)
-                stepPeg(-1);
-            if (input.navRight)
-                stepPeg(1);
+                m_focus = Focus_Pegs;
+            if (input.navRight && !m_fits.empty())
+                m_focus = Focus_Bag;
             if (input.navUp)
-                stepPick(-1);
+                m_focus == Focus_Pegs ? stepPeg(-1) : stepPick(-1);
             if (input.navDown)
-                stepPick(1);
-            if (input.accept())
-                wear();
+                m_focus == Focus_Pegs ? stepPeg(1) : stepPick(1);
+
+            if (input.accept()) {
+                // On a peg, A is "show me what would go here" rather than a
+                // second way to take something off - that is what Y is for,
+                // and it reads the same whichever column you are in.
+                if (m_focus == Focus_Pegs) {
+                    if (!m_fits.empty())
+                        m_focus = Focus_Bag;
+                } else {
+                    wear();
+                }
+            }
             if (input.pressed(HidNpadButton_Y))
                 bare();
-            if (input.pressed(HidNpadButton_X))
+            if (input.pressed(HidNpadButton_X) && m_focus == Focus_Bag)
                 throwAway(app);
             if (input.pressed(HidNpadButton_ZR))
                 sweep(app);
@@ -111,10 +124,15 @@ namespace {
             r.clear(theme::bg0);
             app.touchZone(r.viewport(), Touch_None);
 
-            app.hint("A", "wear it");
-            app.hint("X", "throw away");
+            if (m_focus == Focus_Bag) {
+                app.hint("A", "wear it");
+                app.hint("X", "throw away");
+            } else if (!m_fits.empty()) {
+                app.hint("A", "what would fit");
+            }
             app.hint("ZR", "clear out");
-            app.hint("Y", "take it off");
+            if (wornHere() != 0)
+                app.hint("Y", "take it off");
             if (m_party.size() > 1)
                 app.hint("L/R", "somebody else");
             app.hint("B", "back");
@@ -126,12 +144,32 @@ namespace {
         }
 
     private:
+        // Which column the stick is driving. Both the pegs and the bag are
+        // vertical lists side by side, and before this the pegs answered to
+        // left and right while the bag answered to up and down - two live
+        // cursors on one stick, and the column that looked like a list was
+        // the one that ignored the axis a list uses. Now up and down move
+        // inside whichever column has the focus and left and right move
+        // between them, which is the only arrangement where what the screen
+        // looks like and what the stick does are the same thing.
+        enum Focus : int {
+            Focus_Pegs = 0,
+            Focus_Bag,
+        };
+
         static constexpr float kColumn = 520.0f;
         static constexpr float kTop = 176.0f;
         static constexpr float kPegH = 92.0f;
         static constexpr float kBagRow = 78.0f;
 
         const GearPerson& who() const { return m_party[size_t(m_who)]; }
+
+        // The column with the stick pulses; the other keeps a still, faint
+        // ring, so where you left the cursor is never a guess.
+        float focusRing(int column) const
+        {
+            return m_focus == column ? 0.7f + 0.3f * m_pulse : 0.25f;
+        }
 
         // What is in the bag that would go on the peg the cursor is on, best
         // first, and never anything already worn by somebody else: a piece
@@ -159,6 +197,8 @@ namespace {
                 });
             if (m_pick >= int(m_fits.size()))
                 m_pick = std::max(0, int(m_fits.size()) - 1);
+            if (m_fits.empty())
+                m_focus = Focus_Pegs;
         }
 
         void stepWho(int by)
@@ -166,6 +206,7 @@ namespace {
             int count = int(m_party.size());
             m_who = (m_who + by % count + count) % count;
             m_pick = 0;
+            m_focus = Focus_Pegs;
         }
 
         void stepPeg(int by)
@@ -184,6 +225,11 @@ namespace {
 
         uint16_t wornHere() const
         {
+            // Guarded because the hints ask this before anything else has
+            // checked, and who() indexes a vector that a caller could in
+            // principle hand over empty.
+            if (m_party.empty())
+                return 0;
             return QuestRecord::get().loadout(who().id).worn[m_peg];
         }
 
@@ -369,7 +415,7 @@ namespace {
                     kColumn - theme::s6, kPegH };
                 app.touchZone(box, Zone_Peg, slot);
                 bool here = slot == m_peg;
-                ui::card(r, box, here ? 0.7f + 0.3f * m_pulse : 0.0f,
+                ui::card(r, box, here ? focusRing(Focus_Pegs) : 0.0f,
                     here ? theme::bg2 : theme::bg1, theme::r3);
                 Rect inner = box.inset(theme::s5, theme::s4);
 
@@ -428,7 +474,7 @@ namespace {
                 Rect row { x, y, width, kBagRow };
                 app.touchZone(row, Zone_Bag, i);
                 bool here = i == m_pick;
-                ui::card(r, row, here ? 0.7f + 0.3f * m_pulse : 0.0f,
+                ui::card(r, row, here ? focusRing(Focus_Bag) : 0.0f,
                     here ? theme::bg2 : theme::bg1, theme::r2);
                 Rect inner = row.inset(theme::s5, theme::s3);
 
@@ -505,6 +551,7 @@ namespace {
         int m_who = 0;
         int m_peg = 0;
         int m_pick = 0;
+        int m_focus = Focus_Pegs;
         float m_pulse = 0.0f;
     };
 }

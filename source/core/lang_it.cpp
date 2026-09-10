@@ -1412,6 +1412,7 @@ namespace {
         { "nothing on this peg", "niente in questo posto" },
         { "worn", "indossato" },
         { "wear it", "indossare" },
+        { "what would fit", "cosa ci starebbe" },
         { "take it off", "togliere" },
         { "throw away", "buttare" },
         { "somebody else", "qualcun altro" },

@@ -1399,6 +1399,7 @@ namespace {
         { "nothing on this peg", "nada en esta ranura" },
         { "worn", "puesto" },
         { "wear it", "equipar" },
+        { "what would fit", "lo que encajaría" },
         { "take it off", "quitar" },
         { "throw away", "tirar" },
         { "somebody else", "otra persona" },

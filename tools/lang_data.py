@@ -8951,3 +8951,36 @@ LANGS["zh_hant"].update({
     'floors up to %u have paid this week': '第%u層以下本週已經給過獎勵了',
     'the week turns when the plaza is next reached': '下次連上廣場時這一週才會翻頁',
 })
+
+# ---- the gear screen's peg column, where A shows the bag rather than
+# taking something off.
+LANGS["de"].update({
+    'what would fit': 'was hier passt',
+})
+LANGS["es"].update({
+    'what would fit': 'lo que encajaría',
+})
+LANGS["it"].update({
+    'what would fit': 'cosa ci starebbe',
+})
+LANGS["nl"].update({
+    'what would fit': 'wat hier past',
+})
+LANGS["pt"].update({
+    'what would fit': 'o que serviria',
+})
+LANGS["ru"].update({
+    'what would fit': 'что сюда подойдёт',
+})
+LANGS["ja"].update({
+    'what would fit': '合うもの',
+})
+LANGS["ko"].update({
+    'what would fit': '맞는 것',
+})
+LANGS["zh_hans"].update({
+    'what would fit': '能装的',
+})
+LANGS["zh_hant"].update({
+    'what would fit': '能裝的',
+})

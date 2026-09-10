@@ -1462,6 +1462,7 @@ namespace {
         { "nothing on this peg", "rien à cet emplacement" },
         { "worn", "porté" },
         { "wear it", "équiper" },
+        { "what would fit", "ce qui irait" },
         { "take it off", "retirer" },
         { "throw away", "jeter" },
         { "somebody else", "quelqu'un d'autre" },

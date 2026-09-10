@@ -1255,6 +1255,7 @@ namespace {
         { "nothing on this peg", "이 자리는 비어 있음" },
         { "worn", "착용 중" },
         { "wear it", "착용" },
+        { "what would fit", "맞는 것" },
         { "take it off", "해제" },
         { "throw away", "버리기" },
         { "somebody else", "다른 사람" },

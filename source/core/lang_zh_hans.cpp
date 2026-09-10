@@ -1214,6 +1214,7 @@ namespace {
         { "nothing on this peg", "这个位置是空的" },
         { "worn", "已装备" },
         { "wear it", "装上" },
+        { "what would fit", "能装的" },
         { "take it off", "取下" },
         { "throw away", "丢掉" },
         { "somebody else", "换个人" },

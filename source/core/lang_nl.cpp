@@ -1391,6 +1391,7 @@ namespace {
         { "nothing on this peg", "niets op deze haak" },
         { "worn", "gedragen" },
         { "wear it", "aandoen" },
+        { "what would fit", "wat hier past" },
         { "take it off", "afdoen" },
         { "throw away", "weggooien" },
         { "somebody else", "iemand anders" },

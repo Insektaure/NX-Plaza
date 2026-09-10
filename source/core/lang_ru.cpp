@@ -1392,6 +1392,7 @@ namespace {
         { "nothing on this peg", "здесь пусто" },
         { "worn", "надето" },
         { "wear it", "надеть" },
+        { "what would fit", "что сюда подойдёт" },
         { "take it off", "снять" },
         { "throw away", "выбросить" },
         { "somebody else", "кто-то другой" },
