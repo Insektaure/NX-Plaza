@@ -318,8 +318,15 @@ namespace {
                 m_chosen.erase(it);
                 return;
             }
-            if (int(m_chosen.size()) >= m_slots - 1)
-                return; // your own Mii holds the first slot
+            // The party opens full: buildRoster fills every place with the
+            // strongest people in the collection, so "there is no room" is
+            // the normal case and not the edge one. Refusing here made A do
+            // nothing at all for anybody who had not first taken somebody
+            // out - which is to say, for everybody. The longest-standing
+            // pick steps aside instead, and your own Mii keeps the first
+            // place whatever happens.
+            if (int(m_chosen.size()) >= m_slots - 1 && !m_chosen.empty())
+                m_chosen.erase(m_chosen.begin());
             m_chosen.push_back(m_cursor);
         }
 
