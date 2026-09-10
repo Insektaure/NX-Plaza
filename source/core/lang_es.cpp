@@ -1552,6 +1552,42 @@ namespace {
         { "take it", "tomarla" },
         { "%s gets back up", "%s se levanta" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Una piedra de afilar" },
+        { "One whetstone", "Una piedra de afilar" },
+        { "No whetstones", "Sin piedras de afilar" },
+        { "Use a whetstone", "Usar una piedra" },
+        { "%u left", "quedan %u" },
+        { "as it stands", "tal cual está" },
+        { "whatever it becomes", "en lo que se convierta" },
+        { "before", "antes" },
+        { "after", "después" },
+        { "It came out better.", "La tirada salió mejor." },
+        { "It came out worse.", "La tirada salió peor." },
+        { "It came out much the same.", "La tirada sale más o menos igual." },
+
+        { "roll it again", "volver a tirar" },
+        { "They are %u coins in the shop.", "Cuestan %u monedas en la tienda." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u en la bolsa. Usa una en una pieza de equipo para volver a tirarla." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Vuelve a tirar una pieza de equipo, conservando su rango." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. "
+          "You have %u.",
+            "Vuelve a tirar una pieza de equipo de la búsqueda, "
+            "conservando su rango. Tienes %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "Vuelve a tirar una pieza de equipo de la búsqueda. Mismo "
+            "rango, números nuevos: un épico mal tirado tiene otra "
+            "oportunidad." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

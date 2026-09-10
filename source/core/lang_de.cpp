@@ -1579,6 +1579,43 @@ namespace {
         { "take it", "nehmen" },
         { "%s gets back up", "%s steht wieder auf" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Ein Wetzstein" },
+        { "One whetstone", "Ein Wetzstein" },
+        { "No whetstones", "Keine Wetzsteine" },
+        { "Use a whetstone", "Wetzstein benutzen" },
+        { "%u left", "%u übrig" },
+        { "as it stands", "so wie es ist" },
+        { "whatever it becomes", "was daraus wird" },
+        { "before", "vorher" },
+        { "after", "nachher" },
+        { "It came out better.", "Der Wurf ist besser." },
+        { "It came out worse.", "Der Wurf ist schlechter." },
+        { "It came out much the same.", "Der Wurf läuft aufs Gleiche hinaus." },
+
+        { "roll it again", "neu würfeln" },
+        { "They are %u coins in the shop.", "Sie kosten %u Münzen im Laden." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u im Beutel. Benutze einen auf einem Ausrüstungsstück, um "
+            "es neu zu würfeln." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Er würfelt ein Ausrüstungsstück neu und behält seinen Rang." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. "
+          "You have %u.",
+            "Würfelt ein Ausrüstungsstück des Aufstiegs neu und behält "
+            "seinen Rang. Du hast %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "Würfelt ein Ausrüstungsstück des Aufstiegs neu. Gleicher "
+            "Rang, neue Zahlen - ein schlecht gewürfeltes episches "
+            "bekommt noch eine Chance." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

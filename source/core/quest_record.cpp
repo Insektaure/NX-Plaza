@@ -10,13 +10,23 @@
 namespace nxp {
 
 namespace {
+    uint32_t randomBelow(uint32_t n)
+    {
+        uint32_t bits = 0;
+        randomBytes(&bits, sizeof(bits));
+        return n == 0 ? 0 : bits % n;
+    }
+
     const char* kFile = "quest.dat";
     constexpr char kMagic[4] = { 'N', 'X', 'P', 'Q' };
     constexpr uint16_t kVersion = 1;
 
-    // magic, version, reserved, deepest, climbs, week, paid, reserved,
+    // magic, version, reserved, deepest, climbs, week, paid, whetstones,
     // nextId, item count, wearer count, reserved. Then the items, then the
     // wearers, then the hash.
+    //
+    // The whetstones went into the two bytes that were reserved behind the
+    // week.
     constexpr size_t kHead = 4 + 2 + 2 + 4 + 4 + 4 + 2 + 2 + 2 + 2 + 2 + 2;
 
     // Mondays since the epoch. The epoch itself was a Thursday, so the shift
@@ -74,7 +84,7 @@ std::string QuestRecord::body() const
     put32(out, m_climbs);
     put32(out, m_week);
     put16(out, m_paidThisWeek);
-    put16(out, 0);
+    put16(out, m_stones);
     put16(out, m_nextId);
     put16(out, uint16_t(m_items.size()));
     put16(out, uint16_t(m_worn.size()));
@@ -129,6 +139,7 @@ void QuestRecord::load()
     uint32_t climbs = get32(p + 12);
     uint32_t week = get32(p + 16);
     uint16_t paid = get16(p + 20);
+    uint16_t stones = get16(p + 22);
     uint16_t nextId = get16(p + 24);
     size_t itemCount = get16(p + 26);
     size_t equipCount = get16(p + 28);
@@ -204,6 +215,7 @@ void QuestRecord::load()
     m_nextId = nextId;
     m_week = week;
     m_paidThisWeek = paid;
+    m_stones = stones;
     m_items = std::move(items);
     m_worn = std::move(worn);
 
@@ -217,6 +229,7 @@ void QuestRecord::load()
         m_nextId = 1;
         m_week = 0;
         m_paidThisWeek = 0;
+        m_stones = 0;
         m_items.clear();
         m_worn.clear();
         return;
@@ -406,6 +419,38 @@ bool QuestRecord::notePaidFloor(uint32_t floor)
     m_paidThisWeek = uint16_t(floor);
     m_dirty = true;
     return true;
+}
+
+void QuestRecord::addStones(uint16_t many)
+{
+    if (many == 0)
+        return;
+    // Capped where the field is, so a till that ran away cannot wrap it
+    // round to none.
+    uint32_t total = uint32_t(m_stones) + many;
+    m_stones = uint16_t(std::min<uint32_t>(total, 9999));
+    m_dirty = true;
+}
+
+bool QuestRecord::reforge(uint16_t itemId)
+{
+    if (m_stones == 0)
+        return false;
+    for (Item& item : m_items) {
+        if (item.id != itemId)
+            continue;
+        // Everything about a piece but its tier and its peg comes out of
+        // the seed, so a new seed is a new item in the same rank - which is
+        // the whole of what a whetstone does.
+        uint16_t was = item.seed;
+        do {
+            item.seed = uint16_t(randomBelow(65536));
+        } while (item.seed == was);
+        m_stones--;
+        m_dirty = true;
+        return true;
+    }
+    return false;
 }
 
 uint16_t QuestRecord::worstSpare() const

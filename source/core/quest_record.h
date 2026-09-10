@@ -120,6 +120,21 @@ public:
     // string, which is why this answers with a bool rather than with a name.
     bool wearer(uint16_t itemId, std::string& owner) const;
 
+    // ------------------------------------------------------- whetstones
+    //
+    // Bought in the shop and spent on one piece of gear, which re-rolls its
+    // seed and keeps its tier. Nothing is created: the same item comes back
+    // the same quality with a different roll behind it, which is the only
+    // shape of shop item the tower can sell without undercutting itself.
+
+    uint16_t stones() const { return m_stones; }
+    void addStones(uint16_t many);
+
+    // Spends one and re-rolls `itemId`. False when there are none, or when
+    // no such item is in the bag. Whoever is wearing it goes on wearing it -
+    // it is the same piece with a different roll.
+    bool reforge(uint16_t itemId);
+
     // The lowest-rated thing in the bag that nobody is wearing, or 0 when
     // everything is spoken for. What a full bag throws out to make room.
     uint16_t worstSpare() const;
@@ -155,6 +170,7 @@ private:
     uint32_t m_week = 0;         // Mondays since the epoch, from the plaza
     uint16_t m_paidThisWeek = 0; // how far up this week has already paid
     uint16_t m_nextId = 1;
+    uint16_t m_stones = 0;
     std::vector<Item> m_items;
     std::vector<Wearing> m_worn;
     bool m_loaded = false;

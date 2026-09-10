@@ -1546,6 +1546,39 @@ namespace {
         { "take it", "взять" },
         { "%s gets back up", "%s снова встаёт" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Точильный камень" },
+        { "One whetstone", "Точильный камень" },
+        { "No whetstones", "Точильных камней нет" },
+        { "Use a whetstone", "Использовать камень" },
+        { "%u left", "осталось %u" },
+        { "as it stands", "как есть" },
+        { "whatever it becomes", "во что превратится" },
+        { "before", "было" },
+        { "after", "стало" },
+        { "It came out better.", "Бросок вышел лучше." },
+        { "It came out worse.", "Бросок вышел хуже." },
+        { "It came out much the same.", "Бросок вышел примерно тем же." },
+
+        { "roll it again", "перебросить" },
+        { "They are %u coins in the shop.", "В лавке они стоят %u монет." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u в сумке. Используйте один на вещи снаряжения, чтобы перебросить её." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Он перебрасывает вещь снаряжения, сохраняя её ранг." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. You have %u.",
+            "Перебрасывает вещь снаряжения восхождения, сохраняя ранг. У вас %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "Перебрасывает вещь снаряжения восхождения. Тот же ранг, "
+            "новые числа - неудачная эпическая получит ещё один шанс." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

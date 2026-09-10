@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/pieces.h"
+#include "core/quest_record.h"
 #include "core/store.h"
 #include "core/i18n.h"
 #include "core/util.h"
@@ -21,6 +22,28 @@ namespace {
     // Takes the coins and hands over the piece, in that order of checking and
     // the other order of doing.
     //
+    // A whetstone is a counter and nothing else: it is spent later, on a
+    // piece of gear, from the bag - the shop has no business knowing which
+    // one, and asking here would be the gear screen asked in the wrong
+    // order.
+    void settleStone(App& app, uint32_t price)
+    {
+        Wallet& wallet = Wallet::get();
+        if (wallet.balance() < price) {
+            app.toast(format(tr("%u coins short"), unsigned(price - wallet.balance())),
+                tr("Ten arrive on each new day you open the app."));
+            return;
+        }
+        QuestRecord& record = QuestRecord::get();
+        record.addStones(1);
+        record.flush();
+        wallet.spend(price);
+        wallet.flush();
+        app.toast(tr("One whetstone"),
+            format(tr("%u in the bag. Use one on a piece of gear to roll it again."),
+                unsigned(record.stones())));
+    }
+
     // Lives outside the scene because the confirmation dialog calls it a frame
     // or more later, from a callback that has no business holding on to the
     // screen that opened it. Everything it needs is two values.
@@ -198,6 +221,13 @@ namespace {
         // lines of name ending at 228, and the pill on the floor at 250.
         static constexpr float kIconBox = 96.0f;
 
+        // What a tile sells. It was always a puzzle piece until the tower
+        // wanted a counter of its own, and settle() assumed as much.
+        enum Kind : uint8_t {
+            Kind_Piece = 0,
+            Kind_Whetstone,
+        };
+
         struct Item {
             ui::Icon icon = ui::Icon::Puzzle;
             std::string label;
@@ -205,6 +235,7 @@ namespace {
             uint32_t price = 0;
             bool stocked = false;    // there is something left to sell
             bool activeOnly = false; // drawn from the puzzle being filled only
+            Kind kind = Kind_Piece;
         };
 
         void build(App& app)
@@ -237,6 +268,26 @@ namespace {
                             "screen, or take your chances with any puzzle."),
                       tr(set.name));
             m_items.push_back(chosen);
+
+            // For the tower. Always stocked, because unlike a puzzle piece
+            // there is no finite supply of rolls - which is the point of
+            // it: the shop had two things to sell and both of them ran out
+            // when the puzzles were done.
+            Item stone;
+            stone.icon = ui::Icon::Shield;
+            stone.kind = Kind_Whetstone;
+            stone.price = Wallet::kWhetstonePrice;
+            stone.stocked = true;
+            stone.label = tr("A whetstone");
+            uint16_t held = QuestRecord::get().stones();
+            stone.caption = held == 0
+                ? std::string(tr("Rolls one piece of the quest's gear again. Same "
+                                 "rank, new numbers - a badly rolled epic gets "
+                                 "another go at being a good one."))
+                : format(tr("Rolls one piece of the quest's gear again, keeping its "
+                            "rank. You have %u."),
+                      unsigned(held));
+            m_items.push_back(stone);
 
             // The same goods without the choice. Cheaper for exactly that
             // reason, and it keeps working once the puzzle being filled is
@@ -397,15 +448,20 @@ namespace {
             app.askConfirm(
                 format(tr("Buy %s for %u coins?"), what.c_str(), unsigned(price)),
                 format(tr("%s That leaves you %u."),
-                    activeOnly
-                        ? tr("One you do not hold yet, into the puzzle you are "
-                             "filling.")
-                        : tr("Drawn from every unfinished puzzle at once, so it may "
-                             "not be the one you are filling."),
+                    item.kind == Kind_Whetstone
+                        ? tr("It rolls one piece of gear again, keeping its rank.")
+                        : (activeOnly
+                                  ? tr("One you do not hold yet, into the puzzle you "
+                                       "are filling.")
+                                  : tr("Drawn from every unfinished puzzle at once, "
+                                       "so it may not be the one you are filling.")),
                     unsigned(coins - price)),
                 tr("Buy it"),
-                [appPtr = &app, price, activeOnly]() {
-                    settle(*appPtr, price, activeOnly);
+                [appPtr = &app, price, activeOnly, kind = item.kind]() {
+                    if (kind == Kind_Whetstone)
+                        settleStone(*appPtr, price);
+                    else
+                        settle(*appPtr, price, activeOnly);
                 });
         }
 

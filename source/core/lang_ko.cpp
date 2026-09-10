@@ -1393,6 +1393,38 @@ namespace {
         { "take it", "받기" },
         { "%s gets back up", "%s이(가) 다시 일어났습니다" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "숫돌" },
+        { "One whetstone", "숫돌 1개" },
+        { "No whetstones", "숫돌이 없습니다" },
+        { "Use a whetstone", "숫돌 사용" },
+        { "%u left", "%u개 남음" },
+        { "as it stands", "지금 그대로" },
+        { "whatever it becomes", "무엇이 될지" },
+        { "before", "이전" },
+        { "after", "이후" },
+        { "It came out better.", "더 좋아졌습니다." },
+        { "It came out worse.", "더 나빠졌습니다." },
+        { "It came out much the same.", "거의 같습니다." },
+
+        { "roll it again", "다시 굴리기" },
+        { "They are %u coins in the shop.", "상점에서 %u코인입니다." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "가방에 %u개. 장비에 사용하면 다시 굴립니다." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "장비 하나를 등급은 그대로 두고 다시 굴립니다." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. You have %u.",
+            "퀘스트 장비 하나를 등급 그대로 다시 굴립니다. %u개 있습니다." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "퀘스트 장비 하나를 다시 굴립니다. 등급은 그대로, 수치는 새로 - 잘못 나온 영웅 등급에 한 번 더." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

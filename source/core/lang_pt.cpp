@@ -1541,6 +1541,41 @@ namespace {
         { "take it", "aceitar" },
         { "%s gets back up", "%s levanta-se" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Uma pedra de amolar" },
+        { "One whetstone", "Uma pedra de amolar" },
+        { "No whetstones", "Sem pedras de amolar" },
+        { "Use a whetstone", "Usar uma pedra" },
+        { "%u left", "restam %u" },
+        { "as it stands", "tal como está" },
+        { "whatever it becomes", "aquilo em que se torna" },
+        { "before", "antes" },
+        { "after", "depois" },
+        { "It came out better.", "A tiragem saiu melhor." },
+        { "It came out worse.", "A tiragem saiu pior." },
+        { "It came out much the same.", "A tiragem dá praticamente no mesmo." },
+
+        { "roll it again", "voltar a tirar" },
+        { "They are %u coins in the shop.", "Custam %u moedas na loja." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u no saco. Use uma numa peça de equipamento para a voltar a tirar." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Volta a tirar uma peça de equipamento, mantendo o seu grau." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. "
+          "You have %u.",
+            "Volta a tirar uma peça de equipamento da subida, mantendo o "
+            "grau. Tem %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "Volta a tirar uma peça de equipamento da subida. Mesmo grau, "
+            "números novos - um épico mal saído tem outra hipótese." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

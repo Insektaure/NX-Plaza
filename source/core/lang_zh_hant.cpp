@@ -1343,6 +1343,37 @@ namespace {
         { "take it", "拿下" },
         { "%s gets back up", "%s 又站了起來" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "一塊磨刀石" },
+        { "One whetstone", "一塊磨刀石" },
+        { "No whetstones", "沒有磨刀石" },
+        { "Use a whetstone", "使用磨刀石" },
+        { "%u left", "還剩%u" },
+        { "as it stands", "目前" },
+        { "whatever it becomes", "洗成什麼樣" },
+        { "before", "之前" },
+        { "after", "之後" },
+        { "It came out better.", "這次洗得更好。" },
+        { "It came out worse.", "這次洗得更差。" },
+        { "It came out much the same.", "這次洗得差不多。" },
+
+        { "roll it again", "重新洗" },
+        { "They are %u coins in the shop.", "商店裡%u枚硬幣一塊。" },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "背包裡有%u塊。用在一件裝備上就能重新洗。" },
+        { "It rolls one piece of gear again, keeping its rank.", "把一件裝備重新洗一次，品質不變。" },
+        { "Rolls one piece of the quest's gear again, keeping its rank. You have %u.",
+            "把一件遠征裝備重新洗一次，品質不變。你有%u塊。" },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "把一件遠征裝備重新洗一次。品質不變，數值重來——洗壞的史詩還有一次機會。" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

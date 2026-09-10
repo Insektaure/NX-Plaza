@@ -9712,3 +9712,249 @@ LANGS["zh_hant"].update({
     'Godlike': '神話',
     'Hold a godlike piece of gear.': '擁有一件神話品質的裝備。',
 })
+
+# ---- the whetstone: a shop item spent on one piece of the quest's gear.
+LANGS["de"].update({
+    'A whetstone': 'Ein Wetzstein',
+    'One whetstone': 'Ein Wetzstein',
+    'No whetstones': 'Keine Wetzsteine',
+    'Use a whetstone': 'Wetzstein benutzen',
+    'roll it again': 'neu würfeln',
+    'They are %u coins in the shop.': 'Sie kosten %u Münzen im Laden.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u im Beutel. Benutze einen auf einem Ausrüstungsstück, um es neu zu würfeln.',
+    'It rolls one piece of gear again, keeping its rank.': 'Er würfelt ein Ausrüstungsstück neu und behält seinen Rang.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Würfelt ein Ausrüstungsstück des Aufstiegs neu und behält seinen Rang. Du hast %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'Würfelt ein Ausrüstungsstück des Aufstiegs neu. Gleicher Rang, neue Zahlen - ein schlecht gewürfeltes episches bekommt noch eine Chance.',
+})
+LANGS["es"].update({
+    'A whetstone': 'Una piedra de afilar',
+    'One whetstone': 'Una piedra de afilar',
+    'No whetstones': 'Sin piedras de afilar',
+    'Use a whetstone': 'Usar una piedra',
+    'roll it again': 'volver a tirar',
+    'They are %u coins in the shop.': 'Cuestan %u monedas en la tienda.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u en la bolsa. Usa una en una pieza de equipo para volver a tirarla.',
+    'It rolls one piece of gear again, keeping its rank.': 'Vuelve a tirar una pieza de equipo, conservando su rango.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Vuelve a tirar una pieza de equipo de la búsqueda, conservando su rango. Tienes %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'Vuelve a tirar una pieza de equipo de la búsqueda. Mismo rango, números nuevos: un épico mal tirado tiene otra oportunidad.',
+})
+LANGS["it"].update({
+    'A whetstone': 'Una cote',
+    'One whetstone': 'Una cote',
+    'No whetstones': 'Nessuna cote',
+    'Use a whetstone': 'Usare una cote',
+    'roll it again': 'ritirare',
+    'They are %u coins in the shop.': 'Costano %u monete al negozio.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u nella sacca. Usane una su un pezzo di equipaggiamento per ritirarlo.',
+    'It rolls one piece of gear again, keeping its rank.': 'Ritira un pezzo di equipaggiamento mantenendone il rango.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Ritira un pezzo di equipaggiamento della scalata mantenendone il rango. Ne hai %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": "Ritira un pezzo di equipaggiamento della scalata. Stesso rango, numeri nuovi: un epico venuto male ha un'altra occasione.",
+})
+LANGS["nl"].update({
+    'A whetstone': 'Een wetsteen',
+    'One whetstone': 'Een wetsteen',
+    'No whetstones': 'Geen wetstenen',
+    'Use a whetstone': 'Wetsteen gebruiken',
+    'roll it again': 'opnieuw gooien',
+    'They are %u coins in the shop.': 'Ze kosten %u munten in de winkel.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u in de tas. Gebruik er een op een stuk uitrusting om het opnieuw te gooien.',
+    'It rolls one piece of gear again, keeping its rank.': 'Hij gooit een stuk uitrusting opnieuw en houdt de rang.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Gooit een stuk uitrusting van de klim opnieuw en houdt de rang. Je hebt er %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'Gooit een stuk uitrusting van de klim opnieuw. Zelfde rang, nieuwe getallen - een slecht gegooide epische krijgt nog een kans.',
+})
+LANGS["pt"].update({
+    'A whetstone': 'Uma pedra de amolar',
+    'One whetstone': 'Uma pedra de amolar',
+    'No whetstones': 'Sem pedras de amolar',
+    'Use a whetstone': 'Usar uma pedra',
+    'roll it again': 'voltar a tirar',
+    'They are %u coins in the shop.': 'Custam %u moedas na loja.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u no saco. Use uma numa peça de equipamento para a voltar a tirar.',
+    'It rolls one piece of gear again, keeping its rank.': 'Volta a tirar uma peça de equipamento, mantendo o seu grau.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Volta a tirar uma peça de equipamento da subida, mantendo o grau. Tem %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'Volta a tirar uma peça de equipamento da subida. Mesmo grau, números novos - um épico mal saído tem outra hipótese.',
+})
+LANGS["ru"].update({
+    'A whetstone': 'Точильный камень',
+    'One whetstone': 'Точильный камень',
+    'No whetstones': 'Точильных камней нет',
+    'Use a whetstone': 'Использовать камень',
+    'roll it again': 'перебросить',
+    'They are %u coins in the shop.': 'В лавке они стоят %u монет.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '%u в сумке. Используйте один на вещи снаряжения, чтобы перебросить её.',
+    'It rolls one piece of gear again, keeping its rank.': 'Он перебрасывает вещь снаряжения, сохраняя её ранг.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'Перебрасывает вещь снаряжения восхождения, сохраняя ранг. У вас %u.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'Перебрасывает вещь снаряжения восхождения. Тот же ранг, новые числа - неудачная эпическая получит ещё один шанс.',
+})
+LANGS["ja"].update({
+    'A whetstone': 'といし',
+    'One whetstone': 'といし 1つ',
+    'No whetstones': 'といしがありません',
+    'Use a whetstone': 'といしを使う',
+    'roll it again': 'ふり直す',
+    'They are %u coins in the shop.': 'ショップで%uコインです。',
+    '%u in the bag. Use one on a piece of gear to roll it again.': 'ふくろに%u。そうびに使うと、ふり直せます。',
+    'It rolls one piece of gear again, keeping its rank.': 'そうびを1つ、ランクはそのままでふり直します。',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": 'クエストのそうびを1つ、ランクはそのままでふり直します。手持ち%u。',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": 'クエストのそうびを1つふり直します。ランクはそのまま、数値は新しく。ハズレのエピックにもう一度。',
+})
+LANGS["ko"].update({
+    'A whetstone': '숫돌',
+    'One whetstone': '숫돌 1개',
+    'No whetstones': '숫돌이 없습니다',
+    'Use a whetstone': '숫돌 사용',
+    'roll it again': '다시 굴리기',
+    'They are %u coins in the shop.': '상점에서 %u코인입니다.',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '가방에 %u개. 장비에 사용하면 다시 굴립니다.',
+    'It rolls one piece of gear again, keeping its rank.': '장비 하나를 등급은 그대로 두고 다시 굴립니다.',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": '퀘스트 장비 하나를 등급 그대로 다시 굴립니다. %u개 있습니다.',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": '퀘스트 장비 하나를 다시 굴립니다. 등급은 그대로, 수치는 새로 - 잘못 나온 영웅 등급에 한 번 더.',
+})
+LANGS["zh_hans"].update({
+    'A whetstone': '一块磨刀石',
+    'One whetstone': '一块磨刀石',
+    'No whetstones': '没有磨刀石',
+    'Use a whetstone': '使用磨刀石',
+    'roll it again': '重新洗',
+    'They are %u coins in the shop.': '商店里%u枚硬币一块。',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '背包里有%u块。用在一件装备上就能重新洗。',
+    'It rolls one piece of gear again, keeping its rank.': '把一件装备重新洗一次，品质不变。',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": '把一件远征装备重新洗一次，品质不变。你有%u块。',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": '把一件远征装备重新洗一次。品质不变，数值重来——洗坏的史诗还有一次机会。',
+})
+LANGS["zh_hant"].update({
+    'A whetstone': '一塊磨刀石',
+    'One whetstone': '一塊磨刀石',
+    'No whetstones': '沒有磨刀石',
+    'Use a whetstone': '使用磨刀石',
+    'roll it again': '重新洗',
+    'They are %u coins in the shop.': '商店裡%u枚硬幣一塊。',
+    '%u in the bag. Use one on a piece of gear to roll it again.': '背包裡有%u塊。用在一件裝備上就能重新洗。',
+    'It rolls one piece of gear again, keeping its rank.': '把一件裝備重新洗一次，品質不變。',
+    "Rolls one piece of the quest's gear again, keeping its rank. You have %u.": '把一件遠征裝備重新洗一次，品質不變。你有%u塊。',
+    "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.": '把一件遠征裝備重新洗一次。品質不變，數值重來——洗壞的史詩還有一次機會。',
+})
+
+# ---- what a whetstone did, shown side by side.
+LANGS["de"].update({
+    'before': 'vorher',
+    'after': 'nachher',
+    'It came out better.': 'Der Wurf ist besser.',
+    'It came out worse.': 'Der Wurf ist schlechter.',
+    'It came out much the same.': 'Der Wurf läuft aufs Gleiche hinaus.',
+})
+LANGS["es"].update({
+    'before': 'antes',
+    'after': 'después',
+    'It came out better.': 'La tirada salió mejor.',
+    'It came out worse.': 'La tirada salió peor.',
+    'It came out much the same.': 'La tirada sale más o menos igual.',
+})
+LANGS["it"].update({
+    'before': 'prima',
+    'after': 'dopo',
+    'It came out better.': 'È venuto meglio.',
+    'It came out worse.': 'È venuto peggio.',
+    'It came out much the same.': 'È venuto praticamente uguale.',
+})
+LANGS["nl"].update({
+    'before': 'ervoor',
+    'after': 'erna',
+    'It came out better.': 'De worp is beter.',
+    'It came out worse.': 'De worp is slechter.',
+    'It came out much the same.': 'De worp komt op hetzelfde neer.',
+})
+LANGS["pt"].update({
+    'before': 'antes',
+    'after': 'depois',
+    'It came out better.': 'A tiragem saiu melhor.',
+    'It came out worse.': 'A tiragem saiu pior.',
+    'It came out much the same.': 'A tiragem dá praticamente no mesmo.',
+})
+LANGS["ru"].update({
+    'before': 'было',
+    'after': 'стало',
+    'It came out better.': 'Бросок вышел лучше.',
+    'It came out worse.': 'Бросок вышел хуже.',
+    'It came out much the same.': 'Бросок вышел примерно тем же.',
+})
+LANGS["ja"].update({
+    'before': 'まえ',
+    'after': 'あと',
+    'It came out better.': 'よくなりました。',
+    'It came out worse.': 'わるくなりました。',
+    'It came out much the same.': 'ほぼ変わりません。',
+})
+LANGS["ko"].update({
+    'before': '이전',
+    'after': '이후',
+    'It came out better.': '더 좋아졌습니다.',
+    'It came out worse.': '더 나빠졌습니다.',
+    'It came out much the same.': '거의 같습니다.',
+})
+LANGS["zh_hans"].update({
+    'before': '之前',
+    'after': '之后',
+    'It came out better.': '这次洗得更好。',
+    'It came out worse.': '这次洗得更差。',
+    'It came out much the same.': '这次洗得差不多。',
+})
+LANGS["zh_hant"].update({
+    'before': '之前',
+    'after': '之後',
+    'It came out better.': '這次洗得更好。',
+    'It came out worse.': '這次洗得更差。',
+    'It came out much the same.': '這次洗得差不多。',
+})
+
+# ---- the whetstone overlay: the piece as it stands, and what it became.
+LANGS["de"].update({
+    '%u left': '%u übrig',
+    'as it stands': 'so wie es ist',
+    'whatever it becomes': 'was daraus wird',
+})
+LANGS["es"].update({
+    '%u left': 'quedan %u',
+    'as it stands': 'tal cual está',
+    'whatever it becomes': 'en lo que se convierta',
+})
+LANGS["it"].update({
+    '%u left': 'ne restano %u',
+    'as it stands': "com'è ora",
+    'whatever it becomes': 'in cosa diventa',
+})
+LANGS["nl"].update({
+    '%u left': 'nog %u',
+    'as it stands': 'zoals het nu is',
+    'whatever it becomes': 'wat het wordt',
+})
+LANGS["pt"].update({
+    '%u left': 'restam %u',
+    'as it stands': 'tal como está',
+    'whatever it becomes': 'aquilo em que se torna',
+})
+LANGS["ru"].update({
+    '%u left': 'осталось %u',
+    'as it stands': 'как есть',
+    'whatever it becomes': 'во что превратится',
+})
+LANGS["ja"].update({
+    '%u left': 'のこり%u',
+    'as it stands': 'いまのまま',
+    'whatever it becomes': 'どうなるか',
+})
+LANGS["ko"].update({
+    '%u left': '%u개 남음',
+    'as it stands': '지금 그대로',
+    'whatever it becomes': '무엇이 될지',
+})
+LANGS["zh_hans"].update({
+    '%u left': '还剩%u',
+    'as it stands': '当前',
+    'whatever it becomes': '洗成什么样',
+})
+LANGS["zh_hant"].update({
+    '%u left': '還剩%u',
+    'as it stands': '目前',
+    'whatever it becomes': '洗成什麼樣',
+})

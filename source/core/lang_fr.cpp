@@ -1630,6 +1630,38 @@ namespace {
         { "take it", "prendre" },
         { "%s gets back up", "%s se relève" },
 
+
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Une pierre à aiguiser" },
+        { "One whetstone", "Une pierre à aiguiser" },
+        { "No whetstones", "Aucune pierre à aiguiser" },
+        { "Use a whetstone", "Utiliser une pierre" },
+        { "%u left", "%u restantes" },
+        { "as it stands", "tel quel" },
+        { "whatever it becomes", "ce qu'il deviendra" },
+        { "before", "avant" },
+        { "after", "après" },
+        { "It came out better.", "Le tirage est meilleur." },
+        { "It came out worse.", "Le tirage est moins bon." },
+        { "It came out much the same.", "Le tirage revient au même." },
+
+        { "roll it again", "relancer" },
+        { "They are %u coins in the shop.",
+            "Elles coûtent %u pièces à la boutique." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u dans le sac. Utilisez-en une sur un objet pour le relancer." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Elle relance un objet en gardant son rang." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. You have %u.",
+            "Relance un objet de la quête en gardant son rang. Vous en avez %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new numbers - a badly rolled epic gets another go at being a good one.",
+            "Relance un objet de la quête. Même rang, nouveaux chiffres : un épique mal tiré retente sa chance." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

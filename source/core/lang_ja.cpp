@@ -1366,6 +1366,38 @@ namespace {
         { "take it", "もらう" },
         { "%s gets back up", "%sが起き上がった" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "といし" },
+        { "One whetstone", "といし 1つ" },
+        { "No whetstones", "といしがありません" },
+        { "Use a whetstone", "といしを使う" },
+        { "%u left", "のこり%u" },
+        { "as it stands", "いまのまま" },
+        { "whatever it becomes", "どうなるか" },
+        { "before", "まえ" },
+        { "after", "あと" },
+        { "It came out better.", "よくなりました。" },
+        { "It came out worse.", "わるくなりました。" },
+        { "It came out much the same.", "ほぼ変わりません。" },
+
+        { "roll it again", "ふり直す" },
+        { "They are %u coins in the shop.", "ショップで%uコインです。" },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "ふくろに%u。そうびに使うと、ふり直せます。" },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "そうびを1つ、ランクはそのままでふり直します。" },
+        { "Rolls one piece of the quest's gear again, keeping its rank. You have %u.",
+            "クエストのそうびを1つ、ランクはそのままでふり直します。手持ち%u。" },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "クエストのそうびを1つふり直します。ランクはそのまま、数値は新しく。ハズレのエピックにもう一度。" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

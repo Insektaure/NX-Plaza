@@ -1545,6 +1545,43 @@ namespace {
         { "take it", "nemen" },
         { "%s gets back up", "%s staat weer op" },
 
+        // ---------------------------------------------- the whetstone
+        //
+        // A shop item spent on a piece of the quest's gear. "Pierre à
+        // aiguiser" in full where there is room and "pierre" where
+        // there is not, because the noun is feminine and the short
+        // form agrees the same way.
+        { "A whetstone", "Een wetsteen" },
+        { "One whetstone", "Een wetsteen" },
+        { "No whetstones", "Geen wetstenen" },
+        { "Use a whetstone", "Wetsteen gebruiken" },
+        { "%u left", "nog %u" },
+        { "as it stands", "zoals het nu is" },
+        { "whatever it becomes", "wat het wordt" },
+        { "before", "ervoor" },
+        { "after", "erna" },
+        { "It came out better.", "De worp is beter." },
+        { "It came out worse.", "De worp is slechter." },
+        { "It came out much the same.", "De worp komt op hetzelfde neer." },
+
+        { "roll it again", "opnieuw gooien" },
+        { "They are %u coins in the shop.", "Ze kosten %u munten in de winkel." },
+        { "%u in the bag. Use one on a piece of gear to roll it again.",
+            "%u in de tas. Gebruik er een op een stuk uitrusting om het "
+            "opnieuw te gooien." },
+        { "It rolls one piece of gear again, keeping its rank.",
+            "Hij gooit een stuk uitrusting opnieuw en houdt de rang." },
+        { "Rolls one piece of the quest's gear again, keeping its rank. "
+          "You have %u.",
+            "Gooit een stuk uitrusting van de klim opnieuw en houdt de "
+            "rang. Je hebt er %u." },
+        { "Rolls one piece of the quest's gear again. Same rank, new "
+          "numbers - a badly rolled epic gets another go at being a "
+          "good one.",
+            "Gooit een stuk uitrusting van de klim opnieuw. Zelfde rang, "
+            "nieuwe getallen - een slecht gegooide epische krijgt nog een "
+            "kans." },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

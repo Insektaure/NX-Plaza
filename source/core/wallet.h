@@ -67,6 +67,12 @@ public:
     static constexpr uint32_t kChosenPiecePrice = 100;
     static constexpr uint32_t kAnyPiecePrice = 50;
 
+    // A whetstone, for re-rolling one piece of the quest's gear without
+    // changing its tier. Priced against a chosen puzzle piece at 100 and
+    // about eighty-five coins a week coming in: a rare is pocket change, a
+    // godlike is a fortnight, which is where an endgame sink belongs.
+    static constexpr uint32_t kWhetstonePrice = 40;
+
 private:
     Wallet() = default;
 
