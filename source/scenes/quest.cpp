@@ -35,6 +35,12 @@ namespace {
     // What a shadow is made of.
     const Color kShadowInk = Color::hex(0x2E2733);
 
+    // miiFigure has no canvas of its own to fade as a whole, so it hands
+    // the opacity to every part and the parts overlap
+    // One flat colour at full strength has no seams
+    // to show, and reads as "down" more plainly than a ghost does.
+    const Color kFallenInk = Color::hex(0x8A857E);
+
     int partySlots(uint32_t peopleMet)
     {
         if (peopleMet >= 25)
@@ -1013,17 +1019,19 @@ namespace {
         void drawBossSide(Renderer& r) const
         {
             Rect box = bossRect();
-            Color ink = kShadowInk;
+            // Beaten, it goes pale rather than see-through, for the same
+            // reason the fallen do: alpha on a figure made of overlapping
+            // parts shows every one of its joins.
             bool beaten = m_bossHp <= 0;
-            float opacity = beaten ? 0.28f : 1.0f;
+            Color ink = beaten ? kShadowInk.mix(theme::bg0, 0.72f) : kShadowInk;
             if (!beaten) {
                 r.glow(Rect { box.centerX() - 170.0f, box.centerY() - 170.0f, 340.0f,
                            340.0f },
                     theme::danger.scaleAlpha(0.16f), 1.8f);
             }
             r.ellipse(box.centerX(), kBossGround + 8.0f, kBossFigure * 0.34f, 15.0f,
-                theme::bg0.scaleAlpha(0.35f * opacity), 0.0f);
-            ui::miiFigure(r, box, shadowFace(m_floor), opacity, false, &ink);
+                theme::bg0.scaleAlpha(beaten ? 0.10f : 0.35f), 0.0f);
+            ui::miiFigure(r, box, shadowFace(m_floor), 1.0f, false, &ink);
 
             constexpr float kBarW = 620.0f;
             Rect bar { kBossX - kBarW * 0.5f, kBossGround + 40.0f, kBarW, 24.0f };
@@ -1069,7 +1077,12 @@ namespace {
                     Color rim = theme::accent.scaleAlpha(0.45f * u.lunge);
                     ui::miiSilhouette(r, box.inset(-5.0f), u.face, rim);
                 }
-                ui::miiFigure(r, box, u.face, down ? 0.25f : 1.0f);
+                if (down) {
+                    Color grey = kFallenInk;
+                    ui::miiFigure(r, box, u.face, 1.0f, false, &grey);
+                } else {
+                    ui::miiFigure(r, box, u.face);
+                }
             }
         }
 
