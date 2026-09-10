@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "la corsa dei Mii" },
         { "the mii tower", "la torre di Mii" },
         { "the dice duel", "il duello di dadi" },
+        { "the wheel", "la ruota" },
+        { "the quest", "la scalata" },
         { "what it pays", "quanto paga" },
         { "your prediction", "il tuo pronostico" },
         { "your pairing code", "il tuo codice di abbinamento" },
@@ -1343,6 +1345,131 @@ namespace {
         { "the longest run", "la corsa più lunga" },
         { "the tallest tower", "la torre più alta" },
         { "duels in a row", "duelli di fila" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "La scalata" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "Una torre senza cima, un'ombra su ogni piano, e una squadra "
+            "fatta delle persone che hai incrociato.\nOgni ombra può "
+            "lasciare qualcosa. Equipaggiali, scegli chi sale e il "
+            "combattimento va da sé." },
+        { "Floor %d", "Piano %d" },
+        { "best floor %u", "miglior piano %u" },
+        { "%d of %d places", "%d posti su %d" },
+        { "an empty place", "un posto libero" },
+        { "Climb", "Salire" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Nessuno ti ha ancora incrociato: sali da solo." },
+
+        { "Guard", "Guardia" },
+        { "Blade", "Lama" },
+        { "Spark", "Scintilla" },
+        { "Mender", "Guaritore" },
+
+        { "%s hits for %d", "%s colpisce per %d" },
+        { "%s strikes for %d", "%s cala il colpo, %d" },
+        { "%s wears it down, %d", "%s lo logora, %d" },
+        { "%s patches up %s", "%s rimette in sesto %s" },
+        { "%s stands in front", "%s si mette davanti" },
+        { "The shadow hits %s for %d", "L'ombra colpisce %s per %d" },
+        { "The shadow sweeps, %d", "L'ombra spazza, %d" },
+        { "%s falls", "%s cade" },
+        { "Floor %d is yours", "Il piano %d è tuo" },
+
+        { "The shadow keeps the floor", "L'ombra si tiene il piano" },
+        { "You came back down", "Sei tornato giù" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d piani, e %u monete per quelli che non avevi raggiunto." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Nemmeno un piano. Incrocia qualche altra persona e portala con te." },
+        { "Climb again", "Risalire" },
+        { "bring along", "portare" },
+        { "leave behind", "lasciare" },
+        { "climb", "salire" },
+        { "climb again", "risalire" },
+        { "stop", "fermare" },
+        { "stop here", "fermarsi qui" },
+
+        { "gear", "equipaggiamento" },
+        { "what they carry", "cosa portano" },
+        { "in the bag", "nella sacca" },
+        { "%zu of %zu in the bag", "%zu su %zu nella sacca" },
+        { "Nobody to dress", "Nessuno da equipaggiare" },
+        { "Nothing here that would fit.", "Qui non c'è niente che vada." },
+        { "nothing on this peg", "niente in questo posto" },
+        { "worn", "indossato" },
+        { "wear it", "indossare" },
+        { "take it off", "togliere" },
+        { "throw away", "buttare" },
+        { "somebody else", "qualcun altro" },
+        { "Throw away the %s?", "Buttare %s?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "Un pezzo %s dal piano %u. Non torna." },
+        { "Throw it away", "Buttarlo" },
+        { "Your bag is full", "La sacca è piena" },
+        { "Nothing in it was worse than what fell, so what fell stayed "
+          "on the floor.",
+            "Niente dentro era peggio di ciò che è caduto, quindi è "
+            "rimasto per terra." },
+        { "%s was thrown out to make room.", "%s è stato buttato per fare spazio." },
+        { "clear out", "fare ordine" },
+        { "Nothing to clear out", "Niente da mettere in ordine" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "Tutto quello di scorta è meglio di qualcosa di indossato, o "
+            "va in un posto vuoto." },
+        { "Throw away %zu pieces?", "Buttare %zu pezzi?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "Tutto nella sacca che è peggio di quello che indossa %s. "
+            "Niente di indossato viene toccato." },
+        { "Throw them away", "Buttarli tutti" },
+        { "The shadow left a %s (%s)", "L'ombra ha lasciato %s (%s)" },
+        { "One %s piece came back with you.", "Un pezzo %s è tornato con te." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d pezzi sono tornati con te, il migliore %s." },
+
+        { "weapon", "arma" },
+        { "armour", "armatura" },
+        { "ring", "anello" },
+        { "accessory", "accessorio" },
+
+        { "common", "comune" },
+        { "uncommon", "non comune" },
+        { "rare", "raro" },
+        { "epic", "epico" },
+        { "legendary", "leggendario" },
+        { "godlike", "divino" },
+
+        { "Baton", "Bastone" },
+        { "Cleaver", "Mannaia" },
+        { "Lance", "Lancia" },
+        { "Hammer", "Martello" },
+        { "Jerkin", "Giubbotto" },
+        { "Plate", "Corazza" },
+        { "Cloak", "Mantello" },
+        { "Carapace", "Carapace" },
+        { "Band", "Cerchio" },
+        { "Signet", "Sigillo" },
+        { "Circlet", "Diadema" },
+        { "Seal", "Suggello" },
+        { "Charm", "Amuleto" },
+        { "Talisman", "Talismano" },
+        { "Pendant", "Ciondolo" },
+        { "Feather", "Piuma" },
 
         // ------------------------------------------------- the same in French
         //

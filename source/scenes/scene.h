@@ -2,6 +2,7 @@
 
 #include "gfx/renderer.h"
 #include "core/mii.h"
+#include "core/quest_rules.h"
 #include "platform/input.h"
 
 #include <functional>
@@ -76,6 +77,22 @@ std::unique_ptr<Scene> makeMiiTowerScene();
 std::unique_ptr<Scene> makeLanternWheelScene();
 // Three reels, in a three symbol machine and a five symbol one.
 std::unique_ptr<Scene> makeSlotsScene();
+// A tower with no top, a shadow on every floor, and a party drawn from the
+// people you have crossed. Fought automatically; what it is for is the loot.
+std::unique_ptr<Scene> makeQuestScene();
+
+// One person the gear screen can dress. The base sheet travels with them
+// because working it out needs the crossing they came from, and the gear
+// screen has only the party.
+struct GearPerson {
+    std::string id; // empty for your own Mii
+    std::string name;
+    Mii face;
+    Sheet base;
+};
+
+// Moving gear around, over the top of the quest's party screen.
+std::unique_ptr<Scene> makeQuestGearScene(std::vector<GearPerson> party);
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeStatsScene();
 std::unique_ptr<Scene> makeSettingsScene();

@@ -724,6 +724,12 @@ namespace {
                 who = tr("Not found yet");
             else if (src == nullptr || src->who.empty())
                 who = tr("someone"); // collected before this was kept
+            else if (pieceWasPaidFor(src->who))
+                // The shop, the wheel and the stair are the app talking about
+                // itself, so they are ours to translate. A handle is not, and
+                // running one through tr() would rewrite anybody unlucky
+                // enough to have named themselves after one of our strings.
+                who = tr(src->who);
             else
                 who = src->who;
 

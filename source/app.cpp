@@ -8,6 +8,7 @@
 #include "core/i18n.h"
 #include "core/identity.h"
 #include "core/trophies.h"
+#include "core/quest_record.h"
 #include "core/wallet.h"
 #include "core/log.h"
 #include "core/pieces.h"
@@ -75,8 +76,11 @@ bool App::init()
         return false;
 
     // Before any screen can show a balance, and after identity() exists -
-    // the wallet is checked against this console's own token.
+    // the wallet is checked against this console's own token. The quest's
+    // record is the same kind of file for the same reason, so it is read in
+    // the same breath.
     Wallet::get().load();
+    QuestRecord::get().load();
 
     // The Mii artwork. A face draws nothing without it, so this is a hard
     // failure rather than something to discover on the passport screen.
@@ -123,6 +127,7 @@ void App::exit()
     Update::get().shutdown();
     store().flush();
     Wallet::get().flush();
+    QuestRecord::get().flush();
 
     m_overlays.clear();
     for (auto& scene : m_tabScenes)
@@ -584,12 +589,14 @@ bool App::handleChromeInput(const Input& input)
 
     // Tab switching is global, but overlays own the shoulder buttons so a
     // detail view can use them for next/previous.
+    //
+    // L and R only.
     if (m_overlays.empty()) {
         int index = static_cast<int>(m_tab);
         int count = static_cast<int>(Tab::Count);
-        if (input.pressed(HidNpadButton_R) || input.pressed(HidNpadButton_ZR))
+        if (input.pressed(HidNpadButton_R))
             setTab(static_cast<Tab>((index + 1) % count));
-        else if (input.pressed(HidNpadButton_L) || input.pressed(HidNpadButton_ZL))
+        else if (input.pressed(HidNpadButton_L))
             setTab(static_cast<Tab>((index + count - 1) % count));
     }
 
@@ -636,6 +643,7 @@ void App::update(float dt)
         // Alongside the store, and just as cheap when nothing has changed: the
         // daily grant lands on a check-in, which can happen at any moment.
         Wallet::get().flush();
+        QuestRecord::get().flush();
     }
 }
 

@@ -82,6 +82,12 @@ LOOSE_SKIP_FILES = ("carry.cpp",)
 # card's own title is drawn twice and measured once, so it is written down once.
 CONSTANTS = (
     {"file": "passport.cpp", "name": "kPassTitle"},
+    # Where a piece came from when it came from the app rather than from a
+    # person. Written into the provenance by the store and read back by the
+    # puzzle's own panel, which translates the app's three and leaves a
+    # handle alone.
+    {"file": "pieces.h", "name": "kShopSource"},
+    {"file": "pieces.h", "name": "kWheelSource"},
 )
 
 # Small functions that exist to turn a value into a word - a tier into
@@ -90,7 +96,7 @@ CONSTANTS = (
 # of sight of the call.
 RETURNERS = ("tierName", "filterName", "symbolName", "ordinal", "sortLabel",
              "nextSortHint", "stateLabel", "proximityLabel", "fillHintFor",
-             "caption", "subtitleText")
+             "caption", "subtitleText", "className")
 
 # A table of rows whose labels are translated where they are drawn rather than
 # where the table is filled (see the note in i18n.h about statics). `fields` is
@@ -107,6 +113,13 @@ TABLES = (
     # The short weekday names. Nothing calls weekdayShort() at the moment, so
     # these are translated and waiting rather than on a screen.
     {"file": "util.cpp", "name": "days", "fields": None},
+    # The quest's loot: the six qualities, the four pegs, and the four names
+    # a piece of each kind can wear. All three are read through a function
+    # (qualityName, slotName, itemNoun) whose caller wraps the result, so the
+    # literal is out of sight of every tr() in the tree.
+    {"file": "quest_rules.cpp", "name": "kQualities", "fields": None},
+    {"file": "quest_rules.cpp", "name": "kSlots", "fields": None},
+    {"file": "quest_rules.cpp", "name": "kNouns", "fields": None},
     # The Mii editor's rows: a label, then which part of the Mii it moves.
     {"file": "mii_editor.cpp", "name": "kParts", "fields": (0,)},
     # The card themes, which sit in the palettes beside their colours. Both
@@ -511,17 +524,36 @@ def main():
     said = scan_sources()
 
     if args.all:
+        # --check here used to print the stale count and still exit 0, which
+        # made `--all --check` in a script a check that could not fail. It
+        # answers for every language now, and the summary is only as good as
+        # its exit code.
+        bad = 0
         for code in sorted(CATALOGS):
             rows = read_catalog(CATALOGS[code])
             seen = {}
+            duplicated = 0
             for source, target in rows:
-                seen.setdefault(source, target)
+                if source in seen:
+                    duplicated += 1
+                    continue
+                seen[source] = target
             done = sum(1 for s, t in seen.items() if t != s and t)
             same = sum(1 for s, t in seen.items() if t == s)
             stale = sum(1 for s in seen if s not in said)
+            notes = ""
+            if stale:
+                notes += ", %d stale" % stale
+            if duplicated:
+                notes += ", %d duplicated" % duplicated
             print("%s: %4d of %d translated, %2d the same in both%s"
-                  % (code, done, len(said), same,
-                     ", %d stale" % stale if stale else ""))
+                  % (code, done, len(said), same, notes))
+            if stale or duplicated:
+                bad += 1
+        if args.check and bad:
+            print("%d of %d catalogues have stale or duplicated entries; "
+                  "--lang <code> --check says which" % (bad, len(CATALOGS)))
+            return 1
         return 0
 
     rows = read_catalog(CATALOGS[args.lang])

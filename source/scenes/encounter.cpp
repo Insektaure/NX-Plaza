@@ -139,11 +139,11 @@ public:
 
         // Y is the face button everywhere it appears - the Mii maker's save and
         // load is on Y, so keeping somebody else's face is too.
-        if (input.pressed(HidNpadButton_R) || input.pressed(HidNpadButton_ZR)) {
+        if (input.pressed(HidNpadButton_R)) {
             step(app, 1);
             return;
         }
-        if (input.pressed(HidNpadButton_L) || input.pressed(HidNpadButton_ZL)) {
+        if (input.pressed(HidNpadButton_L)) {
             step(app, -1);
             return;
         }

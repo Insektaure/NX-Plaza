@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "mii 賽跑" },
         { "the mii tower", "mii 塔" },
         { "the dice duel", "骰子對決" },
+        { "the wheel", "轉盤" },
+        { "the quest", "遠征" },
         { "what it pays", "賠付表" },
         { "your prediction", "我的預測" },
         { "your pairing code", "配對碼" },
@@ -1149,6 +1151,121 @@ namespace {
         { "the longest run", "跑得最遠的一次" },
         { "the tallest tower", "最高的塔" },
         { "duels in a row", "連勝場數" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "遠征" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "一座沒有頂的塔，每層都有一個影子，還有一支由你擦肩而過的人組成的隊伍。\n每個影子都可能留下東西。給他們配上裝備，挑好誰去，戰鬥自己會打。" },
+        { "Floor %d", "第%d層" },
+        { "best floor %u", "最高第%u層" },
+        { "%d of %d places", "%d / %d 個位置" },
+        { "an empty place", "空位" },
+        { "Climb", "攀登" },
+        { "Nobody has crossed you yet - you climb alone.", "還沒有人和你擦肩而過——你一個人爬。" },
+
+        { "Guard", "盾衛" },
+        { "Blade", "鋒刃" },
+        { "Spark", "火花" },
+        { "Mender", "醫者" },
+
+        { "%s hits for %d", "%s 攻擊，%d" },
+        { "%s strikes for %d", "%s 重擊，%d" },
+        { "%s wears it down, %d", "%s 削弱了它，%d" },
+        { "%s patches up %s", "%s 治療了 %s" },
+        { "%s stands in front", "%s 擋在前面" },
+        { "The shadow hits %s for %d", "影子攻擊 %s，%d" },
+        { "The shadow sweeps, %d", "影子橫掃，%d" },
+        { "%s falls", "%s 倒下了" },
+        { "Floor %d is yours", "第%d層拿下了" },
+
+        { "The shadow keeps the floor", "影子守住了這一層" },
+        { "You came back down", "你下來了" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d層，還有沒到過的那些層給的%u枚硬幣。" },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "一層都沒上去。多和幾個人擦肩而過，把他們帶上。" },
+        { "Climb again", "再爬一次" },
+        { "bring along", "帶上" },
+        { "leave behind", "留下" },
+        { "climb", "攀登" },
+        { "climb again", "再爬一次" },
+        { "stop", "停下" },
+        { "stop here", "到此為止" },
+
+        { "gear", "裝備" },
+        { "what they carry", "他們帶著的" },
+        { "in the bag", "背包裡" },
+        { "%zu of %zu in the bag", "背包 %zu / %zu" },
+        { "Nobody to dress", "沒有人可以裝備" },
+        { "Nothing here that would fit.", "這裡沒有合適的。" },
+        { "nothing on this peg", "這個位置是空的" },
+        { "worn", "已裝備" },
+        { "wear it", "裝上" },
+        { "take it off", "取下" },
+        { "throw away", "丟掉" },
+        { "somebody else", "換個人" },
+        { "Throw away the %s?", "丟掉%s嗎？" },
+        { "A %s piece from floor %u. It does not come back.", "%s品質，來自第%u層。丟了就沒有了。" },
+        { "Throw it away", "丟掉" },
+        { "Your bag is full", "背包滿了" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "背包裡沒有比掉落的更差的，所以它留在了地上。" },
+        { "%s was thrown out to make room.", "為了騰地方，丟掉了%s。" },
+        { "clear out", "清理" },
+        { "Nothing to clear out", "沒有可清理的" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "備用的都比正在穿的好，或者對應的位置是空的。" },
+        { "Throw away %zu pieces?", "丟掉%zu件嗎？" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "背包裡所有比%s身上裝備更差的。正在裝備的不動。" },
+        { "Throw them away", "全部丟掉" },
+        { "The shadow left a %s (%s)", "影子留下了%s（%s）" },
+        { "One %s piece came back with you.", "帶回來一件%s的東西。" },
+        { "%d pieces came back with you, the best of them %s.", "帶回來%d件，其中最好的是%s。" },
+
+        { "weapon", "武器" },
+        { "armour", "護甲" },
+        { "ring", "戒指" },
+        { "accessory", "飾品" },
+
+        { "common", "普通" },
+        { "uncommon", "優秀" },
+        { "rare", "稀有" },
+        { "epic", "史詩" },
+        { "legendary", "傳說" },
+        { "godlike", "神話" },
+
+        { "Baton", "短棍" },
+        { "Cleaver", "切刀" },
+        { "Lance", "長槍" },
+        { "Hammer", "錘" },
+        { "Jerkin", "皮衣" },
+        { "Plate", "胸甲" },
+        { "Cloak", "斗篷" },
+        { "Carapace", "甲殼" },
+        { "Band", "環" },
+        { "Signet", "印戒" },
+        { "Circlet", "額環" },
+        { "Seal", "封印" },
+        { "Charm", "護符" },
+        { "Talisman", "法符" },
+        { "Pendant", "吊墜" },
+        { "Feather", "羽毛" },
 
         // ------------------------------------------------- the same in French
         //

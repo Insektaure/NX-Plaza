@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "гонка Mii" },
         { "the mii tower", "башня Mii" },
         { "the dice duel", "дуэль на кубиках" },
+        { "the wheel", "колесо" },
+        { "the quest", "восхождение" },
         { "what it pays", "выплаты" },
         { "your prediction", "ваш прогноз" },
         { "your pairing code", "ваш код сопряжения" },
@@ -1324,6 +1326,128 @@ namespace {
         { "the longest run", "самый долгий забег" },
         { "the tallest tower", "самая высокая башня" },
         { "duels in a row", "дуэлей подряд" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "Восхождение" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "Башня без вершины, на каждом этаже тень, и отряд из тех, "
+            "кого вы встретили.\nКаждая тень может что-нибудь оставить. "
+            "Снарядите их, выберите, кто идёт, - бой идёт сам." },
+        { "Floor %d", "Этаж %d" },
+        { "best floor %u", "лучший этаж %u" },
+        { "%d of %d places", "%d из %d мест" },
+        { "an empty place", "свободное место" },
+        { "Climb", "Подняться" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Вас пока никто не встретил - вы поднимаетесь один." },
+
+        { "Guard", "Страж" },
+        { "Blade", "Клинок" },
+        { "Spark", "Искра" },
+        { "Mender", "Лекарь" },
+
+        { "%s hits for %d", "%s бьёт на %d" },
+        { "%s strikes for %d", "%s обрушивает %d" },
+        { "%s wears it down, %d", "%s изматывает её, %d" },
+        { "%s patches up %s", "%s штопает %s" },
+        { "%s stands in front", "%s встаёт впереди" },
+        { "The shadow hits %s for %d", "Тень бьёт %s на %d" },
+        { "The shadow sweeps, %d", "Тень бьёт по всем, %d" },
+        { "%s falls", "%s падает" },
+        { "Floor %d is yours", "Этаж %d ваш" },
+
+        { "The shadow keeps the floor", "Тень удержала этаж" },
+        { "You came back down", "Вы спустились обратно" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d этажей и %u монет за те, до которых вы ещё не доходили." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Ни одного этажа. Встретьте ещё нескольких и возьмите их с собой." },
+        { "Climb again", "Подняться снова" },
+        { "bring along", "взять с собой" },
+        { "leave behind", "оставить" },
+        { "climb", "подняться" },
+        { "climb again", "подняться снова" },
+        { "stop", "остановиться" },
+        { "stop here", "остановиться здесь" },
+
+        { "gear", "снаряжение" },
+        { "what they carry", "что они несут" },
+        { "in the bag", "в сумке" },
+        { "%zu of %zu in the bag", "%zu из %zu в сумке" },
+        { "Nobody to dress", "Некого снаряжать" },
+        { "Nothing here that would fit.", "Здесь нет ничего подходящего." },
+        { "nothing on this peg", "здесь пусто" },
+        { "worn", "надето" },
+        { "wear it", "надеть" },
+        { "take it off", "снять" },
+        { "throw away", "выбросить" },
+        { "somebody else", "кто-то другой" },
+        { "Throw away the %s?", "Выбросить %s?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "%s вещь с этажа %u. Она не вернётся." },
+        { "Throw it away", "Выбросить" },
+        { "Your bag is full", "Сумка полна" },
+        { "Nothing in it was worse than what fell, so what fell stayed "
+          "on the floor.",
+            "Ничего в ней не было хуже того, что выпало, так что оно "
+            "осталось на полу." },
+        { "%s was thrown out to make room.", "%s выброшено, чтобы освободить место." },
+        { "clear out", "разобрать" },
+        { "Nothing to clear out", "Разбирать нечего" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "Всё лишнее лучше того, что надето, или ждёт пустого места." },
+        { "Throw away %zu pieces?", "Выбросить %zu вещей?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "Всё в сумке, что хуже надетого на %s. Надетое не трогаем." },
+        { "Throw them away", "Выбросить всё" },
+        { "The shadow left a %s (%s)", "Тень оставила %s (%s)" },
+        { "One %s piece came back with you.", "Одна %s вещь вернулась с вами." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d вещей вернулось с вами, лучшая - %s." },
+
+        { "weapon", "оружие" },
+        { "armour", "броня" },
+        { "ring", "кольцо" },
+        { "accessory", "аксессуар" },
+
+        { "common", "обычное" },
+        { "uncommon", "необычное" },
+        { "rare", "редкое" },
+        { "epic", "эпическое" },
+        { "legendary", "легендарное" },
+        { "godlike", "божественное" },
+
+        { "Baton", "Дубина" },
+        { "Cleaver", "Тесак" },
+        { "Lance", "Копьё" },
+        { "Hammer", "Молот" },
+        { "Jerkin", "Куртка" },
+        { "Plate", "Панцирь" },
+        { "Cloak", "Плащ" },
+        { "Carapace", "Хитин" },
+        { "Band", "Обруч" },
+        { "Signet", "Печатка" },
+        { "Circlet", "Венец" },
+        { "Seal", "Печать" },
+        { "Charm", "Оберег" },
+        { "Talisman", "Талисман" },
+        { "Pendant", "Кулон" },
+        { "Feather", "Перо" },
 
         // ------------------------------------------------- the same in French
         //

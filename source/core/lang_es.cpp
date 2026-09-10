@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "la carrera de Miis" },
         { "the mii tower", "la torre de Miis" },
         { "the dice duel", "el duelo de dados" },
+        { "the wheel", "la rueda" },
+        { "the quest", "la búsqueda" },
         { "what it pays", "lo que paga" },
         { "your prediction", "tu pronóstico" },
         { "your pairing code", "tu código de emparejamiento" },
@@ -1330,6 +1332,129 @@ namespace {
         { "the longest run", "la carrera más larga" },
         { "the tallest tower", "la torre más alta" },
         { "duels in a row", "duelos seguidos" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "La búsqueda" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "Una torre sin cima, una sombra en cada piso, y un grupo "
+            "hecho con la gente que has cruzado.\nCada sombra puede dejar "
+            "algo. Equípalos, elige quién sube y el combate se resuelve "
+            "solo." },
+        { "Floor %d", "Piso %d" },
+        { "best floor %u", "mejor piso %u" },
+        { "%d of %d places", "%d de %d plazas" },
+        { "an empty place", "una plaza libre" },
+        { "Climb", "Subir" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Nadie te ha cruzado todavía: subes solo." },
+
+        { "Guard", "Guardia" },
+        { "Blade", "Filo" },
+        { "Spark", "Chispa" },
+        { "Mender", "Sanador" },
+
+        { "%s hits for %d", "%s golpea por %d" },
+        { "%s strikes for %d", "%s asesta %d" },
+        { "%s wears it down, %d", "%s lo desgasta, %d" },
+        { "%s patches up %s", "%s cura a %s" },
+        { "%s stands in front", "%s se pone delante" },
+        { "The shadow hits %s for %d", "La sombra golpea a %s por %d" },
+        { "The shadow sweeps, %d", "La sombra barre, %d" },
+        { "%s falls", "%s cae" },
+        { "Floor %d is yours", "El piso %d es tuyo" },
+
+        { "The shadow keeps the floor", "La sombra se queda el piso" },
+        { "You came back down", "Has vuelto a bajar" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d pisos, y %u monedas por los que no habías alcanzado." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Ni un piso. Cruza a unas cuantas personas más y llévatelas." },
+        { "Climb again", "Subir otra vez" },
+        { "bring along", "llevar" },
+        { "leave behind", "dejar" },
+        { "climb", "subir" },
+        { "climb again", "subir otra vez" },
+        { "stop", "parar" },
+        { "stop here", "parar aquí" },
+
+        { "gear", "equipo" },
+        { "what they carry", "lo que llevan" },
+        { "in the bag", "en la bolsa" },
+        { "%zu of %zu in the bag", "%zu de %zu en la bolsa" },
+        { "Nobody to dress", "Nadie a quien equipar" },
+        { "Nothing here that would fit.", "Aquí no hay nada que encaje." },
+        { "nothing on this peg", "nada en esta ranura" },
+        { "worn", "puesto" },
+        { "wear it", "equipar" },
+        { "take it off", "quitar" },
+        { "throw away", "tirar" },
+        { "somebody else", "otra persona" },
+        { "Throw away the %s?", "¿Tirar %s?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "Una pieza %s del piso %u. No vuelve." },
+        { "Throw it away", "Tirarla" },
+        { "Your bag is full", "Tu bolsa está llena" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "Nada dentro era peor que lo que cayó, así que se quedó en el suelo." },
+        { "%s was thrown out to make room.", "%s se tiró para hacer sitio." },
+        { "clear out", "limpiar" },
+        { "Nothing to clear out", "Nada que limpiar" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "Todo lo que sobra es mejor que algo puesto, o va en una "
+            "ranura vacía." },
+        { "Throw away %zu pieces?", "¿Tirar %zu piezas?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "Todo lo de la bolsa que es peor que lo que lleva %s. No se "
+            "toca nada puesto." },
+        { "Throw them away", "Tirarlas todas" },
+        { "The shadow left a %s (%s)", "La sombra dejó %s (%s)" },
+        { "One %s piece came back with you.", "Una pieza %s volvió contigo." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d piezas volvieron contigo, la mejor %s." },
+
+        { "weapon", "arma" },
+        { "armour", "armadura" },
+        { "ring", "anillo" },
+        { "accessory", "accesorio" },
+
+        { "common", "común" },
+        { "uncommon", "poco común" },
+        { "rare", "raro" },
+        { "epic", "épico" },
+        { "legendary", "legendario" },
+        { "godlike", "divino" },
+
+        { "Baton", "Bastón" },
+        { "Cleaver", "Cuchilla" },
+        { "Lance", "Lanza" },
+        { "Hammer", "Martillo" },
+        { "Jerkin", "Jubón" },
+        { "Plate", "Peto" },
+        { "Cloak", "Capa" },
+        { "Carapace", "Caparazón" },
+        { "Band", "Aro" },
+        { "Signet", "Sello" },
+        { "Circlet", "Diadema" },
+        { "Seal", "Sigilo" },
+        { "Charm", "Amuleto" },
+        { "Talisman", "Talismán" },
+        { "Pendant", "Colgante" },
+        { "Feather", "Pluma" },
 
         // ------------------------------------------------- the same in French
         //

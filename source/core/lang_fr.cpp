@@ -89,6 +89,8 @@ namespace {
         { "the mii race", "la course de mii" },
         { "the mii tower", "la tour de mii" },
         { "the dice duel", "le duel de dés" },
+        { "the wheel", "la roue" },
+        { "the quest", "la quête" },
         { "what it pays", "ce que ça paie" },
         { "your prediction", "votre pronostic" },
         { "your pairing code", "votre code d'appairage" },
@@ -1387,6 +1389,136 @@ namespace {
         { "the longest run", "la plus longue course" },
         { "the tallest tower", "la plus haute tour" },
         { "duels in a row", "duels d'affilée" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "La quête" },
+        { "A tower with no top, a shadow on every floor, and a party made of the people you have crossed.\n"
+            "Every shadow can leave something behind. Gear them up, pick who goes, and the fight runs itself.",
+            "Une tour sans sommet, une ombre à chaque étage, et une équipe faite des gens que vous avez croisés.\n"
+            "Chaque ombre peut laisser quelque chose. Équipez-les, choisissez qui monte, le combat se déroule tout seul." },
+        { "Floor %d", "Étage %d" },
+        { "best floor %u", "meilleur étage %u" },
+        { "%d of %d places", "%d places sur %d" },
+        { "an empty place", "une place libre" },
+        { "Climb", "Monter" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Personne ne vous a encore croisé - vous montez seul." },
+
+        // The classes, off the Mii's favourite colour.
+        { "Guard", "Garde" },
+        { "Blade", "Lame" },
+        { "Spark", "Éclat" },
+        { "Mender", "Soigneur" },
+
+        // The blow by blow. One line at a time under the shadow, so they are
+        // short on purpose: a sentence that wraps would push the party cards
+        // down the screen mid-fight.
+        { "%s hits for %d", "%s frappe pour %d" },
+        { "%s strikes for %d", "%s assène %d" },
+        { "%s wears it down, %d", "%s l'affaiblit, %d" },
+        { "%s patches up %s", "%s soigne %s" },
+        { "%s stands in front", "%s se met devant" },
+        { "The shadow hits %s for %d", "L'ombre frappe %s pour %d" },
+        { "The shadow sweeps, %d", "L'ombre balaie, %d" },
+        { "%s falls", "%s tombe" },
+        { "Floor %d is yours", "L'étage %d est à vous" },
+
+        // How a climb ends: the top, a wipe, or walking back down.
+        { "The shadow keeps the floor", "L'ombre garde l'étage" },
+        { "You came back down", "Vous êtes redescendu" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d étages, et %u pièces pour ceux que vous n'aviez pas atteints." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Pas un seul étage. Croisez quelques personnes de plus et emmenez-les." },
+        { "Climb again", "Remonter" },
+        { "bring along", "emmener" },
+        { "leave behind", "laisser" },
+        { "climb", "monter" },
+        { "climb again", "remonter" },
+        { "stop", "arrêter" },
+        { "stop here", "arrêter ici" },
+
+        // The loot. "Objet" for a piece of gear throughout, never "pièce":
+        // a pièce is a coin here and a pièce de puzzle there, and a third
+        // meaning in the one screen that shows all three would be one too
+        // many. The qualities are adjectives and agree with objet, which is
+        // masculine, so they are all written in that form.
+        { "gear", "équipement" },
+        { "what they carry", "ce qu'ils portent" },
+        { "in the bag", "dans le sac" },
+        { "%zu of %zu in the bag", "%zu sur %zu dans le sac" },
+        { "Nobody to dress", "Personne à équiper" },
+        { "Nothing here that would fit.", "Rien ici qui irait." },
+        { "nothing on this peg", "rien à cet emplacement" },
+        { "worn", "porté" },
+        { "wear it", "équiper" },
+        { "take it off", "retirer" },
+        { "throw away", "jeter" },
+        { "somebody else", "quelqu'un d'autre" },
+        { "Throw away the %s?", "Jeter %s ?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "Un objet %s de l'étage %u. Il ne revient pas." },
+        { "Throw it away", "Jeter" },
+        { "Your bag is full", "Votre sac est plein" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "Rien dedans n'était moins bon que ce qui est tombé, alors c'est resté par terre." },
+        { "%s was thrown out to make room.", "%s a été jeté pour faire de la place." },
+        { "clear out", "faire le tri" },
+        { "Nothing to clear out", "Rien à trier" },
+        { "Everything spare is better than something being worn, or sits on a peg with nothing on it.",
+            "Tout ce qui est en réserve vaut mieux que ce qui est porté, ou attend sur un emplacement vide." },
+        { "Throw away %zu pieces?", "Jeter %zu objets ?" },
+        { "Everything in the bag that is worse than what %s has on. Nothing being worn is touched.",
+            "Tout ce qui, dans le sac, vaut moins que ce que porte %s. Rien de porté n'est touché." },
+        { "Throw them away", "Tout jeter" },
+        { "The shadow left a %s (%s)", "L'ombre a laissé %s (%s)" },
+        { "One %s piece came back with you.", "Un objet %s est revenu avec vous." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d objets sont revenus avec vous, le meilleur %s." },
+
+        // The four pegs.
+        { "weapon", "arme" },
+        { "armour", "armure" },
+        { "ring", "anneau" },
+        { "accessory", "accessoire" },
+
+        // The six qualities.
+        { "common", "commun" },
+        { "uncommon", "peu commun" },
+        { "rare", "rare" },
+        { "epic", "épique" },
+        { "legendary", "légendaire" },
+        { "godlike", "divin" },
+
+        // What a piece can be called. Four per peg, plain objects rather
+        // than a fantasy catalogue, and short: they sit in a row 26 pixels
+        // high next to a quality.
+        { "Baton", "Bâton" },
+        { "Cleaver", "Couperet" },
+        { "Lance", "Lance" },
+        { "Hammer", "Marteau" },
+        { "Jerkin", "Pourpoint" },
+        { "Plate", "Plastron" },
+        { "Cloak", "Cape" },
+        { "Carapace", "Carapace" },
+        { "Band", "Anneau" },
+        { "Signet", "Chevalière" },
+        { "Circlet", "Cercle" },
+        { "Seal", "Sceau" },
+        { "Charm", "Porte-bonheur" },
+        { "Talisman", "Talisman" },
+        { "Pendant", "Pendentif" },
+        { "Feather", "Plume" },
 
         // ------------------------------------------------- the same in French
         //

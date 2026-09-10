@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "de Mii-race" },
         { "the mii tower", "de Mii-toren" },
         { "the dice duel", "het dobbelduel" },
+        { "the wheel", "het rad" },
+        { "the quest", "de klim" },
         { "what it pays", "wat het uitbetaalt" },
         { "your prediction", "jouw voorspelling" },
         { "your pairing code", "jouw koppelcode" },
@@ -1321,6 +1323,130 @@ namespace {
         { "the longest run", "de langste run" },
         { "the tallest tower", "de hoogste toren" },
         { "duels in a row", "duels op een rij" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "De klim" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "Een toren zonder top, op elke verdieping een schaduw, en een "
+            "groep van de mensen die je bent tegengekomen.\nElke schaduw "
+            "kan iets achterlaten. Rust ze uit, kies wie er gaat, en het "
+            "gevecht gaat vanzelf." },
+        { "Floor %d", "Verdieping %d" },
+        { "best floor %u", "beste verdieping %u" },
+        { "%d of %d places", "%d van %d plaatsen" },
+        { "an empty place", "een lege plek" },
+        { "Climb", "Klimmen" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Niemand is jou nog tegengekomen - je klimt alleen." },
+
+        { "Guard", "Wacht" },
+        { "Blade", "Kling" },
+        { "Spark", "Vonk" },
+        { "Mender", "Heler" },
+
+        { "%s hits for %d", "%s raakt voor %d" },
+        { "%s strikes for %d", "%s haalt uit, %d" },
+        { "%s wears it down, %d", "%s sloopt hem, %d" },
+        { "%s patches up %s", "%s lapt %s op" },
+        { "%s stands in front", "%s gaat ervoor staan" },
+        { "The shadow hits %s for %d", "De schaduw raakt %s voor %d" },
+        { "The shadow sweeps, %d", "De schaduw maait, %d" },
+        { "%s falls", "%s valt" },
+        { "Floor %d is yours", "Verdieping %d is van jou" },
+
+        { "The shadow keeps the floor", "De schaduw houdt de verdieping" },
+        { "You came back down", "Je bent weer naar beneden gekomen" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d verdiepingen, en %u munten voor de verdiepingen die je "
+            "nog niet had gehaald." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Geen enkele verdieping. Kom nog wat mensen tegen en neem ze mee." },
+        { "Climb again", "Opnieuw klimmen" },
+        { "bring along", "meenemen" },
+        { "leave behind", "achterlaten" },
+        { "climb", "klimmen" },
+        { "climb again", "opnieuw klimmen" },
+        { "stop", "stoppen" },
+        { "stop here", "hier stoppen" },
+
+        { "gear", "uitrusting" },
+        { "what they carry", "wat ze dragen" },
+        { "in the bag", "in de tas" },
+        { "%zu of %zu in the bag", "%zu van %zu in de tas" },
+        { "Nobody to dress", "Niemand om aan te kleden" },
+        { "Nothing here that would fit.", "Hier past niets." },
+        { "nothing on this peg", "niets op deze haak" },
+        { "worn", "gedragen" },
+        { "wear it", "aandoen" },
+        { "take it off", "afdoen" },
+        { "throw away", "weggooien" },
+        { "somebody else", "iemand anders" },
+        { "Throw away the %s?", "%s weggooien?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "Een %s stuk van verdieping %u. Het komt niet terug." },
+        { "Throw it away", "Weggooien" },
+        { "Your bag is full", "Je tas is vol" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "Niets erin was slechter dan wat er viel, dus het bleef liggen." },
+        { "%s was thrown out to make room.", "%s is weggegooid om ruimte te maken." },
+        { "clear out", "opruimen" },
+        { "Nothing to clear out", "Niets op te ruimen" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "Alles wat over is, is beter dan iets wat gedragen wordt, of "
+            "hoort op een lege haak." },
+        { "Throw away %zu pieces?", "%zu stukken weggooien?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "Alles in de tas dat slechter is dan wat %s draagt. Wat "
+            "gedragen wordt blijft." },
+        { "Throw them away", "Alles weggooien" },
+        { "The shadow left a %s (%s)", "De schaduw liet %s achter (%s)" },
+        { "One %s piece came back with you.", "Eén %s stuk kwam met je mee terug." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d stukken kwamen met je mee terug, het beste daarvan %s." },
+
+        { "weapon", "wapen" },
+        { "armour", "harnas" },
+        { "ring", "ring" },
+        { "accessory", "sieraad" },
+
+        { "common", "gewoon" },
+        { "uncommon", "ongewoon" },
+        { "rare", "zeldzaam" },
+        { "epic", "episch" },
+        { "legendary", "legendarisch" },
+        { "godlike", "goddelijk" },
+
+        { "Baton", "Knuppel" },
+        { "Cleaver", "Hakmes" },
+        { "Lance", "Lans" },
+        { "Hammer", "Hamer" },
+        { "Jerkin", "Wambuis" },
+        { "Plate", "Borstplaat" },
+        { "Cloak", "Mantel" },
+        { "Carapace", "Schild" },
+        { "Band", "Band" },
+        { "Signet", "Zegelring" },
+        { "Circlet", "Diadeem" },
+        { "Seal", "Zegel" },
+        { "Charm", "Geluksbrenger" },
+        { "Talisman", "Talisman" },
+        { "Pendant", "Hanger" },
+        { "Feather", "Veer" },
 
         // ------------------------------------------------- the same in French
         //

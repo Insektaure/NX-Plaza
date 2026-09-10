@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "Miiレース" },
         { "the mii tower", "Miiタワー" },
         { "the dice duel", "サイコロ勝負" },
+        { "the wheel", "ルーレット" },
+        { "the quest", "クエスト" },
         { "what it pays", "配当" },
         { "your prediction", "あなたの予想" },
         { "your pairing code", "あなたのペアリングコード" },
@@ -1168,6 +1170,123 @@ namespace {
         { "the longest run", "最長の走行" },
         { "the tallest tower", "いちばん高いタワー" },
         { "duels in a row", "連勝した数" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "クエスト" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "てっぺんのない塔、どの階にも影、そしてすれちがった人たちで組んだパーティー。\nどの影も何かを落とすことがあります。そうびを整え、誰が行くかを選べば、戦いは自動で進みます。" },
+        { "Floor %d", "%d階" },
+        { "best floor %u", "最高%u階" },
+        { "%d of %d places", "%d / %d 人" },
+        { "an empty place", "空き" },
+        { "Climb", "登る" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "まだ誰ともすれちがっていません。ひとりで登ります。" },
+
+        { "Guard", "守り" },
+        { "Blade", "刃" },
+        { "Spark", "閃き" },
+        { "Mender", "癒し" },
+
+        { "%s hits for %d", "%sの攻撃、%d" },
+        { "%s strikes for %d", "%sの一撃、%d" },
+        { "%s wears it down, %d", "%sが削った、%d" },
+        { "%s patches up %s", "%sが%sを手当てした" },
+        { "%s stands in front", "%sが前に出た" },
+        { "The shadow hits %s for %d", "影の攻撃、%sに%d" },
+        { "The shadow sweeps, %d", "影のなぎ払い、%d" },
+        { "%s falls", "%sが倒れた" },
+        { "Floor %d is yours", "%d階を突破" },
+
+        { "The shadow keeps the floor", "影が階を守りきった" },
+        { "You came back down", "降りてきました" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d階、まだ届いていなかった階のぶんで%uコイン。" },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "一階も登れませんでした。もう少し人とすれちがって、連れていきましょう。" },
+        { "Climb again", "もう一度登る" },
+        { "bring along", "連れていく" },
+        { "leave behind", "置いていく" },
+        { "climb", "登る" },
+        { "climb again", "もう一度" },
+        { "stop", "やめる" },
+        { "stop here", "ここでやめる" },
+
+        { "gear", "そうび" },
+        { "what they carry", "持ちもの" },
+        { "in the bag", "ふくろの中" },
+        { "%zu of %zu in the bag", "ふくろ %zu / %zu" },
+        { "Nobody to dress", "そうびさせる人がいません" },
+        { "Nothing here that would fit.", "ここに合うものはありません。" },
+        { "nothing on this peg", "ここには何もない" },
+        { "worn", "そうび中" },
+        { "wear it", "そうびする" },
+        { "take it off", "はずす" },
+        { "throw away", "すてる" },
+        { "somebody else", "ほかの人" },
+        { "Throw away the %s?", "%sをすてますか？" },
+        { "A %s piece from floor %u. It does not come back.", "%sの品、%u階のもの。もどってきません。" },
+        { "Throw it away", "すてる" },
+        { "Your bag is full", "ふくろがいっぱいです" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "ふくろの中に落ちたものより悪いものはなく、そのまま床に残りました。" },
+        { "%s was thrown out to make room.", "%sを捨てて場所を空けました。" },
+        { "clear out", "かたづける" },
+        { "Nothing to clear out", "かたづけるものはありません" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "予備はどれも身につけているものより上か、何も付けていない場所のぶんです。" },
+        { "Throw away %zu pieces?", "%zu個を捨てますか？" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "%sが身につけているものより弱いものを、ふくろからすべて。身につけているものは残ります。" },
+        { "Throw them away", "すべて捨てる" },
+        { "The shadow left a %s (%s)", "影が%sを落とした（%s）" },
+        { "One %s piece came back with you.", "%sの品を1つ持ち帰りました。" },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d個の品を持ち帰りました。いちばんよいのは%s。" },
+
+        { "weapon", "ぶき" },
+        { "armour", "よろい" },
+        { "ring", "ゆびわ" },
+        { "accessory", "アクセサリー" },
+
+        { "common", "コモン" },
+        { "uncommon", "アンコモン" },
+        { "rare", "レア" },
+        { "epic", "エピック" },
+        { "legendary", "レジェンド" },
+        { "godlike", "ゴッド" },
+
+        { "Baton", "こん棒" },
+        { "Cleaver", "なた" },
+        { "Lance", "槍" },
+        { "Hammer", "ハンマー" },
+        { "Jerkin", "胴着" },
+        { "Plate", "胸当て" },
+        { "Cloak", "マント" },
+        { "Carapace", "甲羅" },
+        { "Band", "輪" },
+        { "Signet", "印章" },
+        { "Circlet", "サークレット" },
+        { "Seal", "封印" },
+        { "Charm", "お守り" },
+        { "Talisman", "タリスマン" },
+        { "Pendant", "ペンダント" },
+        { "Feather", "羽根" },
 
         // ------------------------------------------------- the same in French
         //

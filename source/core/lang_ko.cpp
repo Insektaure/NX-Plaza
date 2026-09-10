@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "mii 레이스" },
         { "the mii tower", "mii 타워" },
         { "the dice duel", "주사위 대결" },
+        { "the wheel", "룰렛" },
+        { "the quest", "퀘스트" },
         { "what it pays", "배당표" },
         { "your prediction", "내 예상" },
         { "your pairing code", "페어링 코드" },
@@ -1188,6 +1190,125 @@ namespace {
         { "the longest run", "최장 거리" },
         { "the tallest tower", "가장 높은 탑" },
         { "duels in a row", "연승" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "퀘스트" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "꼭대기가 없는 탑, 층마다 그림자, 그리고 스쳐 지나간 사람들로 짠 파티.\n어떤 그림자든 무언가를 남길 수 "
+            "있습니다. 장비를 갖추고 누가 갈지 고르면 전투는 알아서 진행됩니다." },
+        { "Floor %d", "%d층" },
+        { "best floor %u", "최고 %u층" },
+        { "%d of %d places", "%d / %d 자리" },
+        { "an empty place", "빈자리" },
+        { "Climb", "오르기" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "아직 아무도 당신을 스쳐 지나가지 않았습니다 - 혼자 오릅니다." },
+
+        { "Guard", "방패" },
+        { "Blade", "검" },
+        { "Spark", "불꽃" },
+        { "Mender", "치유" },
+
+        { "%s hits for %d", "%s의 공격, %d" },
+        { "%s strikes for %d", "%s의 일격, %d" },
+        { "%s wears it down, %d", "%s이(가) 깎아냈다, %d" },
+        { "%s patches up %s", "%s이(가) %s을(를) 치료" },
+        { "%s stands in front", "%s이(가) 앞에 섰다" },
+        { "The shadow hits %s for %d", "그림자의 공격, %s에게 %d" },
+        { "The shadow sweeps, %d", "그림자의 휩쓸기, %d" },
+        { "%s falls", "%s 쓰러짐" },
+        { "Floor %d is yours", "%d층 돌파" },
+
+        { "The shadow keeps the floor", "그림자가 층을 지켰다" },
+        { "You came back down", "다시 내려왔습니다" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d층, 아직 오르지 못했던 층의 몫으로 %u코인." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "한 층도 못 올랐습니다. 몇 사람 더 스쳐 지나가서 데려가세요." },
+        { "Climb again", "다시 오르기" },
+        { "bring along", "데려가기" },
+        { "leave behind", "두고 가기" },
+        { "climb", "오르기" },
+        { "climb again", "다시 오르기" },
+        { "stop", "그만두기" },
+        { "stop here", "여기서 그만" },
+
+        { "gear", "장비" },
+        { "what they carry", "지닌 것" },
+        { "in the bag", "가방 안" },
+        { "%zu of %zu in the bag", "가방 %zu / %zu" },
+        { "Nobody to dress", "장비시킬 사람이 없습니다" },
+        { "Nothing here that would fit.", "여기에 맞는 것이 없습니다." },
+        { "nothing on this peg", "이 자리는 비어 있음" },
+        { "worn", "착용 중" },
+        { "wear it", "착용" },
+        { "take it off", "해제" },
+        { "throw away", "버리기" },
+        { "somebody else", "다른 사람" },
+        { "Throw away the %s?", "%s을(를) 버릴까요?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "%s 등급 물건, %u층에서 나왔습니다. 다시 돌아오지 않습니다." },
+        { "Throw it away", "버리기" },
+        { "Your bag is full", "가방이 가득 찼습니다" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "가방 안에 떨어진 것보다 나쁜 것이 없어서 바닥에 남았습니다." },
+        { "%s was thrown out to make room.", "자리를 만들려고 %s을(를) 버렸습니다." },
+        { "clear out", "정리" },
+        { "Nothing to clear out", "정리할 것이 없습니다" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "남은 것이 모두 착용 중인 것보다 좋거나, 비어 있는 자리의 몫입니다." },
+        { "Throw away %zu pieces?", "%zu개를 버릴까요?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "%s이(가) 착용한 것보다 나쁜 것을 가방에서 모두. 착용 중인 것은 건드리지 않습니다." },
+        { "Throw them away", "모두 버리기" },
+        { "The shadow left a %s (%s)", "그림자가 %s을(를) 남겼다 (%s)" },
+        { "One %s piece came back with you.", "%s 물건 하나를 가지고 돌아왔습니다." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d개를 가지고 돌아왔습니다. 그중 최고는 %s." },
+
+        { "weapon", "무기" },
+        { "armour", "갑옷" },
+        { "ring", "반지" },
+        { "accessory", "장신구" },
+
+        { "common", "일반" },
+        { "uncommon", "고급" },
+        { "rare", "희귀" },
+        { "epic", "영웅" },
+        { "legendary", "전설" },
+        { "godlike", "신화" },
+
+        { "Baton", "곤봉" },
+        { "Cleaver", "식칼" },
+        { "Lance", "창" },
+        { "Hammer", "망치" },
+        { "Jerkin", "조끼" },
+        { "Plate", "흉갑" },
+        { "Cloak", "망토" },
+        { "Carapace", "등껍질" },
+        { "Band", "고리" },
+        { "Signet", "인장" },
+        { "Circlet", "서클릿" },
+        { "Seal", "봉인" },
+        { "Charm", "부적" },
+        { "Talisman", "호부" },
+        { "Pendant", "펜던트" },
+        { "Feather", "깃털" },
 
         // ------------------------------------------------- the same in French
         //

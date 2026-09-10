@@ -1,5 +1,6 @@
 #include "app.h"
 #include "core/i18n.h"
+#include "core/quest_record.h"
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
@@ -16,6 +17,9 @@ namespace nxp {
 
 namespace {
 
+    // The quest keeps its record in a file of its own.
+    uint32_t questBest() { return QuestRecord::get().deepest(); }
+
     // The shelf, in one place.
     struct Game {
         ui::Icon icon;
@@ -27,6 +31,9 @@ namespace {
         // whatever it found, which turned the tower's eleven floors into
         // eleven metres.
         const char* unit;
+        // For a game that keeps its record somewhere else. Read only when
+        // `score` is null.
+        uint32_t (*best)() = nullptr;
     };
 
     const Game kShelf[] = {
@@ -58,6 +65,12 @@ namespace {
             "Miss the shoulders below and they fall; drift too far from the base "
             "and the lot goes over.",
             &makeMiiTowerScene, "tower", "floors" },
+        { ui::Icon::Shield, "The quest",
+            "A tower with no top, a shadow on every floor, and a party made "
+            "of the people you have crossed.\n"
+            "Every shadow can leave something behind. Gear them up, pick who "
+            "goes, and the fight runs itself.",
+            &makeQuestScene, nullptr, "floors", &questBest },
         { ui::Icon::Runner, "Plaza dash",
             "Your own Mii running through the plaza, jumping what the market "
             "leaves in the way.\n"
@@ -239,7 +252,8 @@ namespace {
             r.text(textX, inner.y, tr(entry.name), name);
 
             // The record, opposite the name, for a game that keeps one.
-            uint32_t best = entry.score ? app.store().bestScore(entry.score) : 0u;
+            uint32_t best = entry.score ? app.store().bestScore(entry.score)
+                                        : (entry.best ? entry.best() : 0u);
             if (best > 0) {
                 TextStyle meta;
                 meta.size = theme::textSm;

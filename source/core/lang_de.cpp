@@ -71,6 +71,8 @@ namespace {
         { "the mii race", "das Mii-Rennen" },
         { "the mii tower", "der Mii-Turm" },
         { "the dice duel", "das Würfelduell" },
+        { "the wheel", "das rad" },
+        { "the quest", "der aufstieg" },
         { "what it pays", "was es zahlt" },
         { "your prediction", "dein Tipp" },
         { "your pairing code", "dein Kopplungscode" },
@@ -1352,6 +1354,131 @@ namespace {
         { "the longest run", "der weiteste Lauf" },
         { "the tallest tower", "der höchste Turm" },
         { "duels in a row", "Duelle in Folge" },
+
+        // --------------------------------------------------------- the quest
+        //
+        // The tower off the games shelf. "Étage" throughout for a floor,
+        // never "niveau": a level is a thing a game has and a floor is a
+        // thing a building has. The party is "il" in the singular - French
+        // has no neutral singular that reads as anything but a construction,
+        // and a pass is a card rather than a person's own gender.
+        //
+        // The class names are one word each because they sit in a stat block
+        // eighteen pixels high: Lame, Garde, Éclat, Soigneur. Nothing longer
+        // fits, and a role in a party game is a noun anyway.
+        { "The quest", "Der Aufstieg" },
+        { "A tower with no top, a shadow on every floor, and a party "
+          "made of the people you have crossed.\nEvery shadow can leave "
+          "something behind. Gear them up, pick who goes, and the fight "
+          "runs itself.",
+            "Ein Turm ohne Spitze, auf jedem Stockwerk ein Schatten, und "
+            "eine Truppe aus den Leuten, die du getroffen hast.\nJeder "
+            "Schatten kann etwas hinterlassen. Rüste sie aus, wähle aus, "
+            "wer geht, und der Kampf läuft von selbst." },
+        { "Floor %d", "Stockwerk %d" },
+        { "best floor %u", "bestes Stockwerk %u" },
+        { "%d of %d places", "%d von %d Plätzen" },
+        { "an empty place", "ein freier Platz" },
+        { "Climb", "Steigen" },
+        { "Nobody has crossed you yet - you climb alone.",
+            "Dich hat noch niemand getroffen - du steigst allein." },
+
+        { "Guard", "Wache" },
+        { "Blade", "Klinge" },
+        { "Spark", "Funke" },
+        { "Mender", "Heiler" },
+
+        { "%s hits for %d", "%s trifft für %d" },
+        { "%s strikes for %d", "%s schlägt zu, %d" },
+        { "%s wears it down, %d", "%s zermürbt ihn, %d" },
+        { "%s patches up %s", "%s flickt %s zusammen" },
+        { "%s stands in front", "%s stellt sich davor" },
+        { "The shadow hits %s for %d", "Der Schatten trifft %s für %d" },
+        { "The shadow sweeps, %d", "Der Schatten holt aus, %d" },
+        { "%s falls", "%s fällt" },
+        { "Floor %d is yours", "Stockwerk %d gehört dir" },
+
+        { "The shadow keeps the floor", "Der Schatten hält das Stockwerk" },
+        { "You came back down", "Du bist wieder heruntergekommen" },
+        { "%d floors, and %u coins for the ones you had not reached.",
+            "%d Stockwerke, und %u Münzen für die, die du noch nicht "
+            "erreicht hattest." },
+        { "Not one floor. Cross a few more people and bring them along.",
+            "Kein einziges Stockwerk. Triff ein paar mehr Leute und nimm sie mit." },
+        { "Climb again", "Noch einmal" },
+        { "bring along", "mitnehmen" },
+        { "leave behind", "zurücklassen" },
+        { "climb", "steigen" },
+        { "climb again", "noch einmal" },
+        { "stop", "aufhören" },
+        { "stop here", "hier aufhören" },
+
+        { "gear", "ausrüstung" },
+        { "what they carry", "was sie tragen" },
+        { "in the bag", "im beutel" },
+        { "%zu of %zu in the bag", "%zu von %zu im Beutel" },
+        { "Nobody to dress", "Niemand zum Ausrüsten" },
+        { "Nothing here that would fit.", "Hier passt nichts." },
+        { "nothing on this peg", "nichts an diesem Haken" },
+        { "worn", "getragen" },
+        { "wear it", "anlegen" },
+        { "take it off", "ablegen" },
+        { "throw away", "wegwerfen" },
+        { "somebody else", "jemand anderes" },
+        { "Throw away the %s?", "%s wegwerfen?" },
+        { "A %s piece from floor %u. It does not come back.",
+            "Ein %s Stück aus Stockwerk %u. Es kommt nicht zurück." },
+        { "Throw it away", "Wegwerfen" },
+        { "Your bag is full", "Dein Beutel ist voll" },
+        { "Nothing in it was worse than what fell, so what fell stayed on the floor.",
+            "Nichts darin war schlechter als das, was fiel, also blieb es liegen." },
+        { "%s was thrown out to make room.",
+            "%s wurde weggeworfen, um Platz zu schaffen." },
+        { "clear out", "aufräumen" },
+        { "Nothing to clear out", "Nichts aufzuräumen" },
+        { "Everything spare is better than something being worn, or "
+          "sits on a peg with nothing on it.",
+            "Alles Übrige ist besser als etwas Getragenes oder gehört an "
+            "einen leeren Haken." },
+        { "Throw away %zu pieces?", "%zu Stücke wegwerfen?" },
+        { "Everything in the bag that is worse than what %s has on. "
+          "Nothing being worn is touched.",
+            "Alles im Beutel, was schlechter ist als das, was %s trägt. "
+            "Getragenes bleibt." },
+        { "Throw them away", "Alle wegwerfen" },
+        { "The shadow left a %s (%s)", "Der Schatten ließ %s zurück (%s)" },
+        { "One %s piece came back with you.", "Ein %s Stück kam mit zurück." },
+        { "%d pieces came back with you, the best of them %s.",
+            "%d Stücke kamen mit zurück, das beste davon %s." },
+
+        { "weapon", "waffe" },
+        { "armour", "rüstung" },
+        { "ring", "ring" },
+        { "accessory", "schmuck" },
+
+        { "common", "gewöhnlich" },
+        { "uncommon", "ungewöhnlich" },
+        { "rare", "selten" },
+        { "epic", "episch" },
+        { "legendary", "legendär" },
+        { "godlike", "göttlich" },
+
+        { "Baton", "Knüppel" },
+        { "Cleaver", "Hackmesser" },
+        { "Lance", "Lanze" },
+        { "Hammer", "Hammer" },
+        { "Jerkin", "Wams" },
+        { "Plate", "Panzer" },
+        { "Cloak", "Umhang" },
+        { "Carapace", "Chitin" },
+        { "Band", "Reif" },
+        { "Signet", "Siegelring" },
+        { "Circlet", "Stirnreif" },
+        { "Seal", "Siegel" },
+        { "Charm", "Glücksbringer" },
+        { "Talisman", "Talisman" },
+        { "Pendant", "Anhänger" },
+        { "Feather", "Feder" },
 
         // ------------------------------------------------- the same in French
         //
