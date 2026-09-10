@@ -1296,6 +1296,35 @@ namespace {
         { "could not copy %s", "не удалось скопировать %s" },
         { "there was nothing to back up", "копировать было нечего" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "ваша статистика" },
+        { "Everything so far", "Итоги на сегодня" },
+        { "crossings in total", "встреч всего" },
+        { "the one you cross most", "кого встречаете чаще всех" },
+        { "places", "мест" },
+        { "your oldest card", "самая старая карточка" },
+        { "starred", "в избранном" },
+        { "days you have crossed somebody", "дни, когда вы кого-то встретили" },
+        { "%u days", "%u дн." },
+        { "%u months", "%u мес." },
+        { "%u years", "%u г." },
+        { "sent something back", "ответов отправлено" },
+        { "still unopened", "ещё не открыто" },
+        { "pieces", "кусочков" },
+        { "pictures finished", "картин собрано" },
+        { "people gave you a piece", "человек дали вам кусочек" },
+        { "coins", "монеты" },
+        { "earned by turning up", "получено за появления" },
+        { "spent", "потрачено" },
+        { "won at the games", "выиграно в играх" },
+        { "the longest run", "самый долгий забег" },
+        { "the tallest tower", "самая высокая башня" },
+        { "duels in a row", "дуэлей подряд" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

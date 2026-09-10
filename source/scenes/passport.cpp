@@ -164,6 +164,9 @@ public:
             m_pass.setFace(Mii::random());
             commit(app);
         }
+
+        if (input.pressed(HidNpadButton_Y))
+            app.pushOverlay(makeStatsScene());
     }
 
     void draw(App& app, Renderer& r) override
@@ -465,6 +468,7 @@ private:
         // screen that is not obvious from looking at it, so it is always named.
         app.hint(m_onCard ? "Right" : "Left", m_onCard ? "your details" : "your mii");
         app.hint("X", "shuffle face");
+        app.hint("Y", "your record");
 
         struct RowSpec {
             const char* label;

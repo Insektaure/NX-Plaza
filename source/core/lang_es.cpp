@@ -1302,6 +1302,35 @@ namespace {
         { "could not copy %s", "no se pudo copiar %s" },
         { "there was nothing to back up", "no había nada que respaldar" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "tu historial" },
+        { "Everything so far", "Todo hasta ahora" },
+        { "crossings in total", "cruces en total" },
+        { "the one you cross most", "con quien más te cruzas" },
+        { "places", "lugares" },
+        { "your oldest card", "tu tarjeta más antigua" },
+        { "starred", "destacadas" },
+        { "days you have crossed somebody", "días en que te cruzaste con alguien" },
+        { "%u days", "%u días" },
+        { "%u months", "%u meses" },
+        { "%u years", "%u años" },
+        { "sent something back", "devoluciones" },
+        { "still unopened", "sin abrir todavía" },
+        { "pieces", "piezas" },
+        { "pictures finished", "imágenes terminadas" },
+        { "people gave you a piece", "personas te dieron una pieza" },
+        { "coins", "monedas" },
+        { "earned by turning up", "ganadas por aparecer" },
+        { "spent", "gastadas" },
+        { "won at the games", "ganadas en los juegos" },
+        { "the longest run", "la carrera más larga" },
+        { "the tallest tower", "la torre más alta" },
+        { "duels in a row", "duelos seguidos" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

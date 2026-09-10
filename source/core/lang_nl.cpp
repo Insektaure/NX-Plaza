@@ -1293,6 +1293,35 @@ namespace {
         { "could not copy %s", "%s kon niet worden gekopieerd" },
         { "there was nothing to back up", "er was niets om te back-uppen" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "jouw overzicht" },
+        { "Everything so far", "Alles tot nu toe" },
+        { "crossings in total", "ontmoetingen in totaal" },
+        { "the one you cross most", "wie je het vaakst kruist" },
+        { "places", "plekken" },
+        { "your oldest card", "je oudste kaart" },
+        { "starred", "gemarkeerd" },
+        { "days you have crossed somebody", "dagen waarop je iemand kruiste" },
+        { "%u days", "%u dagen" },
+        { "%u months", "%u maanden" },
+        { "%u years", "%u jaar" },
+        { "sent something back", "teruggestuurd" },
+        { "still unopened", "nog ongeopend" },
+        { "pieces", "stukjes" },
+        { "pictures finished", "plaatjes af" },
+        { "people gave you a piece", "mensen gaven je een stukje" },
+        { "coins", "munten" },
+        { "earned by turning up", "verdiend met langskomen" },
+        { "spent", "uitgegeven" },
+        { "won at the games", "gewonnen bij de spellen" },
+        { "the longest run", "de langste run" },
+        { "the tallest tower", "de hoogste toren" },
+        { "duels in a row", "duels op een rij" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

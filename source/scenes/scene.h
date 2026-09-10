@@ -77,6 +77,7 @@ std::unique_ptr<Scene> makeLanternWheelScene();
 // Three reels, in a three symbol machine and a five symbol one.
 std::unique_ptr<Scene> makeSlotsScene();
 std::unique_ptr<Scene> makePassportScene();
+std::unique_ptr<Scene> makeStatsScene();
 std::unique_ptr<Scene> makeSettingsScene();
 // One collected pass, close up. `siblings` is the list the caller was showing,
 // in the order it was showing it, so the shoulder buttons can step through it

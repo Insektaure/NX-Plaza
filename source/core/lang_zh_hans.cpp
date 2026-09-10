@@ -1121,6 +1121,35 @@ namespace {
         { "could not copy %s", "无法复制 %s" },
         { "there was nothing to back up", "没有需要备份的内容" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "你的记录" },
+        { "Everything so far", "到目前为止的一切" },
+        { "crossings in total", "擦肩总数" },
+        { "the one you cross most", "擦肩最多的人" },
+        { "places", "地点" },
+        { "your oldest card", "最早的一张卡片" },
+        { "starred", "已加星" },
+        { "days you have crossed somebody", "你擦肩而过的星期" },
+        { "%u days", "%u 天" },
+        { "%u months", "%u 个月" },
+        { "%u years", "%u 年" },
+        { "sent something back", "回赠次数" },
+        { "still unopened", "仍未打开" },
+        { "pieces", "碎片" },
+        { "pictures finished", "完成的画" },
+        { "people gave you a piece", "人给过你碎片" },
+        { "coins", "硬币" },
+        { "earned by turning up", "来一趟就有的" },
+        { "spent", "已花费" },
+        { "won at the games", "在游戏里赢到的" },
+        { "the longest run", "跑得最远的一次" },
+        { "the tallest tower", "最高的塔" },
+        { "duels in a row", "连胜场数" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

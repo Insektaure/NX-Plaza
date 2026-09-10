@@ -1140,6 +1140,35 @@ namespace {
         { "could not copy %s", "%s をコピーできませんでした" },
         { "there was nothing to back up", "バックアップするものがありませんでした" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "あなたの記録" },
+        { "Everything so far", "これまでのすべて" },
+        { "crossings in total", "すれちがい合計" },
+        { "the one you cross most", "いちばん多くすれちがった人" },
+        { "places", "場所" },
+        { "your oldest card", "いちばん古いカード" },
+        { "starred", "お気に入り" },
+        { "days you have crossed somebody", "だれかとすれちがった曜日" },
+        { "%u days", "%u日" },
+        { "%u months", "%uか月" },
+        { "%u years", "%u年" },
+        { "sent something back", "お返しした数" },
+        { "still unopened", "未確認" },
+        { "pieces", "ピース" },
+        { "pictures finished", "完成した絵" },
+        { "people gave you a piece", "ピースをくれた人" },
+        { "coins", "コイン" },
+        { "earned by turning up", "開いてもらった分" },
+        { "spent", "使った分" },
+        { "won at the games", "ゲームで勝った分" },
+        { "the longest run", "最長の走行" },
+        { "the tallest tower", "いちばん高いタワー" },
+        { "duels in a row", "連勝した数" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a

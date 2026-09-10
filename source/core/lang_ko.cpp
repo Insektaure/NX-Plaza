@@ -1160,6 +1160,35 @@ namespace {
         { "could not copy %s", "%s을(를) 복사할 수 없었습니다" },
         { "there was nothing to back up", "백업할 것이 없었습니다" },
 
+        // ------------------------------------------------------- your plaza
+        //
+        // The stats page off the pass. Its captions sit under a number, so
+        // they are fragments rather than sentences: "croisements en tout"
+        // under 214, the way a caption reads on a card.
+        { "your record", "나의 기록" },
+        { "Everything so far", "지금까지의 모든 것" },
+        { "crossings in total", "스쳐 지남 합계" },
+        { "the one you cross most", "가장 많이 스쳐 지난 사람" },
+        { "places", "장소" },
+        { "your oldest card", "가장 오래된 카드" },
+        { "starred", "즐겨찾기" },
+        { "days you have crossed somebody", "누군가와 스쳐 지난 요일" },
+        { "%u days", "%u일" },
+        { "%u months", "%u개월" },
+        { "%u years", "%u년" },
+        { "sent something back", "답례한 횟수" },
+        { "still unopened", "아직 안 읽음" },
+        { "pieces", "조각" },
+        { "pictures finished", "완성한 그림" },
+        { "people gave you a piece", "조각을 준 사람" },
+        { "coins", "코인" },
+        { "earned by turning up", "접속으로 받은 코인" },
+        { "spent", "사용" },
+        { "won at the games", "게임에서 딴 코인" },
+        { "the longest run", "최장 거리" },
+        { "the tallest tower", "가장 높은 탑" },
+        { "duels in a row", "연승" },
+
         // ------------------------------------------------- the same in French
         //
         // Listed on purpose rather than left out, so the scanner can tell a
