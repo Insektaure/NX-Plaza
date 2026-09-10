@@ -105,6 +105,17 @@ struct TrophyFacts {
     // struct is a state that either holds or does not.
     uint32_t dashBest = 0;
 
+    // The quest. All of it is already in quest.dat - the deepest floor
+    // reached, how many climbs have been started, the bag and who is
+    // wearing what - so none of these cost the record a byte.
+    uint32_t questDeepest = 0; // the deepest floor ever reached
+    uint32_t questGear = 0;    // pieces in the bag
+    uint32_t questBest = 0;    // the best quality held, as a Quality
+    bool questFullSet = false; // somebody wearing all four pegs at once
+    // Five in the party at once, which needs twenty-five people crossed:
+    // a plaza fact wearing a quest hat, and the point of the tower.
+    bool questFullParty = false;
+
     bool passReady = false;    // a name, a greeting and something carried
     bool lateCrossing = false; // one between midnight and four
 

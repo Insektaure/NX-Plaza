@@ -1,7 +1,11 @@
 #include "core/trophies.h"
 
+#include "core/quest_record.h"
+#include "core/quest_rules.h"
 #include "core/store.h"
 #include "core/wallet.h"
+
+#include <algorithm>
 
 namespace nxp {
 
@@ -277,6 +281,37 @@ namespace {
             "Take pieces from fifty different people.", Tier::Gold,
             [](const TrophyFacts& f) { return f.pieceDonors >= 50; } },
 
+        // -------------------------------------------------------- the quest
+        { "quest_first_floor", "A shadow on the stair",
+            "Clear a floor of the quest.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.questDeepest >= 1; } },
+        { "quest_first_gear", "Something to wear",
+            "Find your first piece of gear in the quest.", Tier::Bronze,
+            [](const TrophyFacts& f) { return f.questGear >= 1; } },
+        { "quest_floor_ten", "Ten floors up",
+            "Reach the tenth floor of the quest.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.questDeepest >= 10; } },
+        { "quest_full_set", "Well turned out",
+            "Have somebody wearing a weapon, armour, a ring and an accessory "
+            "at once.",
+            Tier::Silver, [](const TrophyFacts& f) { return f.questFullSet; } },
+        { "quest_full_party", "A full stair",
+            "Take five up the tower at once.", Tier::Silver,
+            [](const TrophyFacts& f) { return f.questFullParty; } },
+        { "quest_floor_twenty", "Twenty floors up",
+            "Reach the twentieth floor of the quest.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.questDeepest >= 20; } },
+        // Legendary starts falling on floor eight and lands about once in
+        // sixty kills there; godlike does not exist below sixteen and lands
+        // about once in a hundred. The second is the rarest thing in the app,
+        // and it gates the platinum - which is the point of a platinum.
+        { "quest_legendary", "Legendary",
+            "Hold a legendary piece of gear.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.questBest >= Quality_Legendary; } },
+        { "quest_godlike", "Godlike",
+            "Hold a godlike piece of gear.", Tier::Gold,
+            [](const TrophyFacts& f) { return f.questBest >= Quality_Godlike; } },
+
         // ---------------------------------------------------------- platinum
         // Decided from the others, so it has no test of its own.
         { "the_whole_plaza", "The whole plaza",
@@ -298,6 +333,36 @@ TrophyFacts trophyFacts(const Store& store)
     facts.coinsSpent = Wallet::get().spent();
     facts.balance = Wallet::get().balance();
     facts.coinsWon = Wallet::get().won();
+
+    // And the quest, from its own file, for the same reason: none of it is
+    // anything the store walked past.
+    const QuestRecord& quest = QuestRecord::get();
+    facts.questDeepest = quest.deepest();
+    facts.questGear = uint32_t(quest.items().size());
+    for (const Item& item : quest.items())
+        facts.questBest = std::max(facts.questBest, uint32_t(item.quality));
+
+    // Four pegs filled on one person. Asked of everybody who is wearing
+    // anything rather than of the party, because a party is a thing the
+    // quest screen assembles and this walk has never heard of it.
+    for (const Item& item : quest.items()) {
+        std::string owner;
+        if (!quest.wearer(item.id, owner))
+            continue;
+        QuestRecord::Loadout gear = quest.loadout(owner);
+        bool all = true;
+        for (int slot = 0; slot < Slot_Count; slot++)
+            all = all && gear.worn[slot] != 0;
+        if (all) {
+            facts.questFullSet = true;
+            break;
+        }
+    }
+
+    // Five places in the party is twenty-five people crossed - the same
+    // rule partySlots() uses, and the reason it is written here as well is
+    // that a trophy must not depend on a scene being open.
+    facts.questFullParty = facts.uniquePeople >= 25;
     return facts;
 }
 

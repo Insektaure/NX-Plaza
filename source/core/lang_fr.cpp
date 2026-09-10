@@ -653,6 +653,33 @@ namespace {
         { "Win two hundred coins betting in the games tab.",
             "Gagnez deux cents pièces en pariant dans l'onglet des jeux." },
         { "Fifty contributors", "Cinquante contributeurs" },
+
+        // The quest's own. The two quality words appear twice in
+        // this file - lowercase as a tier on a piece of gear, and
+        // capitalised here as the name of a trophy - and they are
+        // separate keys on purpose.
+        { "A shadow on the stair", "Une ombre dans l'escalier" },
+        { "Clear a floor of the quest.", "Franchir un étage de la quête." },
+        { "Something to wear", "De quoi s'équiper" },
+        { "Find your first piece of gear in the quest.",
+            "Trouver son premier objet dans la quête." },
+        { "Ten floors up", "Dix étages plus haut" },
+        { "Reach the tenth floor of the quest.",
+            "Atteindre le dixième étage de la quête." },
+        { "Well turned out", "Bien équipé" },
+        { "Have somebody wearing a weapon, armour, a ring and an accessory at once.",
+            "Avoir quelqu'un portant une arme, une armure, un anneau et un accessoire à la fois." },
+        { "A full stair", "Un escalier au complet" },
+        { "Take five up the tower at once.", "Monter à cinq dans la tour." },
+        { "Twenty floors up", "Vingt étages plus haut" },
+        { "Reach the twentieth floor of the quest.",
+            "Atteindre le vingtième étage de la quête." },
+        { "Legendary", "Légendaire" },
+        { "Hold a legendary piece of gear.",
+            "Posséder un objet légendaire." },
+        { "Godlike", "Divin" },
+        { "Hold a godlike piece of gear.", "Posséder un objet divin." },
+
         { "Take pieces from fifty different people.",
             "Prenez des pièces à cinquante personnes différentes." },
         { "The whole plaza", "Tout le plaza" },
