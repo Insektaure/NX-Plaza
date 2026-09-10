@@ -490,7 +490,7 @@ namespace {
                 Color::hex(0xD8A33A), // legendary
                 Color::hex(0xD1574B), // godlike
             };
-            uint8_t tier = quality < Quality_Count ? quality : Quality_Common;
+            uint8_t tier = quality < Quality_Count ? quality : uint8_t(Quality_Common);
             TextStyle text;
             text.size = theme::textXs;
             text.weight = FontWeight::Bold;

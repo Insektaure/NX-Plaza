@@ -183,17 +183,17 @@ Mii shadowFace(int floor)
 
 const char* qualityName(uint8_t quality)
 {
-    return kQualities[quality < Quality_Count ? quality : Quality_Common];
+    return kQualities[quality < Quality_Count ? quality : uint8_t(Quality_Common)];
 }
 
 const char* slotName(uint8_t slot)
 {
-    return kSlots[slot < Slot_Count ? slot : Slot_Weapon];
+    return kSlots[slot < Slot_Count ? slot : uint8_t(Slot_Weapon)];
 }
 
 const char* itemNoun(const Item& item)
 {
-    uint8_t slot = item.slot < Slot_Count ? item.slot : Slot_Weapon;
+    uint8_t slot = item.slot < Slot_Count ? item.slot : uint8_t(Slot_Weapon);
     return kNouns[slot * kNounsPer + item.seed % kNounsPer];
 }
 
@@ -203,8 +203,9 @@ Sheet itemBonus(const Item& item)
     if (!item.valid())
         return bonus;
 
-    uint8_t quality = item.quality < Quality_Count ? item.quality : Quality_Common;
-    uint8_t slot = item.slot < Slot_Count ? item.slot : Slot_Weapon;
+    uint8_t quality
+        = item.quality < Quality_Count ? item.quality : uint8_t(Quality_Common);
+    uint8_t slot = item.slot < Slot_Count ? item.slot : uint8_t(Slot_Weapon);
 
     // The seed is the roll. It is picked when the thing falls and then never
     // changes, so an item is as random as any loot game's and still costs
