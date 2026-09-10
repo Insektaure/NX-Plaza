@@ -155,16 +155,24 @@ namespace {
             title.leading = theme::leadingTight;
             ui::coinAmount(r, content.x, y, coins, title);
 
-            // Earned and spent, opposite it. Two totals is all the wallet
-            // keeps, and it is the only way to see a day has been credited
-            // without having watched the balance.
+            // Earned and spent, opposite it, and the two have to add up to
+            // the balance beside them or the line is worse than no line.
+            //
+            // It used to read granted() alone, from when the wallet kept
+            // only two totals. Winnings became a third and this was never
+            // told: a console that had won forty coins at the games showed
+            // a balance forty higher than its own "earned - spent" could
+            // account for. Everything that came in is earned, however it
+            // arrived - the day, the races, the tower.
+            const Wallet& wallet = Wallet::get();
             TextStyle totals;
             totals.size = theme::textSm;
             totals.color = theme::fg4;
             totals.tracking = theme::trackingWide;
             r.text(Rect { content.x, y, content.w, title.size * theme::leadingTight },
-                format(tr("%u earned - %u spent"), unsigned(Wallet::get().granted()),
-                    unsigned(Wallet::get().spent())),
+                format(tr("%u earned - %u spent"),
+                    unsigned(wallet.granted() + wallet.won()),
+                    unsigned(wallet.spent())),
                 totals, Align::Right, VAlign::Middle);
             y += title.size * theme::leadingTight + theme::s3;
 
