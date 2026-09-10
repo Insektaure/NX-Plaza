@@ -311,7 +311,7 @@ namespace {
         static constexpr float kLunge = 30.0f; // how far a step forward goes
 
         static constexpr float kRosterY = 700.0f;
-        static constexpr float kRosterH = 162.0f;
+        static constexpr float kRosterH = 168.0f;
         // Wide enough for the longest class in any of the eleven: the
         // Portuguese Mender is CURANDEIRO, ten uppercase characters, and
         // at 104 it ran straight out of its card.
@@ -1217,21 +1217,40 @@ namespace {
         }
 
         // The numbers, rising and fading off whoever they happened to.
+        // A damage number is not body text and must not be coloured like
+        // it. fg1 flips with the palette - near-white on the dark theme,
+        // near-black on the light one - so the same code read cleanly on
+        // one and vanished into the scenery on the other.
+        //
+        // Fixed colours, the same in both, over a dark shadow: a
+        // number that floats across a Mii, a shadow and the ground has no
+        // background to be chosen against, so it carries its own.
         void drawPops(Renderer& r) const
         {
+            const Color kHurt = Color::hex(0xF7F3EC);
+            const Color kBig = Color::hex(0xF2B23A);
+            const Color kMend = Color::hex(0x74C25C);
+            const Color kUnder = Color::hex(0x17130F);
+
             for (const Pop& p : m_pops) {
                 float gone = 1.0f - p.life;
+                float alpha = std::min(1.0f, p.life * 2.4f);
+
                 TextStyle text;
                 text.size = p.crit ? theme::textXl : theme::textLg;
                 text.weight = FontWeight::Bold;
                 text.tracking = theme::trackingTight;
-                Color base = p.heal ? theme::success
-                                    : (p.crit ? theme::accent : theme::fg1);
-                text.color = base.scaleAlpha(std::min(1.0f, p.life * 2.4f));
+
                 std::string body = p.heal ? format("+%d", p.amount)
                                           : format("%d", p.amount);
-                r.text(Rect { p.x - 120.0f, p.y - gone * 54.0f, 240.0f, 60.0f }, body,
-                    text, Align::Center, VAlign::Top);
+                Rect at { p.x - 120.0f, p.y - gone * 54.0f, 240.0f, 60.0f };
+
+                text.color = kUnder.scaleAlpha(alpha * 0.7f);
+                r.text(at.offset(3.0f, 3.0f), body, text, Align::Center, VAlign::Top);
+
+                text.color = (p.heal ? kMend : (p.crit ? kBig : kHurt))
+                                 .scaleAlpha(alpha);
+                r.text(at, body, text, Align::Center, VAlign::Top);
             }
         }
 
@@ -1300,7 +1319,7 @@ namespace {
                 name.size = theme::textXs;
                 name.weight = FontWeight::Bold;
                 name.color = chosen ? theme::fg1 : theme::fg3;
-                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 26.0f, cell.w - 8.0f,
+                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 32.0f, cell.w - 8.0f,
                           22.0f },
                     r.ellipsize(m.name, name, cell.w - 8.0f), name, Align::Center,
                     VAlign::Top);
@@ -1315,7 +1334,7 @@ namespace {
                 role.color = chosen ? theme::accent : theme::fg4;
                 role.uppercase = true;
                 float room = cell.w - 8.0f;
-                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 52.0f, room, 22.0f },
+                r.text(Rect { cell.x + 4.0f, cell.y + kHead + 58.0f, room, 22.0f },
                     r.ellipsize(tr(className(m.sheet.cls)), role, room), role,
                     Align::Center, VAlign::Top);
 
