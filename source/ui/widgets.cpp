@@ -36,16 +36,28 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         break;
     }
     case Icon::Shield: {
-        // Rounded across the top, tapering to a point.
-        Rect body { cx - s * 0.28f, cy - s * 0.32f, s * 0.56f, s * 0.5f };
-        r.strokeRect(body, s * 0.22f, weight, color);
-        int steps = 6;
-        for (int i = 0; i < steps; i++) {
-            float t = static_cast<float>(i) / static_cast<float>(steps - 1);
-            float y = body.bottom() - weight * 0.5f + t * s * 0.16f;
-            float half = (1.0f - t) * s * 0.28f;
-            r.circle(cx - half, y, weight * 0.55f, color);
-            r.circle(cx + half, y, weight * 0.55f, color);
+        // A crest: a flat top, straight sides, then two edges running down
+        // to a point.
+        float half = s * 0.30f;
+        float top = cy - s * 0.34f;
+        float shoulder = cy - s * 0.02f; // where the sides start to close
+        float point = cy + s * 0.36f;
+
+        r.rect(Rect { cx - half, top - weight * 0.5f, half * 2.0f, weight }, color);
+        r.rect(Rect { cx - half - weight * 0.5f, top, weight, shoulder - top },
+            color);
+        r.rect(Rect { cx + half - weight * 0.5f, top, weight, shoulder - top },
+            color);
+
+        float drop = point - shoulder;
+        float run = std::sqrt(half * half + drop * drop);
+        int steps = std::max(6, static_cast<int>(run / (weight * 0.6f)));
+        for (int i = 0; i <= steps; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(steps);
+            float y = shoulder + t * drop;
+            float out = (1.0f - t) * half;
+            r.circle(cx - out, y, weight * 0.55f, color);
+            r.circle(cx + out, y, weight * 0.55f, color);
         }
         break;
     }
