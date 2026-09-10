@@ -52,9 +52,37 @@ public:
     uint32_t climbs() const { return m_climbs; }
 
     // Records a floor as reached. True only when it is deeper than anything
-    // before, which is exactly the condition a payout is gated on.
+    // before; this is the all-time record the shelf shows, not the thing a
+    // payout is gated on any more - see the week, below.
     bool noteFloor(uint32_t floor);
     void noteClimb();
+
+    // ------------------------------------------------------------ the week
+    //
+    // The tower pays for a floor once a week rather than once ever, so a
+    // console that has finished climbing still has a reason to go back on a
+    // Monday. It is one number because a climb always starts at the bottom:
+    // "floors up to here have been paid" says everything, and cannot be
+    // farmed by re-clearing floor three.
+    //
+    // Which Monday it is comes from the plaza's clock, never this console's,
+    // for exactly the reason the daily coins do: a clock its owner can set
+    // is a clock that pays weekly every five minutes.
+
+    // Which Monday the plaza last said it was. Zero until a check-in has
+    // answered even once.
+    uint32_t week() const { return m_week; }
+
+    // The deepest floor already paid for this week.
+    uint32_t paidThisWeek() const { return m_paidThisWeek; }
+
+    // Rolls the week over when the plaza's clock says it is a new one.
+    // Cheap and safe to call on every check-in, like the wallet's own.
+    void notePlazaTime(uint64_t serverTime);
+
+    // True the first time this floor is cleared in the current week, and
+    // records it. What both the coin and the certain drop hang on.
+    bool notePaidFloor(uint32_t floor);
 
     // ------------------------------------------------------------ the bag
 
@@ -111,8 +139,8 @@ public:
 private:
     QuestRecord() = default;
 
-    std::string body(uint16_t version) const;
-    std::string signature(uint16_t version) const;
+    std::string body() const;
+    std::string signature() const;
 
     struct Wearing {
         std::string owner;
@@ -124,6 +152,8 @@ private:
 
     uint32_t m_deepest = 0;
     uint32_t m_climbs = 0;
+    uint32_t m_week = 0;         // Mondays since the epoch, from the plaza
+    uint16_t m_paidThisWeek = 0; // how far up this week has already paid
     uint16_t m_nextId = 1;
     std::vector<Item> m_items;
     std::vector<Wearing> m_worn;

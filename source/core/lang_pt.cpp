@@ -1412,6 +1412,12 @@ namespace {
             "Tudo o que no saco é pior do que aquilo que %s tem posto. "
             "Nada posto é tocado." },
         { "Throw them away", "Deitar todas fora" },
+
+        { "every floor pays this week", "esta semana todos os andares pagam" },
+        { "floors up to %u have paid this week",
+            "os andares até ao %u já pagaram esta semana" },
+        { "the week turns when the plaza is next reached",
+            "a semana muda no próximo contacto com o plaza" },
         { "The shadow left a %s (%s)", "A sombra deixou %s (%s)" },
         { "One %s piece came back with you.", "Uma peça %s voltou consigo." },
         { "%d pieces came back with you, the best of them %s.",

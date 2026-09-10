@@ -8899,3 +8899,55 @@ LANGS["zh_hant"].update({
     'Everything in the bag that is worse than what %s has on. Nothing being worn is touched.': '背包裡所有比%s身上裝備更差的。正在裝備的不動。',
     'Throw them away': '全部丟掉',
 })
+
+# ---- the Monday reset, shown under the floor number.
+LANGS["de"].update({
+    'every floor pays this week': 'diese Woche zahlt jedes Stockwerk',
+    'floors up to %u have paid this week': 'Stockwerke bis %u haben diese Woche schon gezahlt',
+    'the week turns when the plaza is next reached': 'die Woche wechselt beim nächsten Kontakt mit dem Plaza',
+})
+LANGS["es"].update({
+    'every floor pays this week': 'esta semana pagan todos los pisos',
+    'floors up to %u have paid this week': 'los pisos hasta el %u ya han pagado esta semana',
+    'the week turns when the plaza is next reached': 'la semana cambia la próxima vez que se llegue al plaza',
+})
+LANGS["it"].update({
+    'every floor pays this week': 'questa settimana pagano tutti i piani',
+    'floors up to %u have paid this week': 'i piani fino al %u hanno già pagato questa settimana',
+    'the week turns when the plaza is next reached': 'la settimana cambia al prossimo collegamento al plaza',
+})
+LANGS["nl"].update({
+    'every floor pays this week': 'deze week betaalt elke verdieping',
+    'floors up to %u have paid this week': 'verdiepingen tot %u hebben deze week al betaald',
+    'the week turns when the plaza is next reached': 'de week draait bij het volgende contact met het plaza',
+})
+LANGS["pt"].update({
+    'every floor pays this week': 'esta semana todos os andares pagam',
+    'floors up to %u have paid this week': 'os andares até ao %u já pagaram esta semana',
+    'the week turns when the plaza is next reached': 'a semana muda no próximo contacto com o plaza',
+})
+LANGS["ru"].update({
+    'every floor pays this week': 'на этой неделе платит каждый этаж',
+    'floors up to %u have paid this week': 'этажи до %u на этой неделе уже заплатили',
+    'the week turns when the plaza is next reached': 'неделя сменится при следующей связи с плазой',
+})
+LANGS["ja"].update({
+    'every floor pays this week': '今週はどの階も報酬があります',
+    'floors up to %u have paid this week': '%u階までは今週ぶんの報酬が出ました',
+    'the week turns when the plaza is next reached': 'プラザにつながったときに週が変わります',
+})
+LANGS["ko"].update({
+    'every floor pays this week': '이번 주에는 모든 층이 보상을 줍니다',
+    'floors up to %u have paid this week': '%u층까지는 이번 주 보상을 이미 받았습니다',
+    'the week turns when the plaza is next reached': '플라자에 연결되면 주가 바뀝니다',
+})
+LANGS["zh_hans"].update({
+    'every floor pays this week': '这一周每层都会给奖励',
+    'floors up to %u have paid this week': '第%u层以下本周已经给过奖励了',
+    'the week turns when the plaza is next reached': '下次连上广场时这一周才会翻页',
+})
+LANGS["zh_hant"].update({
+    'every floor pays this week': '這一週每層都會給獎勵',
+    'floors up to %u have paid this week': '第%u層以下本週已經給過獎勵了',
+    'the week turns when the plaza is next reached': '下次連上廣場時這一週才會翻頁',
+})

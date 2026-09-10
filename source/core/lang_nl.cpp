@@ -1414,6 +1414,12 @@ namespace {
             "Alles in de tas dat slechter is dan wat %s draagt. Wat "
             "gedragen wordt blijft." },
         { "Throw them away", "Alles weggooien" },
+
+        { "every floor pays this week", "deze week betaalt elke verdieping" },
+        { "floors up to %u have paid this week",
+            "verdiepingen tot %u hebben deze week al betaald" },
+        { "the week turns when the plaza is next reached",
+            "de week draait bij het volgende contact met het plaza" },
         { "The shadow left a %s (%s)", "De schaduw liet %s achter (%s)" },
         { "One %s piece came back with you.", "Eén %s stuk kwam met je mee terug." },
         { "%d pieces came back with you, the best of them %s.",

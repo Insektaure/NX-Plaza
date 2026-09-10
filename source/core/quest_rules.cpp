@@ -274,9 +274,8 @@ uint32_t itemRating(const Item& item)
 Item rollDrop(int floor, uint16_t nextId)
 {
     Item item;
-    // Half the time the shadow leaves nothing. Every floor can drop, every
-    // time it is beaten - the coins are what is paid once, not the loot,
-    // because loot is the reason to climb a tower you have already climbed.
+    // Half the time the shadow leaves nothing, on every floor and every
+    // climb alike.
     if (randomBelow(100) < 50)
         return item;
 

@@ -6,6 +6,7 @@
 #include "core/log.h"
 #include "core/place.h"
 #include "core/store.h"
+#include "core/quest_record.h"
 #include "core/wallet.h"
 #include "core/util.h"
 #include "net/http.h"
@@ -422,10 +423,12 @@ bool Sync::doCheckin()
 
     // The plaza's own clock, which every reply has always carried and nothing
     // has ever read. It is what decides whether a day has turned for the daily
-    // coins: taken from here rather than from this console, whose clock its
-    // owner can set to whatever they like.
-    Wallet::get().notePlazaTime(
-        static_cast<uint64_t>(js::getInt(reply, "server_time", 0)));
+    // coins, and whether a Monday has turned for the tower: taken from here
+    // rather than from this console, whose clock its owner can set to
+    // whatever they like.
+    uint64_t plazaNow = static_cast<uint64_t>(js::getInt(reply, "server_time", 0));
+    Wallet::get().notePlazaTime(plazaNow);
+    QuestRecord::get().notePlazaTime(plazaNow);
 
     int pending = static_cast<int>(js::getInt(reply, "pending"));
     json_decref(reply);

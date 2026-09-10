@@ -1415,6 +1415,12 @@ namespace {
           "Nothing being worn is touched.",
             "Всё в сумке, что хуже надетого на %s. Надетое не трогаем." },
         { "Throw them away", "Выбросить всё" },
+
+        { "every floor pays this week", "на этой неделе платит каждый этаж" },
+        { "floors up to %u have paid this week",
+            "этажи до %u на этой неделе уже заплатили" },
+        { "the week turns when the plaza is next reached",
+            "неделя сменится при следующей связи с плазой" },
         { "The shadow left a %s (%s)", "Тень оставила %s (%s)" },
         { "One %s piece came back with you.", "Одна %s вещь вернулась с вами." },
         { "%d pieces came back with you, the best of them %s.",

@@ -186,16 +186,15 @@ namespace {
         // with full health would be a different, easier one. What does
         // persist is the deepest floor ever reached, in QuestRecord.
 
-        // Two coins a floor, paid only the first time that floor is
-        // reached. A climb can be repeated as often as anybody likes and
-        // pays nothing in coins for ground already covered, which is what
-        // stops an auto-battler with no stake from being a coin press - the
-        // warning on Wallet::award is about exactly this.
+        // One coin a floor, and a floor pays once a week rather than once
+        // ever: a Monday puts the whole tower back on the board, so a
+        // console that has finished climbing still has a reason to go up on
+        // reset day.
         //
-        // The loot is the other half and does not work this way: gear falls
-        // every time a shadow does, because it is the reason to climb a
-        // tower you have already climbed.
-        static constexpr uint32_t kFloorCoins = 2;
+        // It still cannot be farmed inside a week: being paid means going
+        // deeper than you have been since Monday, so re-clearing floor three
+        // pays nothing at all.
+        static constexpr uint32_t kFloorCoins = 1;
 
         static constexpr float kHorizon = 380.0f;
         static constexpr float kGround = 430.0f;
@@ -598,20 +597,19 @@ namespace {
             m_deepest = m_floor;
             m_guard = -1;
 
-            // Paid once, on a floor this console has never reached. A climb
-            // is free and repeatable, so anything paid per attempt would be
-            // a tap rather than a reward - which makes the record of what has
-            // been reached worth exactly as much as the coins, and is why it
-            // lives in a signed file of its own rather than in the score
-            // table beside the tower's and the dash's.
+            // The all-time record, which is what the shelf shows. It stopped
+            // gating the coins when the week came in.
             QuestRecord& record = QuestRecord::get();
-            if (record.noteFloor(uint32_t(m_floor))) {
+            if (record.noteFloor(uint32_t(m_floor)))
                 m_best = uint32_t(m_floor);
 
-                // The record goes to the card first. Something has to be
-                // written first, and of the two ways for a console to die
-                // between the writes, losing two coins is a better loss than
-                // being able to earn them a second time.
+            // First time up here this week? That is the coin, and only the
+            // coin: the loot is a flat half on every floor and every climb.
+            if (record.notePaidFloor(uint32_t(m_floor))) {
+                // The record goes to the card first. Something has to, and
+                // of the two ways for a console to die between the writes,
+                // losing a coin is a better loss than being able to earn it
+                // a second time.
                 record.flush();
 
                 Wallet& wallet = Wallet::get();
@@ -620,10 +618,6 @@ namespace {
                 m_earned += kFloorCoins;
             }
 
-            // And then the loot, which is the other half of the bargain and
-            // the half that repeats. Coins are paid for ground you have never
-            // covered; gear falls every time a shadow does, or the tower
-            // would be worth climbing exactly once.
             m_log = format(tr("Floor %d is yours"), m_floor);
             takeDrop(app, record);
 
@@ -687,15 +681,28 @@ namespace {
             floorText.tracking = theme::trackingTight;
             r.text(theme::edge, 74.0f, format(tr("Floor %d"), m_floor), floorText);
 
+            TextStyle note;
+            note.size = theme::textSm;
+            note.color = theme::fg3;
+            note.tracking = theme::trackingWide;
+            Rect right { 0.0f, 80.0f, Renderer::DesignWidth - theme::edge, 30.0f };
             if (m_best > 0) {
-                TextStyle best;
-                best.size = theme::textSm;
-                best.color = theme::fg3;
-                best.tracking = theme::trackingWide;
-                r.text(Rect { 0.0f, 80.0f, Renderer::DesignWidth - theme::edge, 30.0f },
-                    format(tr("best floor %u"), unsigned(m_best)), best, Align::Right,
-                    VAlign::Top);
+                r.text(right, format(tr("best floor %u"), unsigned(m_best)), note,
+                    Align::Right, VAlign::Top);
             }
+
+            // What the week has already paid for, because a reward you
+            // cannot see the state of is a reward people assume is broken.
+            const QuestRecord& record = QuestRecord::get();
+            note.color = theme::fg4;
+            right.y = 112.0f;
+            uint32_t paid = record.paidThisWeek();
+            std::string week = record.week() == 0
+                ? std::string(tr("the week turns when the plaza is next reached"))
+                : (paid == 0 ? std::string(tr("every floor pays this week"))
+                             : format(tr("floors up to %u have paid this week"),
+                                 unsigned(paid)));
+            r.text(right, week, note, Align::Right, VAlign::Top);
         }
 
         void drawShadow(Renderer& r, int floor, bool beaten, float shake) const
@@ -924,7 +931,7 @@ namespace {
 
             Rect climb { Renderer::DesignWidth - theme::edge
                     - ui::actionButtonWidth(r, tr("Climb")),
-                124.0f, ui::actionButtonWidth(r, tr("Climb")), 64.0f };
+                156.0f, ui::actionButtonWidth(r, tr("Climb")), 64.0f };
             app.touchZone(climb, Zone_Climb);
             ui::actionButton(r, climb, tr("Climb"), true,
                 app.touchHeld(Zone_Climb) ? 1.0f : 0.7f + 0.3f * m_pulse);

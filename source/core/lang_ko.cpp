@@ -1276,6 +1276,10 @@ namespace {
           "Nothing being worn is touched.",
             "%s이(가) 착용한 것보다 나쁜 것을 가방에서 모두. 착용 중인 것은 건드리지 않습니다." },
         { "Throw them away", "모두 버리기" },
+
+        { "every floor pays this week", "이번 주에는 모든 층이 보상을 줍니다" },
+        { "floors up to %u have paid this week", "%u층까지는 이번 주 보상을 이미 받았습니다" },
+        { "the week turns when the plaza is next reached", "플라자에 연결되면 주가 바뀝니다" },
         { "The shadow left a %s (%s)", "그림자가 %s을(를) 남겼다 (%s)" },
         { "One %s piece came back with you.", "%s 물건 하나를 가지고 돌아왔습니다." },
         { "%d pieces came back with you, the best of them %s.",

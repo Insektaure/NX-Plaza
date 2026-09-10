@@ -1254,6 +1254,10 @@ namespace {
           "Nothing being worn is touched.",
             "%sが身につけているものより弱いものを、ふくろからすべて。身につけているものは残ります。" },
         { "Throw them away", "すべて捨てる" },
+
+        { "every floor pays this week", "今週はどの階も報酬があります" },
+        { "floors up to %u have paid this week", "%u階までは今週ぶんの報酬が出ました" },
+        { "the week turns when the plaza is next reached", "プラザにつながったときに週が変わります" },
         { "The shadow left a %s (%s)", "影が%sを落とした（%s）" },
         { "One %s piece came back with you.", "%sの品を1つ持ち帰りました。" },
         { "%d pieces came back with you, the best of them %s.",

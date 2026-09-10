@@ -1446,6 +1446,12 @@ namespace {
             "Alles im Beutel, was schlechter ist als das, was %s trägt. "
             "Getragenes bleibt." },
         { "Throw them away", "Alle wegwerfen" },
+
+        { "every floor pays this week", "diese Woche zahlt jedes Stockwerk" },
+        { "floors up to %u have paid this week",
+            "Stockwerke bis %u haben diese Woche schon gezahlt" },
+        { "the week turns when the plaza is next reached",
+            "die Woche wechselt beim nächsten Kontakt mit dem Plaza" },
         { "The shadow left a %s (%s)", "Der Schatten ließ %s zurück (%s)" },
         { "One %s piece came back with you.", "Ein %s Stück kam mit zurück." },
         { "%d pieces came back with you, the best of them %s.",

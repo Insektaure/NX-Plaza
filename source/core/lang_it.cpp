@@ -1437,6 +1437,12 @@ namespace {
             "Tutto nella sacca che è peggio di quello che indossa %s. "
             "Niente di indossato viene toccato." },
         { "Throw them away", "Buttarli tutti" },
+
+        { "every floor pays this week", "questa settimana pagano tutti i piani" },
+        { "floors up to %u have paid this week",
+            "i piani fino al %u hanno già pagato questa settimana" },
+        { "the week turns when the plaza is next reached",
+            "la settimana cambia al prossimo collegamento al plaza" },
         { "The shadow left a %s (%s)", "L'ombra ha lasciato %s (%s)" },
         { "One %s piece came back with you.", "Un pezzo %s è tornato con te." },
         { "%d pieces came back with you, the best of them %s.",

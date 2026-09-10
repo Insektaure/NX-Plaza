@@ -1481,6 +1481,15 @@ namespace {
         { "Everything in the bag that is worse than what %s has on. Nothing being worn is touched.",
             "Tout ce qui, dans le sac, vaut moins que ce que porte %s. Rien de porté n'est touché." },
         { "Throw them away", "Tout jeter" },
+
+        // The weekly reset. "Semaine" rather than "hebdomadaire": the line
+        // sits under a floor number in eighteen-pixel text and has to be
+        // read at a glance, not parsed.
+        { "every floor pays this week", "chaque étage paie cette semaine" },
+        { "floors up to %u have paid this week",
+            "les étages jusqu'au %u ont déjà payé cette semaine" },
+        { "the week turns when the plaza is next reached",
+            "la semaine tournera à la prochaine connexion au plaza" },
         { "The shadow left a %s (%s)", "L'ombre a laissé %s (%s)" },
         { "One %s piece came back with you.", "Un objet %s est revenu avec vous." },
         { "%d pieces came back with you, the best of them %s.",

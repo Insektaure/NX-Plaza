@@ -12,10 +12,19 @@ namespace nxp {
 namespace {
     const char* kFile = "quest.dat";
     constexpr char kMagic[4] = { 'N', 'X', 'P', 'Q' };
-    constexpr uint16_t kVersion = 2;
+    constexpr uint16_t kVersion = 1;
 
-    constexpr size_t kHeadV1 = 4 + 2 + 2 + 4 + 4;         // through climbs
-    constexpr size_t kHeadV2 = kHeadV1 + 2 + 2 + 2 + 2;   // + nextId, counts
+    // magic, version, reserved, deepest, climbs, week, paid, reserved,
+    // nextId, item count, wearer count, reserved. Then the items, then the
+    // wearers, then the hash.
+    constexpr size_t kHead = 4 + 2 + 2 + 4 + 4 + 4 + 2 + 2 + 2 + 2 + 2 + 2;
+
+    // Mondays since the epoch. The epoch itself was a Thursday, so the shift
+    // is what makes a week turn at Monday midnight UTC rather than at
+    // Thursday midnight - the sort of thing nobody notices until a reset
+    // lands in the middle of a Wednesday evening.
+    constexpr uint64_t kMondayShift = 345600;
+    constexpr uint64_t kWeekSeconds = 604800;
     constexpr size_t kItemBytes = 8;
     constexpr size_t kHash = 32;
 
@@ -55,17 +64,17 @@ QuestRecord& QuestRecord::get()
 
 // Packed exactly as the file of that version is, because a hash over a
 // different byte layout is a hash over a different file.
-std::string QuestRecord::body(uint16_t version) const
+std::string QuestRecord::body() const
 {
     std::string out;
     out.append(kMagic, sizeof(kMagic));
-    put16(out, version);
+    put16(out, kVersion);
     put16(out, 0);
     put32(out, m_deepest);
     put32(out, m_climbs);
-    if (version == 1)
-        return out;
-
+    put32(out, m_week);
+    put16(out, m_paidThisWeek);
+    put16(out, 0);
     put16(out, m_nextId);
     put16(out, uint16_t(m_items.size()));
     put16(out, uint16_t(m_worn.size()));
@@ -87,13 +96,13 @@ std::string QuestRecord::body(uint16_t version) const
     return out;
 }
 
-std::string QuestRecord::signature(uint16_t version) const
+std::string QuestRecord::signature() const
 {
     // The token is the key. It is 256 secret bits that live in identity.json
     // and never leave this console except as a bearer header, so the hash
     // cannot be reproduced from the source alone.
     uint8_t digest[kHash];
-    sha256Over({ body(version), identity().token }, digest);
+    sha256Over({ body(), identity().token }, digest);
     return std::string(reinterpret_cast<const char*>(digest), kHash);
 }
 
@@ -110,88 +119,81 @@ void QuestRecord::load()
     const uint8_t* p = reinterpret_cast<const uint8_t*>(blob.data());
     size_t size = blob.size();
     uint16_t version = size >= 6 ? get16(p + 4) : 0;
-    if (size < kHeadV1 + kHash || memcmp(p, kMagic, sizeof(kMagic)) != 0
-        || (version != 1 && version != kVersion)) {
+    if (size < kHead + kHash || memcmp(p, kMagic, sizeof(kMagic)) != 0
+        || version != kVersion) {
         LOG("quest: %s is not a record this build reads; starting empty", kFile);
         return;
     }
 
     uint32_t deepest = get32(p + 8);
     uint32_t climbs = get32(p + 12);
-    uint16_t nextId = 1;
+    uint32_t week = get32(p + 16);
+    uint16_t paid = get16(p + 20);
+    uint16_t nextId = get16(p + 24);
+    size_t itemCount = get16(p + 26);
+    size_t equipCount = get16(p + 28);
     std::vector<Item> items;
     std::vector<Wearing> worn;
 
-    if (version == 1) {
-        if (size != kHeadV1 + kHash) {
-            LOG("quest: %s is the wrong size for a version 1 record", kFile);
-            return;
-        }
-    } else {
-        if (size < kHeadV2 + kHash) {
-            LOG("quest: %s is too short for its own header", kFile);
-            return;
-        }
-        nextId = get16(p + 16);
-        size_t itemCount = get16(p + 18);
-        size_t equipCount = get16(p + 20);
-        if (itemCount > kBagLimit || equipCount > kMaxEquips) {
-            LOG("quest: %s claims %zu items and %zu wearers; refusing it", kFile,
-                itemCount, equipCount);
-            return;
-        }
+    if (itemCount > kBagLimit || equipCount > kMaxEquips) {
+        LOG("quest: %s claims %zu items and %zu wearers; refusing it", kFile,
+            itemCount, equipCount);
+        return;
+    }
 
-        size_t at = kHeadV2;
-        if (size < at + itemCount * kItemBytes + kHash) {
-            LOG("quest: %s is shorter than the items it lists", kFile);
+    // Walked with a cursor from here, because the wearers are variable
+    // length and a hard-coded offset into them is how two people end up
+    // sharing a hat.
+    size_t at = kHead;
+    if (size < at + itemCount * kItemBytes + kHash) {
+        LOG("quest: %s is shorter than the items it lists", kFile);
+        return;
+    }
+    items.reserve(itemCount);
+    for (size_t i = 0; i < itemCount; i++) {
+        const uint8_t* q = p + at;
+        Item item;
+        item.id = get16(q);
+        item.quality = q[2];
+        item.slot = q[3];
+        item.seed = get16(q + 4);
+        item.floor = get16(q + 6);
+        // A quality or a slot this build does not have would index past the
+        // end of a table, so it is refused rather than clamped into meaning
+        // something it never meant.
+        if (item.id == 0 || item.quality >= Quality_Count
+            || item.slot >= Slot_Count) {
+            LOG("quest: %s holds an item this build cannot read", kFile);
             return;
         }
-        items.reserve(itemCount);
-        for (size_t i = 0; i < itemCount; i++) {
-            const uint8_t* q = p + at;
-            Item item;
-            item.id = get16(q);
-            item.quality = q[2];
-            item.slot = q[3];
-            item.seed = get16(q + 4);
-            item.floor = get16(q + 6);
-            // A tag from a build that grew a quality or a slot this one does
-            // not have would index past the end of a table, so it is refused
-            // rather than clamped into meaning something it never meant.
-            if (item.id == 0 || item.quality >= Quality_Count
-                || item.slot >= Slot_Count) {
-                LOG("quest: %s holds an item this build cannot read", kFile);
-                return;
-            }
-            items.push_back(item);
-            at += kItemBytes;
-        }
+        items.push_back(item);
+        at += kItemBytes;
+    }
 
-        worn.reserve(equipCount);
-        for (size_t i = 0; i < equipCount; i++) {
-            if (size < at + 1 + kHash) {
-                LOG("quest: %s ends inside its wearers", kFile);
-                return;
-            }
-            size_t len = p[at++];
-            if (len > kMaxOwner || size < at + len + Slot_Count * 2 + kHash) {
-                LOG("quest: %s ends inside a wearer", kFile);
-                return;
-            }
-            Wearing row;
-            row.owner.assign(reinterpret_cast<const char*>(p + at), len);
-            at += len;
-            for (int slot = 0; slot < Slot_Count; slot++) {
-                row.gear.worn[slot] = get16(p + at);
-                at += 2;
-            }
-            worn.push_back(std::move(row));
-        }
-
-        if (size != at + kHash) {
-            LOG("quest: %s has %zu bytes nobody claimed", kFile, size - at - kHash);
+    worn.reserve(equipCount);
+    for (size_t i = 0; i < equipCount; i++) {
+        if (size < at + 1 + kHash) {
+            LOG("quest: %s ends inside its wearers", kFile);
             return;
         }
+        size_t len = p[at++];
+        if (len > kMaxOwner || size < at + len + Slot_Count * 2 + kHash) {
+            LOG("quest: %s ends inside a wearer", kFile);
+            return;
+        }
+        Wearing row;
+        row.owner.assign(reinterpret_cast<const char*>(p + at), len);
+        at += len;
+        for (int slot = 0; slot < Slot_Count; slot++) {
+            row.gear.worn[slot] = get16(p + at);
+            at += 2;
+        }
+        worn.push_back(std::move(row));
+    }
+
+    if (size != at + kHash) {
+        LOG("quest: %s has %zu bytes nobody claimed", kFile, size - at - kHash);
+        return;
     }
 
     // Verified against what the file claims, not against what is in memory.
@@ -200,10 +202,12 @@ void QuestRecord::load()
     m_deepest = deepest;
     m_climbs = climbs;
     m_nextId = nextId;
+    m_week = week;
+    m_paidThisWeek = paid;
     m_items = std::move(items);
     m_worn = std::move(worn);
 
-    std::string expected = signature(version);
+    std::string expected = signature();
     bool ok = expected.size() == kHash
         && memcmp(expected.data(), p + (size - kHash), kHash) == 0;
     if (!ok) {
@@ -211,14 +215,11 @@ void QuestRecord::load()
         m_deepest = wasDeepest;
         m_climbs = wasClimbs;
         m_nextId = 1;
+        m_week = 0;
+        m_paidThisWeek = 0;
         m_items.clear();
         m_worn.clear();
         return;
-    }
-
-    if (version == 1) {
-        LOG("quest: upgrading %s from version 1", kFile);
-        m_dirty = true;
     }
 
     if (m_deepest > kSaneFloor) {
@@ -239,8 +240,8 @@ bool QuestRecord::flush()
     if (!m_dirty)
         return true;
 
-    std::string file = body(kVersion);
-    file.append(signature(kVersion));
+    std::string file = body();
+    file.append(signature());
 
     if (!writeWholeFileAtomic(dataPath(kFile), file)) {
         LOG("quest: could not write %s", kFile);
@@ -378,6 +379,33 @@ bool QuestRecord::wearer(uint16_t itemId, std::string& owner) const
         }
     }
     return false;
+}
+
+void QuestRecord::notePlazaTime(uint64_t serverTime)
+{
+    if (serverTime == 0)
+        return;
+    uint32_t week = uint32_t((serverTime + kMondayShift) / kWeekSeconds);
+    if (week == m_week)
+        return;
+
+    // Forwards or backwards. A plaza that came back with an earlier week
+    // than the one on the card is a plaza whose clock was wrong, or a card
+    // carried to another one; either way the honest thing is to follow it
+    // rather than to sit on a week that no longer exists.
+    m_week = week;
+    m_paidThisWeek = 0;
+    m_dirty = true;
+    LOG("quest: a new week, the tower pays from the bottom again");
+}
+
+bool QuestRecord::notePaidFloor(uint32_t floor)
+{
+    if (floor == 0 || floor > kSaneFloor || floor <= m_paidThisWeek)
+        return false;
+    m_paidThisWeek = uint16_t(floor);
+    m_dirty = true;
+    return true;
 }
 
 uint16_t QuestRecord::worstSpare() const

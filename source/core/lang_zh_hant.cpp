@@ -1234,6 +1234,10 @@ namespace {
           "Nothing being worn is touched.",
             "背包裡所有比%s身上裝備更差的。正在裝備的不動。" },
         { "Throw them away", "全部丟掉" },
+
+        { "every floor pays this week", "這一週每層都會給獎勵" },
+        { "floors up to %u have paid this week", "第%u層以下本週已經給過獎勵了" },
+        { "the week turns when the plaza is next reached", "下次連上廣場時這一週才會翻頁" },
         { "The shadow left a %s (%s)", "影子留下了%s（%s）" },
         { "One %s piece came back with you.", "帶回來一件%s的東西。" },
         { "%d pieces came back with you, the best of them %s.", "帶回來%d件，其中最好的是%s。" },
