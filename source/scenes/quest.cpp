@@ -1010,8 +1010,13 @@ namespace {
             if (QuestRecord::get().autoAdvance()) {
                 float after = theme::edge + r.measure(floorLine, floorText)
                     + theme::s4;
-                ui::icon(r, Rect { after, 76.0f, 48.0f, 48.0f },
-                    ui::Icon::FastForward, theme::accent, 3.5f);
+                Rect mark { after, 76.0f, 48.0f, 48.0f };
+
+                // A slow breath under it.
+                float beat = 0.55f + 0.45f * m_pulse;
+                r.glow(mark.inset(-16.0f),
+                    theme::accentGlow.scaleAlpha(0.75f * beat), 1.7f);
+                ui::icon(r, mark, ui::Icon::FastForward, theme::accent, 3.5f);
             }
 
             TextStyle note;
