@@ -22,7 +22,7 @@ namespace {
     constexpr uint16_t kVersion = 1;
 
     // magic, version, reserved, deepest, climbs, week, paid, whetstones,
-    // nextId, item count, wearer count, reserved. Then the items, then the
+    // nextId, item count, wearer count, flags. Then the items, then the
     // wearers, then the hash.
     //
     // The whetstones went into the two bytes that were reserved behind the
@@ -88,7 +88,7 @@ std::string QuestRecord::body() const
     put16(out, m_nextId);
     put16(out, uint16_t(m_items.size()));
     put16(out, uint16_t(m_worn.size()));
-    put16(out, 0);
+    put16(out, m_flags);
 
     for (const Item& item : m_items) {
         put16(out, item.id);
@@ -143,6 +143,7 @@ void QuestRecord::load()
     uint16_t nextId = get16(p + 24);
     size_t itemCount = get16(p + 26);
     size_t equipCount = get16(p + 28);
+    uint16_t flags = get16(p + 30);
     std::vector<Item> items;
     std::vector<Wearing> worn;
 
@@ -216,6 +217,7 @@ void QuestRecord::load()
     m_week = week;
     m_paidThisWeek = paid;
     m_stones = stones;
+    m_flags = flags;
     m_items = std::move(items);
     m_worn = std::move(worn);
 
@@ -230,6 +232,7 @@ void QuestRecord::load()
         m_week = 0;
         m_paidThisWeek = 0;
         m_stones = 0;
+        m_flags = 0;
         m_items.clear();
         m_worn.clear();
         return;
@@ -419,6 +422,15 @@ bool QuestRecord::notePaidFloor(uint32_t floor)
     m_paidThisWeek = uint16_t(floor);
     m_dirty = true;
     return true;
+}
+
+void QuestRecord::setAutoAdvance(bool on)
+{
+    uint16_t was = m_flags;
+    m_flags = on ? uint16_t(m_flags | kAutoAdvance)
+                 : uint16_t(m_flags & ~kAutoAdvance);
+    if (m_flags != was)
+        m_dirty = true;
 }
 
 void QuestRecord::addStones(uint16_t many)

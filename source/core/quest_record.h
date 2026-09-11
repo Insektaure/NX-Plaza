@@ -48,6 +48,13 @@ public:
     // Writes it, if anything changed.
     bool flush();
 
+    // Whether a cleared floor waits for you or carries on by itself. A
+    // preference rather than progress, but it lives here because this is
+    // the quest's file and a climb is where it is set - the alternative was
+    // a row in Settings for something only one screen has ever heard of.
+    bool autoAdvance() const { return (m_flags & kAutoAdvance) != 0; }
+    void setAutoAdvance(bool on);
+
     uint32_t deepest() const { return m_deepest; }
     uint32_t climbs() const { return m_climbs; }
 
@@ -171,6 +178,10 @@ private:
     uint16_t m_paidThisWeek = 0; // how far up this week has already paid
     uint16_t m_nextId = 1;
     uint16_t m_stones = 0;
+    // The two bytes behind the counts, which the file has always written
+    // as zero. One bit of it is in use; the rest is the next small thing.
+    static constexpr uint16_t kAutoAdvance = 1u << 0;
+    uint16_t m_flags = 0;
     std::vector<Item> m_items;
     std::vector<Wearing> m_worn;
     bool m_loaded = false;

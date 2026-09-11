@@ -1392,6 +1392,9 @@ namespace {
         { "It lasts as long as the climb does.", "이번 등반 동안만 이어집니다." },
         { "take it", "받기" },
         { "blessings", "축복" },
+        { "keep going on its own", "자동으로 진행" },
+        { "stop on each floor", "층마다 멈추기" },
+        { "carrying on by itself", "자동으로 진행 중" },
         { "%s gets back up", "%s이(가) 다시 일어났습니다" },
 
         // ---------------------------------------------- the whetstone

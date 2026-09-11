@@ -9990,3 +9990,55 @@ LANGS["zh_hans"].update({
 LANGS["zh_hant"].update({
     'blessings': '祝福',
 })
+
+# ---- carrying on by itself: the climb advances without a button.
+LANGS["de"].update({
+    'keep going on its own': 'von allein weiterlaufen',
+    'stop on each floor': 'bei jedem Stockwerk anhalten',
+    'carrying on by itself': 'läuft von allein weiter',
+})
+LANGS["es"].update({
+    'keep going on its own': 'seguir solo',
+    'stop on each floor': 'parar en cada piso',
+    'carrying on by itself': 'sigue solo',
+})
+LANGS["it"].update({
+    'keep going on its own': 'andare avanti da sé',
+    'stop on each floor': 'fermarsi a ogni piano',
+    'carrying on by itself': 'va avanti da sé',
+})
+LANGS["nl"].update({
+    'keep going on its own': 'vanzelf doorgaan',
+    'stop on each floor': 'bij elke verdieping stoppen',
+    'carrying on by itself': 'gaat vanzelf door',
+})
+LANGS["pt"].update({
+    'keep going on its own': 'seguir sozinho',
+    'stop on each floor': 'parar em cada andar',
+    'carrying on by itself': 'segue sozinho',
+})
+LANGS["ru"].update({
+    'keep going on its own': 'идти дальше само',
+    'stop on each floor': 'останавливаться на каждом этаже',
+    'carrying on by itself': 'идёт дальше само',
+})
+LANGS["ja"].update({
+    'keep going on its own': '自動でつづける',
+    'stop on each floor': '階ごとに止まる',
+    'carrying on by itself': '自動でつづいています',
+})
+LANGS["ko"].update({
+    'keep going on its own': '자동으로 진행',
+    'stop on each floor': '층마다 멈추기',
+    'carrying on by itself': '자동으로 진행 중',
+})
+LANGS["zh_hans"].update({
+    'keep going on its own': '自动继续',
+    'stop on each floor': '每层都停',
+    'carrying on by itself': '正在自动继续',
+})
+LANGS["zh_hant"].update({
+    'keep going on its own': '自動繼續',
+    'stop on each floor': '每層都停',
+    'carrying on by itself': '正在自動繼續',
+})

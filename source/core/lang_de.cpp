@@ -1578,6 +1578,9 @@ namespace {
         { "It lasts as long as the climb does.", "Es hält so lange wie der Aufstieg." },
         { "take it", "nehmen" },
         { "blessings", "segen" },
+        { "keep going on its own", "von allein weiterlaufen" },
+        { "stop on each floor", "bei jedem Stockwerk anhalten" },
+        { "carrying on by itself", "läuft von allein weiter" },
         { "%s gets back up", "%s steht wieder auf" },
 
         // ---------------------------------------------- the whetstone

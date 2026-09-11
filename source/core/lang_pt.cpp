@@ -1540,6 +1540,9 @@ namespace {
         { "It lasts as long as the climb does.", "Dura o que durar a subida." },
         { "take it", "aceitar" },
         { "blessings", "bênçãos" },
+        { "keep going on its own", "seguir sozinho" },
+        { "stop on each floor", "parar em cada andar" },
+        { "carrying on by itself", "segue sozinho" },
         { "%s gets back up", "%s levanta-se" },
 
         // ---------------------------------------------- the whetstone

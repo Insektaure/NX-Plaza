@@ -1551,6 +1551,9 @@ namespace {
         { "It lasts as long as the climb does.", "Dura lo que dure la subida." },
         { "take it", "tomarla" },
         { "blessings", "bendiciones" },
+        { "keep going on its own", "seguir solo" },
+        { "stop on each floor", "parar en cada piso" },
+        { "carrying on by itself", "sigue solo" },
         { "%s gets back up", "%s se levanta" },
 
         // ---------------------------------------------- the whetstone

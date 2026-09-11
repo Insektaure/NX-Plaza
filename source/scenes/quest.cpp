@@ -80,17 +80,25 @@ namespace {
             switch (m_phase) {
             case Phase_Fight:
                 runFight(app, dt);
+                if (input.pressed(HidNpadButton_X))
+                    flipAuto();
                 if (input.back())
                     stop();
                 return;
             case Phase_Won:
                 agePops(dt);
+                if (input.pressed(HidNpadButton_X)) {
+                    flipAuto();
+                    return;
+                }
+                // Long enough to read a drop and see what it was worth,
+                // short enough that ten floors is not ten stares.
+                if (QuestRecord::get().autoAdvance() && m_clock >= kWonBeat) {
+                    onward();
+                    return;
+                }
                 if (input.accept()) {
-                    // Every fifth floor, the tower offers something before
-                    // it offers the next floor.
-                    if (m_floor % 5 == 0 && offer())
-                        return;
-                    nextFloor();
+                    onward();
                 } else if (input.back()) {
                     stop();
                 }
@@ -211,6 +219,9 @@ namespace {
                 drawOver(app, r);
                 return;
             }
+            app.hint("X",
+                QuestRecord::get().autoAdvance() ? "stop on each floor"
+                                                 : "keep going on its own");
             app.hint("B", "stop");
         }
 
@@ -282,6 +293,7 @@ namespace {
         static constexpr float kPanelY = 648.0f;
         static constexpr float kPanelRow = 56.0f;
         static constexpr float kHeldY = 660.0f;
+        static constexpr float kWonBeat = 1.7f; // a floor read by itself
         static constexpr float kOrderY = 24.0f;
         // The box a head sits in, and how much of it the face may take.
         //
@@ -534,6 +546,32 @@ namespace {
             m_say.clear();
             m_phase = Phase_Fight;
             m_clock = 0.0f;
+        }
+
+        // Whether a cleared floor waits for you. On X the whole way up -
+        // during a fight as much as on the screen that follows it - because
+        // the moment somebody decides they have read enough drop screens is
+        // usually halfway through watching one more.
+        //
+        // The clock goes back to zero so flipping it on does not skip the
+        // spoils that are already on screen.
+        void flipAuto()
+        {
+            QuestRecord& record = QuestRecord::get();
+            record.setAutoAdvance(!record.autoAdvance());
+            record.flush();
+            m_clock = 0.0f;
+        }
+
+        // On to the next floor, or to the blessing that comes before it.
+        // A blessing always waits for you however the spoils were left -
+        // carrying on by itself is about not reading the same drop screen
+        // ten times, not about skipping the one decision in the climb.
+        void onward()
+        {
+            if (m_floor % 5 == 0 && offer())
+                return;
+            nextFloor();
         }
 
         // True when there was something to offer, which is the caller's
@@ -1501,7 +1539,9 @@ namespace {
         // that may as well not have fallen.
         void drawWon(App& app, Renderer& r)
         {
+            bool auto_ = QuestRecord::get().autoAdvance();
             app.hint("A", "next floor");
+            app.hint("X", auto_ ? "stop on each floor" : "keep going on its own");
             app.hint("B", "stop here");
 
             constexpr float kW = 860.0f;
@@ -1536,6 +1576,16 @@ namespace {
                     m_paidNow, purse);
             }
             y += title.size * theme::leadingTight + theme::s5;
+
+            if (auto_) {
+                TextStyle on;
+                on.size = theme::textXs;
+                on.color = theme::fg4;
+                on.tracking = theme::trackingWide;
+                on.uppercase = true;
+                r.text(Rect { inner.x, inner.bottom() - 24.0f, inner.w, 24.0f },
+                    tr("carrying on by itself"), on, Align::Right, VAlign::Top);
+            }
 
             if (!m_spoils.valid()) {
                 TextStyle none;

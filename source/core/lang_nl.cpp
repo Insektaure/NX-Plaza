@@ -1544,6 +1544,9 @@ namespace {
         { "It lasts as long as the climb does.", "Het houdt zo lang als de klim." },
         { "take it", "nemen" },
         { "blessings", "zegeningen" },
+        { "keep going on its own", "vanzelf doorgaan" },
+        { "stop on each floor", "bij elke verdieping stoppen" },
+        { "carrying on by itself", "gaat vanzelf door" },
         { "%s gets back up", "%s staat weer op" },
 
         // ---------------------------------------------- the whetstone
