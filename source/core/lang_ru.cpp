@@ -1547,7 +1547,6 @@ namespace {
         { "blessings", "благословения" },
         { "keep going on its own", "идти дальше само" },
         { "stop on each floor", "останавливаться на каждом этаже" },
-        { "carrying on by itself", "идёт дальше само" },
         { "%s gets back up", "%s снова встаёт" },
 
         // ---------------------------------------------- the whetstone

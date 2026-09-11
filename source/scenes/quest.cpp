@@ -293,7 +293,7 @@ namespace {
         static constexpr float kPanelY = 648.0f;
         static constexpr float kPanelRow = 56.0f;
         static constexpr float kHeldY = 660.0f;
-        static constexpr float kWonBeat = 1.7f; // a floor read by itself
+        static constexpr float kWonBeat = 2.5f; // a floor read by itself
         static constexpr float kOrderY = 24.0f;
         // The box a head sits in, and how much of it the face may take.
         //
@@ -1000,7 +1000,19 @@ namespace {
             floorText.weight = FontWeight::Bold;
             floorText.color = theme::fg1;
             floorText.tracking = theme::trackingTight;
-            r.text(theme::edge, 74.0f, format(tr("Floor %d"), m_floor), floorText);
+            std::string floorLine = format(tr("Floor %d"), m_floor);
+            r.text(theme::edge, 74.0f, floorLine, floorText);
+
+            // Two chevrons beside the floor, for as long as the climb is
+            // carrying on by itself. Here rather than on the screen between
+            // floors, because that is the one place you could already tell:
+            // during a fight there was nothing to say it was still set.
+            if (QuestRecord::get().autoAdvance()) {
+                float after = theme::edge + r.measure(floorLine, floorText)
+                    + theme::s4;
+                ui::icon(r, Rect { after, 76.0f, 48.0f, 48.0f },
+                    ui::Icon::FastForward, theme::accent, 3.5f);
+            }
 
             TextStyle note;
             note.size = theme::textSm;
@@ -1539,9 +1551,10 @@ namespace {
         // that may as well not have fallen.
         void drawWon(App& app, Renderer& r)
         {
-            bool auto_ = QuestRecord::get().autoAdvance();
             app.hint("A", "next floor");
-            app.hint("X", auto_ ? "stop on each floor" : "keep going on its own");
+            app.hint("X",
+                QuestRecord::get().autoAdvance() ? "stop on each floor"
+                                                 : "keep going on its own");
             app.hint("B", "stop here");
 
             constexpr float kW = 860.0f;
@@ -1576,16 +1589,6 @@ namespace {
                     m_paidNow, purse);
             }
             y += title.size * theme::leadingTight + theme::s5;
-
-            if (auto_) {
-                TextStyle on;
-                on.size = theme::textXs;
-                on.color = theme::fg4;
-                on.tracking = theme::trackingWide;
-                on.uppercase = true;
-                r.text(Rect { inner.x, inner.bottom() - 24.0f, inner.w, 24.0f },
-                    tr("carrying on by itself"), on, Align::Right, VAlign::Top);
-            }
 
             if (!m_spoils.valid()) {
                 TextStyle none;

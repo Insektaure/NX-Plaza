@@ -1344,7 +1344,6 @@ namespace {
         { "blessings", "祝福" },
         { "keep going on its own", "自动继续" },
         { "stop on each floor", "每层都停" },
-        { "carrying on by itself", "正在自动继续" },
         { "%s gets back up", "%s 又站了起来" },
 
         // ---------------------------------------------- the whetstone

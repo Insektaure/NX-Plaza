@@ -1631,7 +1631,6 @@ namespace {
         { "blessings", "bénédictions" },
         { "keep going on its own", "enchaîner tout seul" },
         { "stop on each floor", "s'arrêter à chaque étage" },
-        { "carrying on by itself", "enchaîne tout seul" },
         { "%s gets back up", "%s se relève" },
 
 

@@ -435,6 +435,23 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         }
         break;
     }
+    case Icon::FastForward: {
+        // Two chevrons, one behind the other. Drawn the same stepped way as
+        // the chevron and the arrows so it sits with them rather than
+        // looking like it came from somewhere else.
+        for (int arm = 0; arm < 2; arm++) {
+            float ox = cx + (arm == 0 ? -s * 0.34f : s * 0.02f);
+            int steps = 8;
+            for (int i = 0; i < steps; i++) {
+                float t = static_cast<float>(i) / static_cast<float>(steps - 1);
+                r.circle(ox + t * s * 0.30f, cy - s * 0.26f + t * s * 0.26f,
+                    weight * 0.6f, color);
+                r.circle(ox + t * s * 0.30f, cy + s * 0.26f - t * s * 0.26f,
+                    weight * 0.6f, color);
+            }
+        }
+        break;
+    }
     case Icon::Chevron: {
         int steps = 5;
         for (int i = 0; i < steps; i++) {

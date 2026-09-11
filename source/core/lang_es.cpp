@@ -1553,7 +1553,6 @@ namespace {
         { "blessings", "bendiciones" },
         { "keep going on its own", "seguir solo" },
         { "stop on each floor", "parar en cada piso" },
-        { "carrying on by itself", "sigue solo" },
         { "%s gets back up", "%s se levanta" },
 
         // ---------------------------------------------- the whetstone

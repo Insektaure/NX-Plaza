@@ -1580,7 +1580,6 @@ namespace {
         { "blessings", "segen" },
         { "keep going on its own", "von allein weiterlaufen" },
         { "stop on each floor", "bei jedem Stockwerk anhalten" },
-        { "carrying on by itself", "läuft von allein weiter" },
         { "%s gets back up", "%s steht wieder auf" },
 
         // ---------------------------------------------- the whetstone

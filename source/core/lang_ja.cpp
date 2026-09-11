@@ -1367,7 +1367,6 @@ namespace {
         { "blessings", "さずかりもの" },
         { "keep going on its own", "自動でつづける" },
         { "stop on each floor", "階ごとに止まる" },
-        { "carrying on by itself", "自動でつづいています" },
         { "%s gets back up", "%sが起き上がった" },
 
         // ---------------------------------------------- the whetstone
