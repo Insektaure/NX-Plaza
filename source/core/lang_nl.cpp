@@ -1543,6 +1543,7 @@ namespace {
         { "The stair offers you something", "De trap biedt je iets aan" },
         { "It lasts as long as the climb does.", "Het houdt zo lang als de klim." },
         { "take it", "nemen" },
+        { "blessings", "zegeningen" },
         { "%s gets back up", "%s staat weer op" },
 
         // ---------------------------------------------- the whetstone

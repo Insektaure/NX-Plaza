@@ -1544,6 +1544,7 @@ namespace {
         { "It lasts as long as the climb does.",
             "Это держится, пока длится восхождение." },
         { "take it", "взять" },
+        { "blessings", "благословения" },
         { "%s gets back up", "%s снова встаёт" },
 
         // ---------------------------------------------- the whetstone

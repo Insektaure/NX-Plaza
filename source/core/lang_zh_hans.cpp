@@ -1341,6 +1341,7 @@ namespace {
         { "The stair offers you something", "楼梯递给你一样东西" },
         { "It lasts as long as the climb does.", "它只持续这一次攀登。" },
         { "take it", "拿下" },
+        { "blessings", "祝福" },
         { "%s gets back up", "%s 又站了起来" },
 
         // ---------------------------------------------- the whetstone

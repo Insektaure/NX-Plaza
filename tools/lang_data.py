@@ -9958,3 +9958,35 @@ LANGS["zh_hant"].update({
     'as it stands': '目前',
     'whatever it becomes': '洗成什麼樣',
 })
+
+# ---- the blessings a climb is carrying, listed down the bottom-left.
+LANGS["de"].update({
+    'blessings': 'segen',
+})
+LANGS["es"].update({
+    'blessings': 'bendiciones',
+})
+LANGS["it"].update({
+    'blessings': 'benedizioni',
+})
+LANGS["nl"].update({
+    'blessings': 'zegeningen',
+})
+LANGS["pt"].update({
+    'blessings': 'bênçãos',
+})
+LANGS["ru"].update({
+    'blessings': 'благословения',
+})
+LANGS["ja"].update({
+    'blessings': 'さずかりもの',
+})
+LANGS["ko"].update({
+    'blessings': '축복',
+})
+LANGS["zh_hans"].update({
+    'blessings': '祝福',
+})
+LANGS["zh_hant"].update({
+    'blessings': '祝福',
+})

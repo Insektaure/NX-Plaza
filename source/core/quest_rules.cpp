@@ -158,6 +158,17 @@ Sheet sheetFor(const Mii& mii, uint32_t crossed, uint32_t travelled, uint32_t ho
 
 // ---------------------------------------------------------------- the tower
 
+int partySlots(uint32_t peopleMet)
+{
+    if (peopleMet >= 25)
+        return 5;
+    if (peopleMet >= 10)
+        return 4;
+    return 3;
+}
+
+bool fullPartyAt(uint32_t peopleMet) { return partySlots(peopleMet) >= 5; }
+
 Boss bossFor(int floor)
 {
     // Clamped only to keep the arithmetic honest. Boss health passes what a

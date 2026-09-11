@@ -73,6 +73,19 @@ struct Boss {
     uint16_t spd = 1;
 };
 
+// How many can go up at once. The party is the collection, so this is where
+// meeting people pays: the fourth and fifth places are worth more than any
+// single ally in them.
+//
+// Here rather than in the scene that draws the party, because the trophy
+// walk needs the same answer and cannot ask a scene for it.
+int partySlots(uint32_t peopleMet);
+
+// The full five, which is the same question asked the other way round.
+// Written as a call rather than as `>= 25` in two files, because a
+// threshold spelled out twice is a threshold that moves once.
+bool fullPartyAt(uint32_t peopleMet);
+
 // The tower has no top. A party's damage is fixed by who is in it and by what
 // they carry; the shadow's health is not, so a climb ends where the roster
 // and the gear run out rather than at a number picked here.

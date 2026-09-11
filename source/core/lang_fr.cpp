@@ -1628,6 +1628,7 @@ namespace {
         { "It lasts as long as the climb does.",
             "Cela dure le temps de l'ascension." },
         { "take it", "prendre" },
+        { "blessings", "bénédictions" },
         { "%s gets back up", "%s se relève" },
 
 

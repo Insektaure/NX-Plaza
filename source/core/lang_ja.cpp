@@ -1364,6 +1364,7 @@ namespace {
         { "The stair offers you something", "階段が何かを差し出している" },
         { "It lasts as long as the climb does.", "この登りのあいだだけ続きます。" },
         { "take it", "もらう" },
+        { "blessings", "さずかりもの" },
         { "%s gets back up", "%sが起き上がった" },
 
         // ---------------------------------------------- the whetstone

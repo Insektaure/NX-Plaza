@@ -1550,6 +1550,7 @@ namespace {
         { "The stair offers you something", "La escalera te ofrece algo" },
         { "It lasts as long as the climb does.", "Dura lo que dure la subida." },
         { "take it", "tomarla" },
+        { "blessings", "bendiciones" },
         { "%s gets back up", "%s se levanta" },
 
         // ---------------------------------------------- the whetstone

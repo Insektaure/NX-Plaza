@@ -41,15 +41,6 @@ namespace {
     // to show, and reads as "down" more plainly than a ghost does.
     const Color kFallenInk = Color::hex(0x8A857E);
 
-    int partySlots(uint32_t peopleMet)
-    {
-        if (peopleMet >= 25)
-            return 5;
-        if (peopleMet >= 10)
-            return 4;
-        return 3;
-    }
-
     class QuestScene final : public Scene {
     public:
         enum Zone : int {
@@ -204,6 +195,7 @@ namespace {
             drawBossSide(r);
             drawField(r);
             drawPanel(r, false);
+            drawHeld(r);
             drawSay(r);
             drawPops(r);
 
@@ -289,6 +281,7 @@ namespace {
         static constexpr float kPanelX = 1150.0f;
         static constexpr float kPanelY = 648.0f;
         static constexpr float kPanelRow = 56.0f;
+        static constexpr float kHeldY = 660.0f;
         static constexpr float kOrderY = 24.0f;
         // The box a head sits in, and how much of it the face may take.
         //
@@ -1198,6 +1191,41 @@ namespace {
                         ? 0.0f
                         : float(u.mp) / float(std::max<uint16_t>(1, u.sheet.mp)),
                     theme::info);
+            }
+        }
+
+        // What this climb is carrying boon wise, down the bottom-left, where the
+        // roster sits while you are still choosing.
+        void drawHeld(Renderer& r) const
+        {
+            if (m_held.empty())
+                return;
+
+            TextStyle label;
+            label.size = theme::textXs;
+            label.color = theme::fg4;
+            label.tracking = theme::trackingWider;
+            label.uppercase = true;
+            // Its own word, not the encounter card's "carrying" - that one
+            // labels the radishes and rally ghosts on somebody's pass, and
+            // a key shared between the two could only ever be right for
+            // one of them.
+            r.text(theme::edge, kHeldY, tr("blessings"), label);
+
+            TextStyle name;
+            name.size = theme::textSm;
+            name.weight = FontWeight::Bold;
+            name.color = theme::accent;
+
+            float y = kHeldY + 30.0f;
+            for (uint8_t id : m_held) {
+                // Eight is more than any real climb takes - the pool is
+                // eighteen and they come one floor in five - but a run that
+                // went deep enough would otherwise write over the hint bar.
+                if (y + 28.0f > kHeldY + 8.0f * 30.0f)
+                    break;
+                r.text(theme::edge, y, tr(boonInfo(id).name), name);
+                y += 30.0f;
             }
         }
 

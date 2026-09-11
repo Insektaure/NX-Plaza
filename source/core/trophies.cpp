@@ -359,10 +359,12 @@ TrophyFacts trophyFacts(const Store& store)
         }
     }
 
-    // Five places in the party is twenty-five people crossed - the same
-    // rule partySlots() uses, and the reason it is written here as well is
-    // that a trophy must not depend on a scene being open.
-    facts.questFullParty = facts.uniquePeople >= 25;
+    // Asked of the rule itself rather than spelled out again here. This
+    // read `>= 25` until the threshold lived in one place: the same number
+    // in two files is a trophy that goes on firing at twenty-five after
+    // somebody moves the fifth place to thirty, and claims you took five
+    // up a tower that only lets four.
+    facts.questFullParty = fullPartyAt(facts.uniquePeople);
     return facts;
 }
 
