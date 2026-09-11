@@ -328,6 +328,7 @@ namespace {
 
         static constexpr float kBeat = 0.55f; // one action
         static constexpr float kPopLife = 0.9f;
+        static constexpr float kGesture = 0.45f; // one beat is 0.55
         static constexpr float kLunge = 30.0f; // how far a step forward goes
 
         static constexpr float kRosterY = 700.0f;
@@ -559,6 +560,10 @@ namespace {
             m_beatClock = 0.0f;
             m_bossShake = 1.0f;
             m_guard = -1;
+            m_flash = 0.0f;
+            m_arm = 0.0f;
+            m_ring = 0.0f;
+            m_sweep = 0.0f;
             m_say.clear();
             m_phase = Phase_Fight;
             m_clock = 0.0f;
@@ -675,6 +680,11 @@ namespace {
             m_bossShake = std::min(1.0f, m_bossShake + dt * 4.0f);
             for (Member& u : m_units)
                 u.lunge = std::max(0.0f, u.lunge - dt * 4.0f);
+            float fade = dt / kGesture;
+            m_flash = std::max(0.0f, m_flash - fade);
+            m_arm = std::max(0.0f, m_arm - fade);
+            m_ring = std::max(0.0f, m_ring - fade);
+            m_sweep = std::max(0.0f, m_sweep - fade);
             agePops(dt);
 
             m_beatClock += dt;
@@ -766,13 +776,17 @@ namespace {
         // The spread is what makes two runs of the same party different, and
         // it is small enough that it decides a close floor rather than a
         // whole climb.
-        static int hitFor(int atk, int def, float mult, bool* crit = nullptr)
+        // Not static: a static cannot see m_boons, so the
+        // crit chance was pinned at twelve and Keen edge - three times as
+        // often - set a field nothing on earth read. It was the only
+        // blessing in the pool that did nothing whatsoever.
+        int hitFor(int atk, int def, float mult, bool* crit = nullptr) const
         {
             int base = int(float(atk) - float(def) * 0.5f);
             base = std::max(1, int(float(base) * mult));
             int wobble = std::max(1, base / 4);
             int out = base + int(randomBelow(uint32_t(wobble * 2 + 1))) - wobble;
-            bool big = randomBelow(100) < 12;
+            bool big = int(randomBelow(100)) < m_boons.crit;
             if (big)
                 out = int(float(out) * 1.7f);
             if (crit)
@@ -793,6 +807,7 @@ namespace {
             case Class_Blade:
                 if (hasMp) {
                     u.mp -= m_boons.skillCost;
+                    m_flash = 1.0f;
                     strike(hitFor(atkOf(u), m_boss.def, 1.8f, &crit), crit);
                     return;
                 }
@@ -805,8 +820,9 @@ namespace {
                         int given = int(float(atkOf(u)) * m_boons.mendPower);
                         int before = hurt->hp;
                         hurt->hp = std::min(hurt->maxHp, hurt->hp + given);
-                        popOver(unitRect(int(hurt - m_units.data())),
-                            hurt->hp - before, true, false);
+                        m_ringAt = int(hurt - m_units.data());
+                        m_ring = 1.0f;
+                        popOver(unitRect(m_ringAt), hurt->hp - before, true, false);
                         return;
                     }
                 }
@@ -819,6 +835,7 @@ namespace {
                     // what a Spark takes away, and it does not come back.
                     m_bossAtk = std::max(float(m_boss.atk) * 0.6f,
                         m_bossAtk * (1.0f - m_boons.sparkBite));
+                    m_arm = 1.0f;
                     return;
                 }
                 break;
@@ -861,6 +878,38 @@ namespace {
             return out;
         }
 
+        // Somebody has just been brought to nothing. Returns true if they
+        // stayed down.
+        //
+        // This lived only in the single-target path, so Second wind never
+        // fired on a sweep - and a sweep is every fourth round and reaches
+        // the whole party, which is the commonest way anybody falls at all.
+        // A run could end with the blessing still unspent.
+        bool fell(Member& u)
+        {
+            if (m_boons.secondWind && !m_boons.spentWind) {
+                m_boons.spentWind = true;
+                u.hp = std::max(1, u.maxHp / 3);
+                popOver(unitRect(int(&u - m_units.data())), u.hp, true, false);
+                m_say = format(tr("%s gets back up"), u.name.c_str());
+                return false;
+            }
+            m_fallen++;
+            // Whoever was standing in front is not standing at all now.
+            if (m_guard >= 0 && &u == &m_units[size_t(m_guard)])
+                m_guard = -1;
+            m_say = format(tr("%s falls"), u.name.c_str());
+            return true;
+        }
+
+        // Standing in front only counts while they are still up. Asked in
+        // two places, so it is asked once here.
+        bool guarding() const
+        {
+            return m_guard >= 0 && m_guard < int(m_units.size())
+                && m_units[size_t(m_guard)].hp > 0;
+        }
+
         void bossActs()
         {
             int atk = int(m_bossAtk);
@@ -870,27 +919,25 @@ namespace {
             // whole reason the numbers are better than a line of text.
             if (m_round % 4 == 0) {
                 m_say.clear();
+                m_sweep = 1.0f;
                 for (size_t i = 0; i < m_units.size(); i++) {
                     Member& u = m_units[i];
                     if (u.hp <= 0)
                         continue;
                     bool crit = false;
                     float bite = 0.55f * m_boons.taken
-                        * (m_boons.guardSweep && m_guard >= 0 ? 0.5f : 1.0f);
+                        * (m_boons.guardSweep && guarding() ? 0.5f : 1.0f);
                     int dealt = hitFor(atk, u.sheet.def, bite, &crit);
                     u.hp = std::max(0, u.hp - dealt);
                     popOver(unitRect(int(i)), dealt, false, crit);
                     if (u.hp == 0)
-                        m_fallen++;
-                    if (u.hp == 0)
-                        m_say = format(tr("%s falls"), u.name.c_str());
+                        fell(u);
                 }
                 return;
             }
 
             Member* target = nullptr;
-            if (m_guard >= 0 && m_guard < int(m_units.size())
-                && m_units[size_t(m_guard)].hp > 0) {
+            if (guarding()) {
                 target = &m_units[size_t(m_guard)];
             } else {
                 std::vector<int> alive;
@@ -912,19 +959,7 @@ namespace {
             target->hp = std::max(0, target->hp - dealt);
             popOver(unitRect(int(target - m_units.data())), dealt, false, crit);
             if (target->hp == 0) {
-                // Back up once, if this run was blessed with it.
-                if (m_boons.secondWind && !m_boons.spentWind) {
-                    m_boons.spentWind = true;
-                    target->hp = std::max(1, target->maxHp / 3);
-                    popOver(unitRect(int(target - m_units.data())), target->hp, true,
-                        false);
-                    m_say = format(tr("%s gets back up"), target->name.c_str());
-                    return;
-                }
-                m_fallen++;
-                if (guarded)
-                    m_guard = -1;
-                m_say = format(tr("%s falls"), target->name.c_str());
+                fell(*target);
                 return;
             }
             m_say.clear();
@@ -1097,6 +1132,20 @@ namespace {
                 theme::bg0.scaleAlpha(beaten ? 0.10f : 0.35f), 0.0f);
             ui::miiFigure(r, box, shadowFace(m_floor), 1.0f, false, &ink);
 
+            // A Blade's blow, laid across whatever it hit. A band rather
+            // than a flash over the whole figure, so the 1.8x strike looks
+            // like something happening to the shadow and not like the
+            // screen blinking.
+            if (m_flash > 0.0f) {
+                float t = 1.0f - m_flash;
+                float y = box.y + box.h * (0.15f + 0.55f * t);
+                r.gradientRectH(Rect { box.x - 40.0f, y, box.w + 80.0f, 10.0f },
+                    theme::accent.scaleAlpha(0.0f),
+                    theme::accent.scaleAlpha(0.85f * m_flash));
+                r.glow(Rect { box.x - 60.0f, y - 40.0f, box.w + 120.0f, 90.0f },
+                    theme::accentGlow.scaleAlpha(0.5f * m_flash), 1.6f);
+            }
+
             constexpr float kBarW = 620.0f;
             Rect bar { kBossX - kBarW * 0.5f, kBossGround + 40.0f, kBarW, 24.0f };
             float share = m_boss.hp > 0
@@ -1116,14 +1165,24 @@ namespace {
                 format("%d / %u", std::max(0, m_bossHp), unsigned(m_boss.hp)), count,
                 Align::Center, VAlign::Top);
 
+            // A Spark takes the shadow's arm off for good, and that was
+            // the most interesting thing in the fight happening entirely
+            // invisibly - the number changed and nothing said so. Lit and
+            // underlined for a beat when it moves.
             TextStyle stat;
             stat.size = theme::textXs;
-            stat.color = theme::fg3;
+            stat.color = m_arm > 0.0f ? theme::accent : theme::fg3;
             stat.tracking = theme::trackingWide;
-            r.text(Rect { bar.x, bar.bottom() + 42.0f, bar.w, 26.0f },
+            Rect stats { bar.x, bar.bottom() + 42.0f, bar.w, 26.0f };
+            r.text(stats,
                 format("ATK %u   DEF %u   SPD %u", unsigned(int(m_bossAtk)),
                     unsigned(m_boss.def), unsigned(m_boss.spd)),
                 stat, Align::Center, VAlign::Top);
+            if (m_arm > 0.0f) {
+                r.roundRect(Rect { stats.centerX() - 90.0f * m_arm, stats.bottom(),
+                               180.0f * m_arm, 3.0f },
+                    1.5f, theme::accent.scaleAlpha(m_arm));
+            }
         }
 
         // The party on the field: figures only, because their numbers are
@@ -1147,6 +1206,42 @@ namespace {
                 } else {
                     ui::miiFigure(r, box, u.face);
                 }
+
+                // Standing in front: a shield between them and the shadow,
+                // held for as long as the taunt is. It was a line of text
+                // and nothing else, which for the one move that changes who
+                // gets hit was not enough.
+                if (int(i) == m_guard && !down) {
+                    Rect shield { box.x - 34.0f, box.centerY() - 44.0f, 26.0f,
+                        88.0f };
+                    r.roundRect(shield, 13.0f, theme::accent.scaleAlpha(0.22f));
+                    r.strokeRect(shield, 13.0f, theme::stroke * 1.5f,
+                        theme::accent.scaleAlpha(0.85f));
+                }
+
+                // A ring off whoever was just patched up, opening outwards.
+                if (m_ring > 0.0f && int(i) == m_ringAt) {
+                    float t = 1.0f - m_ring;
+                    float spread = 40.0f + 70.0f * t;
+                    r.strokeRect(Rect { box.centerX() - spread, box.centerY() - spread,
+                                     spread * 2.0f, spread * 2.0f },
+                        spread, theme::stroke * 2.0f,
+                        theme::success.scaleAlpha(0.75f * m_ring));
+                }
+            }
+
+            // And the swing that reaches everybody: one band crossing the
+            // whole line rather than four hits that happen to land at once,
+            // which is what four separate numbers looked like.
+            if (m_sweep > 0.0f && !m_units.empty()) {
+                Rect first = unitRect(0);
+                Rect last = unitRect(int(m_units.size()) - 1);
+                float t = 1.0f - m_sweep;
+                float x = first.x - 90.0f + (last.right() - first.x + 180.0f) * t;
+                r.gradientRectH(Rect { x - 150.0f, first.y - 20.0f, 150.0f,
+                                   last.bottom() - first.y + 40.0f },
+                    theme::danger.scaleAlpha(0.0f),
+                    theme::danger.scaleAlpha(0.55f * m_sweep));
             }
         }
 
@@ -1739,6 +1834,18 @@ namespace {
         std::vector<uint8_t> m_held;  // and which ones, so none comes twice
         std::vector<uint8_t> m_offer; // the three on the table
         int m_boonPick = 0;
+
+        // Five gestures, so a round can be read without reading the
+        // numbers: what a Blade does, what a Spark takes, who is standing
+        // in front, who was mended, and when the swing hits everybody.
+        // Each is a lifetime from 1 down to 0 on the same decay; the
+        // Guard's is not here because standing in front lasts as long as
+        // m_guard says it does.
+        float m_flash = 0.0f;  // a band across the shadow, from a Blade
+        float m_arm = 0.0f;    // the shadow's attack, freshly taken down
+        float m_ring = 0.0f;   // a ring off whoever a Mender just patched
+        int m_ringAt = -1;
+        float m_sweep = 0.0f;  // the swing that reaches the whole party
 
         std::vector<Pop> m_pops;
         Item m_spoils;        // what the floor just now gave up, if anything
