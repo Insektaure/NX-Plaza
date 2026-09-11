@@ -75,7 +75,9 @@ to make them.
   reach it in a week and the tower resets every Monday, so the ground you have
   already covered is worth climbing again. **Y** to equip the party, **ZR**
   opens the bag, and the shop sells whetstones that roll a piece of gear again
-  without changing its rank.
+  without changing its rank. **ZL** locks a piece, in the bag or on the gear
+  screen: a padlock appears beside its name and nothing throws it away until
+  you unlock it.
 - **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
   gets quicker until you hit something. Nothing staked and nothing won: it
   keeps a best distance and that is all.
