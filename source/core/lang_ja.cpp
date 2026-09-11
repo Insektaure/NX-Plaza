@@ -1234,6 +1234,7 @@ namespace {
         { "bring along", "連れていく" },
         { "leave behind", "置いていく" },
         { "climb", "登る" },
+        { "Climb", "登る" },
         { "stop", "やめる" },
         { "stop here", "ここでやめる" },
 

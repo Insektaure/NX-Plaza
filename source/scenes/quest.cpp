@@ -45,6 +45,7 @@ namespace {
     public:
         enum Zone : int {
             Zone_Roster = Touch_SceneBase,
+            Zone_Climb,
             Zone_Boon,
             Zone_Back,
         };
@@ -65,6 +66,7 @@ namespace {
             syncUnits();
             previewFloor();
             m_phase = Phase_Party;
+            m_focus = Focus_Roster;
             m_clock = 0.0f;
             m_best = QuestRecord::get().deepest();
         }
@@ -129,8 +131,11 @@ namespace {
             if (tapped) {
                 if (tap.is(Zone_Back))
                     app.popOverlay();
+                else if (tap.is(Zone_Climb))
+                    startOrAgain();
                 else if (tap.is(Zone_Roster) && tap.index >= 0
                     && tap.index < int(m_roster.size())) {
+                    m_focus = Focus_Roster;
                     m_cursor = tap.index;
                     toggle();
                 }
@@ -164,12 +169,22 @@ namespace {
             }
             syncUnits();
 
-            if (input.navLeft)
-                moveCursor(-1);
-            if (input.navRight)
-                moveCursor(1);
-            if (input.accept())
-                toggle();
+            // Up and down move between the roster and the button that
+            // sets off, so the button is somewhere the stick can actually
+            // get to.
+            if (input.navUp || input.navDown)
+                m_focus = m_focus == Focus_Roster ? Focus_Climb : Focus_Roster;
+            if (m_focus == Focus_Roster) {
+                if (input.navLeft)
+                    moveCursor(-1);
+                if (input.navRight)
+                    moveCursor(1);
+                if (input.accept())
+                    toggle();
+            } else if (input.accept()) {
+                startOrAgain();
+            }
+            // And X sets off from either, because it always has.
             if (input.pressed(HidNpadButton_X))
                 startOrAgain();
             if (input.pressed(HidNpadButton_Y))
@@ -460,6 +475,7 @@ namespace {
             syncUnits();
             previewFloor();
             m_phase = Phase_Party;
+            m_focus = Focus_Roster;
             m_clock = 0.0f;
         }
 
@@ -1445,8 +1461,12 @@ namespace {
 
         void drawPartyHints(App& app, Renderer& r)
         {
-            app.hint("A", inParty(m_cursor) ? "leave behind" : "bring along");
-            app.hint("X", "climb");
+            bool onButton = m_focus == Focus_Climb;
+            app.hint("A",
+                onButton ? "climb"
+                         : (inParty(m_cursor) ? "leave behind" : "bring along"));
+            if (!onButton)
+                app.hint("X", "climb");
             app.hint("Y", "gear");
             app.hint("ZR", "the bag");
             app.hint("B", "back");
@@ -1459,6 +1479,18 @@ namespace {
             r.text(Rect { theme::edge, kRosterY - 34.0f, kPanelX - theme::s5
                       - theme::edge, 28.0f },
                 label, note, Align::Left, VAlign::Top);
+
+            // The way up, as a button rather than as a hint alone: the
+            // stick reaches it with up or down, a finger reaches it
+            // directly, and X still does it from anywhere.
+            std::string go = tr("Climb");
+            float width = ui::actionButtonWidth(r, go);
+            Rect climb { Renderer::DesignWidth - theme::edge - width, 156.0f, width,
+                72.0f };
+            app.touchZone(climb, Zone_Climb);
+            ui::actionButton(r, climb, go, onButton,
+                app.touchHeld(Zone_Climb) ? 1.0f
+                                          : (onButton ? 0.7f + 0.3f * m_pulse : 0.0f));
         }
 
         // Three, side by side, and the run keeps whichever one you take.
@@ -1686,6 +1718,12 @@ namespace {
         std::vector<int> m_chosen;    // indices into m_roster
         int m_slots = 3;
         int m_cursor = 0;
+
+        enum Focus : int {
+            Focus_Roster = 0,
+            Focus_Climb,
+        };
+        int m_focus = Focus_Roster;
 
         std::vector<Member> m_units; // the party as it stands this climb
         int m_floor = 1;

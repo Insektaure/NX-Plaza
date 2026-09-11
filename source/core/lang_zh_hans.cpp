@@ -1214,6 +1214,7 @@ namespace {
         { "bring along", "带上" },
         { "leave behind", "留下" },
         { "climb", "攀登" },
+        { "Climb", "攀登" },
         { "stop", "停下" },
         { "stop here", "到此为止" },
 

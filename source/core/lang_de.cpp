@@ -1427,6 +1427,7 @@ namespace {
         { "bring along", "mitnehmen" },
         { "leave behind", "zurücklassen" },
         { "climb", "steigen" },
+        { "Climb", "Steigen" },
         { "stop", "aufhören" },
         { "stop here", "hier aufhören" },
 

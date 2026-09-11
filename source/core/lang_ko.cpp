@@ -1255,6 +1255,7 @@ namespace {
         { "bring along", "데려가기" },
         { "leave behind", "두고 가기" },
         { "climb", "오르기" },
+        { "Climb", "오르기" },
         { "stop", "그만두기" },
         { "stop here", "여기서 그만" },
 

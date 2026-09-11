@@ -10064,3 +10064,35 @@ LANGS["zh_hans"].update({
 LANGS["zh_hant"].update({
     'Take it off first, then throw it away.': '請先取下，再丟掉。',
 })
+
+# ---- the button that sets a climb off, back on the party screen.
+LANGS["de"].update({
+    'Climb': 'Steigen',
+})
+LANGS["es"].update({
+    'Climb': 'Subir',
+})
+LANGS["it"].update({
+    'Climb': 'Salire',
+})
+LANGS["nl"].update({
+    'Climb': 'Klimmen',
+})
+LANGS["pt"].update({
+    'Climb': 'Subir',
+})
+LANGS["ru"].update({
+    'Climb': 'Подняться',
+})
+LANGS["ja"].update({
+    'Climb': '登る',
+})
+LANGS["ko"].update({
+    'Climb': '오르기',
+})
+LANGS["zh_hans"].update({
+    'Climb': '攀登',
+})
+LANGS["zh_hant"].update({
+    'Climb': '攀登',
+})

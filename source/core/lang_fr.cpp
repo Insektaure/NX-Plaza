@@ -1465,6 +1465,7 @@ namespace {
         { "bring along", "emmener" },
         { "leave behind", "laisser" },
         { "climb", "monter" },
+        { "Climb", "Monter" },
         { "stop", "arrêter" },
         { "stop here", "arrêter ici" },
 

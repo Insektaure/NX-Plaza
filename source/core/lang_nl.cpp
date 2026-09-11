@@ -1395,6 +1395,7 @@ namespace {
         { "bring along", "meenemen" },
         { "leave behind", "achterlaten" },
         { "climb", "klimmen" },
+        { "Climb", "Klimmen" },
         { "stop", "stoppen" },
         { "stop here", "hier stoppen" },
 

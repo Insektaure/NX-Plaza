@@ -1402,6 +1402,7 @@ namespace {
         { "bring along", "llevar" },
         { "leave behind", "dejar" },
         { "climb", "subir" },
+        { "Climb", "Subir" },
         { "stop", "parar" },
         { "stop here", "parar aquí" },
 
