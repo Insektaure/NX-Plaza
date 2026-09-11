@@ -9092,7 +9092,7 @@ LANGS["de"].update({
     'Keen edge': 'Scharfe Schneide',
     'Telling blows land three times as often.': 'Entscheidende Treffer sitzen dreimal so oft.',
     'Second wind': 'Zweiter Atem',
-    'The first to fall gets up once, at a third.': 'Der Erste, der fällt, steht einmal wieder auf, bei einem Drittel.',
+    'The first to fall gets up once, at half.': 'Der Erste, der fällt, steht einmal wieder auf, bei der Hälfte.',
     'Rally': 'Sammelruf',
     'Each one who falls makes the rest hit a fifth harder.': 'Jeder Gefallene lässt den Rest ein Fünftel härter schlagen.',
     'Momentum': 'Schwung',
@@ -9134,7 +9134,7 @@ LANGS["es"].update({
     'Keen edge': 'Filo agudo',
     'Telling blows land three times as often.': 'Los golpes decisivos caen tres veces más a menudo.',
     'Second wind': 'Segundo aliento',
-    'The first to fall gets up once, at a third.': 'El primero en caer se levanta una vez, a un tercio.',
+    'The first to fall gets up once, at half.': 'El primero en caer se levanta una vez, a la mitad.',
     'Rally': 'Arenga',
     'Each one who falls makes the rest hit a fifth harder.': 'Cada uno que cae hace que el resto golpee un quinto más fuerte.',
     'Momentum': 'Impulso',
@@ -9176,7 +9176,7 @@ LANGS["it"].update({
     'Keen edge': 'Filo affilato',
     'Telling blows land three times as often.': 'I colpi decisivi cadono tre volte più spesso.',
     'Second wind': 'Secondo fiato',
-    'The first to fall gets up once, at a third.': 'Il primo a cadere si rialza una volta, a un terzo.',
+    'The first to fall gets up once, at half.': 'Il primo a cadere si rialza una volta, a metà.',
     'Rally': 'Adunata',
     'Each one who falls makes the rest hit a fifth harder.': 'Ogni caduto fa colpire gli altri un quinto più forte.',
     'Momentum': 'Slancio',
@@ -9218,7 +9218,7 @@ LANGS["nl"].update({
     'Keen edge': 'Scherpe snede',
     'Telling blows land three times as often.': 'Rake klappen vallen drie keer zo vaak.',
     'Second wind': 'Tweede adem',
-    'The first to fall gets up once, at a third.': 'De eerste die valt staat één keer op, op een derde.',
+    'The first to fall gets up once, at half.': 'De eerste die valt staat één keer op, op de helft.',
     'Rally': 'Verzamelen',
     'Each one who falls makes the rest hit a fifth harder.': 'Elke gevallene laat de rest een vijfde harder slaan.',
     'Momentum': 'Vaart',
@@ -9260,7 +9260,7 @@ LANGS["pt"].update({
     'Keen edge': 'Gume afiado',
     'Telling blows land three times as often.': 'Os golpes decisivos caem três vezes mais.',
     'Second wind': 'Segundo fôlego',
-    'The first to fall gets up once, at a third.': 'O primeiro a cair levanta-se uma vez, a um terço.',
+    'The first to fall gets up once, at half.': 'O primeiro a cair levanta-se uma vez, a metade.',
     'Rally': 'Reunir',
     'Each one who falls makes the rest hit a fifth harder.': 'Cada um que cai faz os outros bater um quinto mais forte.',
     'Momentum': 'Impulso',
@@ -9302,7 +9302,7 @@ LANGS["ru"].update({
     'Keen edge': 'Острая грань',
     'Telling blows land three times as often.': 'Решающие удары случаются втрое чаще.',
     'Second wind': 'Второе дыхание',
-    'The first to fall gets up once, at a third.': 'Первый упавший один раз встаёт, с третью здоровья.',
+    'The first to fall gets up once, at half.': 'Первый упавший один раз встаёт с половиной здоровья.',
     'Rally': 'Сплочение',
     'Each one who falls makes the rest hit a fifth harder.': 'Каждый упавший заставляет остальных бить на пятую часть сильнее.',
     'Momentum': 'Разгон',
@@ -9344,7 +9344,7 @@ LANGS["ja"].update({
     'Keen edge': '鋭い刃',
     'Telling blows land three times as often.': '会心の一撃が3倍出やすくなる。',
     'Second wind': '第二の息',
-    'The first to fall gets up once, at a third.': '最初に倒れた者が一度だけ、3分の1で起き上がる。',
+    'The first to fall gets up once, at half.': '最初に倒れた者が一度だけ、半分で起き上がる。',
     'Rally': '鼓舞',
     'Each one who falls makes the rest hit a fifth harder.': '倒れた者が出るたび、残りの攻撃が5分の1上がる。',
     'Momentum': '勢い',
@@ -9386,7 +9386,7 @@ LANGS["ko"].update({
     'Keen edge': '예리한 날',
     'Telling blows land three times as often.': '결정타가 세 배로 자주 터집니다.',
     'Second wind': '두 번째 숨',
-    'The first to fall gets up once, at a third.': '처음 쓰러진 사람이 한 번, 3분의 1로 일어납니다.',
+    'The first to fall gets up once, at half.': '처음 쓰러진 사람이 한 번, 절반으로 일어납니다.',
     'Rally': '결집',
     'Each one who falls makes the rest hit a fifth harder.': '한 명이 쓰러질 때마다 남은 이들이 5분의 1 강해집니다.',
     'Momentum': '가속',
@@ -9428,7 +9428,7 @@ LANGS["zh_hans"].update({
     'Keen edge': '锋锐',
     'Telling blows land three times as often.': '会心一击出现的次数变成三倍。',
     'Second wind': '第二口气',
-    'The first to fall gets up once, at a third.': '第一个倒下的人会以三分之一的生命起来一次。',
+    'The first to fall gets up once, at half.': '第一个倒下的人会以一半的生命起来一次。',
     'Rally': '集结',
     'Each one who falls makes the rest hit a fifth harder.': '每有一人倒下，其余人的攻击提高五分之一。',
     'Momentum': '势头',
@@ -9470,7 +9470,7 @@ LANGS["zh_hant"].update({
     'Keen edge': '鋒銳',
     'Telling blows land three times as often.': '會心一擊出現的次數變成三倍。',
     'Second wind': '第二口氣',
-    'The first to fall gets up once, at a third.': '第一個倒下的人會以三分之一的生命起來一次。',
+    'The first to fall gets up once, at half.': '第一個倒下的人會以一半的生命起來一次。',
     'Rally': '集結',
     'Each one who falls makes the rest hit a fifth harder.': '每有一人倒下，其餘人的攻擊提高五分之一。',
     'Momentum': '勢頭',
@@ -10095,4 +10095,107 @@ LANGS["zh_hans"].update({
 })
 LANGS["zh_hant"].update({
     'Climb': '攀登',
+})
+
+# ---- the lock: a piece marked safe from everything that throws gear away.
+
+LANGS["de"].update({
+    'lock': 'sperren',
+    'unlock': 'entsperren',
+    'That one is locked': 'Das ist gesperrt',
+    'Unlock it first, then throw it away.': 'Hebe erst die Sperre auf, dann wirf es weg.',
+})
+LANGS["es"].update({
+    'lock': 'bloquear',
+    'unlock': 'desbloquear',
+    'That one is locked': 'Ese está bloqueado',
+    'Unlock it first, then throw it away.': 'Desbloquéalo primero y luego tíralo.',
+})
+LANGS["it"].update({
+    'lock': 'blocca',
+    'unlock': 'sblocca',
+    'That one is locked': 'Quello è bloccato',
+    'Unlock it first, then throw it away.': 'Sbloccalo prima, poi buttalo via.',
+})
+LANGS["nl"].update({
+    'lock': 'vergrendelen',
+    'unlock': 'ontgrendelen',
+    'That one is locked': 'Die is vergrendeld',
+    'Unlock it first, then throw it away.': 'Ontgrendel het eerst en gooi het dan weg.',
+})
+LANGS["pt"].update({
+    'lock': 'bloquear',
+    'unlock': 'desbloquear',
+    'That one is locked': 'Esse está bloqueado',
+    'Unlock it first, then throw it away.': 'Desbloqueia-o primeiro e depois deita-o fora.',
+})
+LANGS["ru"].update({
+    'lock': 'заблокировать',
+    'unlock': 'разблокировать',
+    'That one is locked': 'Он заблокирован',
+    'Unlock it first, then throw it away.': 'Сначала разблокируйте, потом выбрасывайте.',
+})
+LANGS["ja"].update({
+    'lock': 'ロック',
+    'unlock': 'ロックかいじょ',
+    'That one is locked': 'ロックされています',
+    'Unlock it first, then throw it away.': 'さきにロックをはずしてからすててください。',
+})
+LANGS["ko"].update({
+    'lock': '잠그기',
+    'unlock': '잠금 해제',
+    'That one is locked': '잠겨 있습니다',
+    'Unlock it first, then throw it away.': '먼저 잠금을 해제한 뒤 버리세요.',
+})
+LANGS["zh_hans"].update({
+    'lock': '锁定',
+    'unlock': '解锁',
+    'That one is locked': '它已锁定',
+    'Unlock it first, then throw it away.': '请先解锁，再丢弃。',
+})
+LANGS["zh_hant"].update({
+    'lock': '鎖定',
+    'unlock': '解鎖',
+    'That one is locked': '它已鎖定',
+    'Unlock it first, then throw it away.': '請先解鎖，再丟棄。',
+})
+LANGS["de"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Alles darin wird getragen oder ist gesperrt, also blieb der Fund liegen.',
+})
+LANGS["es"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Todo lo que hay está puesto o bloqueado, así que lo caído se quedó en el suelo.',
+})
+LANGS["it"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Tutto quello che hai è indossato o bloccato, quindi il bottino è rimasto a terra.',
+})
+LANGS["nl"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Alles erin wordt gedragen of is vergrendeld, dus wat viel bleef liggen.',
+})
+LANGS["pt"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Tudo o que lá está é usado ou está bloqueado, por isso o que caiu ficou no chão.',
+})
+LANGS["ru"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'Всё в нём надето или заблокировано, поэтому добыча осталась на полу.',
+})
+LANGS["ja"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        'すべてそうびちゅうかロックずみなので、おとしものはゆかにのこりました。',
+})
+LANGS["ko"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        '전부 착용 중이거나 잠겨 있어서 떨어진 것은 바닥에 남았습니다.',
+})
+LANGS["zh_hans"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        '里面的东西都在装备中或已锁定，掉落物留在了地上。',
+})
+LANGS["zh_hant"].update({
+    'Everything in it is worn or locked, so what fell stayed on the floor.':
+        '裡面的東西都在裝備中或已鎖定，掉落物留在了地上。',
 })

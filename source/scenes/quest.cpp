@@ -470,6 +470,7 @@ namespace {
         {
             m_pops.clear();
             m_say.clear();
+            m_sayHold = 0.0f;
             m_spoils = Item {};
             m_floor = 1;
             buildRoster(app); // a climb can have changed what people carry
@@ -523,6 +524,7 @@ namespace {
             m_fallen = 0;
             m_pops.clear();
             m_say.clear();
+            m_sayHold = 0.0f;
             m_spoils = Item {};
             QuestRecord::get().noteClimb();
 
@@ -565,6 +567,7 @@ namespace {
             m_ring = 0.0f;
             m_sweep = 0.0f;
             m_say.clear();
+            m_sayHold = 0.0f;
             m_phase = Phase_Fight;
             m_clock = 0.0f;
         }
@@ -685,6 +688,7 @@ namespace {
             m_arm = std::max(0.0f, m_arm - fade);
             m_ring = std::max(0.0f, m_ring - fade);
             m_sweep = std::max(0.0f, m_sweep - fade);
+            m_sayHold = std::max(0.0f, m_sayHold - dt);
             agePops(dt);
 
             m_beatClock += dt;
@@ -843,7 +847,7 @@ namespace {
                 if (hasMp && m_guard != index) {
                     u.mp -= m_boons.skillCost;
                     m_guard = index;
-                    m_say = format(tr("%s stands in front"), u.name.c_str());
+                    say(format(tr("%s stands in front"), u.name.c_str()));
                     return;
                 }
                 break;
@@ -858,7 +862,7 @@ namespace {
         {
             m_bossHp -= dealt;
             m_bossShake = 0.0f;
-            m_say.clear();
+            hush();
             popOver(bossRect(), dealt, false, crit);
         }
 
@@ -878,6 +882,26 @@ namespace {
             return out;
         }
 
+        // The line under the turn order, and the hold that keeps one line up
+        // through everything that happens after it. A sweep reaches the whole
+        // party in one instant, so "somebody gets back up" used to be
+        // overwritten by "somebody else falls" before it had been on screen
+        // for a frame.
+        void say(std::string line, float hold = 0.0f)
+        {
+            if (m_sayHold > 0.0f && hold <= 0.0f)
+                return;
+            m_say = std::move(line);
+            m_sayHold = hold;
+        }
+
+        // Back to silence, unless something is being held.
+        void hush()
+        {
+            if (m_sayHold <= 0.0f)
+                m_say.clear();
+        }
+
         // Somebody has just been brought to nothing. Returns true if they
         // stayed down.
         //
@@ -888,17 +912,26 @@ namespace {
         bool fell(Member& u)
         {
             if (m_boons.secondWind && !m_boons.spentWind) {
+                // Half rather than a third. A third was one hit deep in the
+                // tower, so the blessing was spent and the shadow took it
+                // straight back on its next turn - which from the other side
+                // of the screen is indistinguishable from not reviving.
                 m_boons.spentWind = true;
-                u.hp = std::max(1, u.maxHp / 3);
-                popOver(unitRect(int(&u - m_units.data())), u.hp, true, false);
-                m_say = format(tr("%s gets back up"), u.name.c_str());
+                u.hp = std::max(1, u.maxHp / 2);
+                int at = int(&u - m_units.data());
+                popOver(unitRect(at), u.hp, true, false);
+                // The same burst a Mender makes, because a green number on
+                // its own is easy to read as one more hit landing.
+                m_ringAt = at;
+                m_ring = 1.0f;
+                say(format(tr("%s gets back up"), u.name.c_str()), 1.6f);
                 return false;
             }
             m_fallen++;
             // Whoever was standing in front is not standing at all now.
             if (m_guard >= 0 && &u == &m_units[size_t(m_guard)])
                 m_guard = -1;
-            m_say = format(tr("%s falls"), u.name.c_str());
+            say(format(tr("%s falls"), u.name.c_str()));
             return true;
         }
 
@@ -918,7 +951,7 @@ namespace {
             // half, and a number lands on every head at once - which is the
             // whole reason the numbers are better than a line of text.
             if (m_round % 4 == 0) {
-                m_say.clear();
+                hush();
                 m_sweep = 1.0f;
                 for (size_t i = 0; i < m_units.size(); i++) {
                     Member& u = m_units[i];
@@ -962,7 +995,7 @@ namespace {
                 fell(*target);
                 return;
             }
-            m_say.clear();
+            hush();
         }
 
         void clearedFloor(App& app)
@@ -994,6 +1027,7 @@ namespace {
             }
 
             m_say.clear();
+            m_sayHold = 0.0f;
             m_pops.clear();
             takeDrop(app, record);
 
@@ -1013,8 +1047,16 @@ namespace {
                 // and twenty commons could cost somebody a godlike from
                 // floor thirty. It makes room instead, and only ever out of
                 // the worst thing nobody is wearing.
+                // worstSpare() passes over anything worn or locked, so no
+                // spare at all means the bag is entirely spoken for.
                 const Item* spare = record.find(record.worstSpare());
-                if (!spare || itemRating(*spare) >= itemRating(fell)) {
+                if (!spare) {
+                    app.toast(tr("Your bag is full"),
+                        tr("Everything in it is worn or locked, so what fell stayed "
+                           "on the floor."));
+                    return;
+                }
+                if (itemRating(*spare) >= itemRating(fell)) {
                     app.toast(tr("Your bag is full"),
                         tr("Nothing in it was worse than what fell, so what fell "
                            "stayed on the floor."));
@@ -1212,11 +1254,12 @@ namespace {
                 // and nothing else, which for the one move that changes who
                 // gets hit was not enough.
                 if (int(i) == m_guard && !down) {
-                    Rect shield { box.x - 34.0f, box.centerY() - 44.0f, 26.0f,
-                        88.0f };
-                    r.roundRect(shield, 13.0f, theme::accent.scaleAlpha(0.22f));
-                    r.strokeRect(shield, 13.0f, theme::stroke * 1.5f,
-                        theme::accent.scaleAlpha(0.85f));
+                    Rect crest { box.x - 58.0f, box.centerY() - 30.0f, 60.0f,
+                        60.0f };
+                    float beat = 0.6f + 0.4f * m_pulse;
+                    r.glow(crest.inset(-18.0f),
+                        theme::accentGlow.scaleAlpha(0.7f * beat), 1.6f);
+                    ui::icon(r, crest, ui::Icon::Shield, theme::accent, 3.0f);
                 }
 
                 // A ring off whoever was just patched up, opening outwards.
@@ -1862,6 +1905,7 @@ namespace {
         int m_fallen = 0;  // how many have gone down this climb, for Rally
         float m_beatClock = 0.0f;
         std::string m_say; // the odd thing a number cannot say by itself
+        float m_sayHold = 0.0f; // seconds the current line refuses to be replaced
     };
 }
 

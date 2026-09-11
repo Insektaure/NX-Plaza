@@ -125,6 +125,10 @@ struct Item {
     uint8_t slot = Slot_Weapon;
     uint16_t seed = 0;
     uint16_t floor = 0; // where it fell, for the line under its name
+    // Kept on purpose. A locked piece cannot be thrown away, swept out by
+    // the clear-out, or evicted to make room when the bag is full - which
+    // is the one that matters, because that one happens without asking.
+    bool locked = false;
 
     bool valid() const { return id != 0; }
 };

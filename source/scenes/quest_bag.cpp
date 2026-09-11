@@ -113,6 +113,8 @@ namespace {
                 step(-1);
             if (input.navDown)
                 step(1);
+            if (input.pressed(HidNpadButton_ZL))
+                flipLock();
             if (input.pressed(HidNpadButton_X))
                 throwAway(app);
             if (input.pressed(HidNpadButton_Y))
@@ -133,7 +135,9 @@ namespace {
             }
 
             if (!m_shown.empty()) {
-                app.hint("X", "throw away");
+                app.hint("ZL", m_shown[size_t(m_pick)].locked ? "unlock" : "lock");
+                if (!m_shown[size_t(m_pick)].locked)
+                    app.hint("X", "throw away");
                 app.hint("Y", "roll it again");
             }
             app.hint("B", "back");
@@ -232,11 +236,29 @@ namespace {
                 m_now = *now;
         }
 
+        // Kept, or not. A locked piece survives everything that removes
+        // gear without being asked - the sweep, and the eviction a full bag
+        // makes on its own - which is what the lock is for.
+        void flipLock()
+        {
+            if (m_shown.empty())
+                return;
+            const Item& item = m_shown[size_t(m_pick)];
+            QuestRecord& record = QuestRecord::get();
+            record.setLocked(item.id, !item.locked);
+            record.flush();
+        }
+
         void throwAway(App& app)
         {
             if (m_shown.empty())
                 return;
             const Item gone = m_shown[size_t(m_pick)];
+            if (gone.locked) {
+                app.toast(tr("That one is locked"),
+                    tr("Unlock it first, then throw it away."));
+                return;
+            }
             std::string owner;
             if (QuestRecord::get().wearer(gone.id, owner)) {
                 // Refused rather than quietly stripped: taking a piece off
@@ -496,7 +518,13 @@ namespace {
             noun.size = theme::textBase;
             noun.weight = FontWeight::Bold;
             noun.color = theme::fg1;
-            r.text(inner.x, inner.y, tr(itemNoun(item)), noun);
+            float nounX = inner.x;
+            if (item.locked) {
+                ui::icon(r, Rect { inner.x, inner.y + 2.0f, 24.0f, 24.0f },
+                    ui::Icon::Lock, theme::accent, 2.0f);
+                nounX += 32.0f;
+            }
+            r.text(nounX, inner.y, tr(itemNoun(item)), noun);
 
             TextStyle peg;
             peg.size = theme::textXs;

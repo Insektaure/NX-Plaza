@@ -36,28 +36,37 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         break;
     }
     case Icon::Shield: {
-        // A crest: a flat top, straight sides, then two edges running down
-        // to a point.
+        // A heater shield: a top edge with the shoulders rounding off it,
+        // sides that stay near full width down the upper half, and a
+        // continuous sweep to the point.
         float half = s * 0.30f;
         float top = cy - s * 0.34f;
-        float shoulder = cy - s * 0.02f; // where the sides start to close
-        float point = cy + s * 0.36f;
+        float point = cy + s * 0.40f;
+        float drop = point - top;
 
-        r.rect(Rect { cx - half, top - weight * 0.5f, half * 2.0f, weight }, color);
-        r.rect(Rect { cx - half - weight * 0.5f, top, weight, shoulder - top },
-            color);
-        r.rect(Rect { cx + half - weight * 0.5f, top, weight, shoulder - top },
-            color);
+        auto width = [](float t) {
+            if (t < 0.10f)
+                return 0.86f + 0.14f * (t / 0.10f); // the shoulder
+            float u = (t - 0.10f) / 0.90f;
+            float inside = 1.0f - u * u * u;
+            return inside <= 0.0f ? 0.0f : std::sqrt(inside);
+        };
 
-        float drop = point - shoulder;
-        float run = std::sqrt(half * half + drop * drop);
-        int steps = std::max(6, static_cast<int>(run / (weight * 0.6f)));
+        // The top edge, tucked inside the shoulders so the corners read as
+        // turned rather than cut.
+        float lip = half * width(0.0f);
+        r.rect(Rect { cx - lip, top - weight * 0.5f, lip * 2.0f, weight }, color);
+
+        // Both edges, walked together. The step count comes from how far
+        // they have to go, so it stays gapless at 48 pixels on the games
+        // shelf and at half that in a settings row.
+        int steps = std::max(10, static_cast<int>(drop / (weight * 0.5f)));
         for (int i = 0; i <= steps; i++) {
             float t = static_cast<float>(i) / static_cast<float>(steps);
-            float y = shoulder + t * drop;
-            float out = (1.0f - t) * half;
-            r.circle(cx - out, y, weight * 0.55f, color);
-            r.circle(cx + out, y, weight * 0.55f, color);
+            float x = half * width(t);
+            float y = top + t * drop;
+            r.circle(cx - x, y, weight * 0.55f, color);
+            r.circle(cx + x, y, weight * 0.55f, color);
         }
         break;
     }
@@ -432,6 +441,26 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
             float x = cx - s * 0.04f + t * s * 0.30f;
             float y = cy + s * 0.18f - t * s * 0.38f;
             r.circle(x, y, weight * 0.6f, color);
+        }
+        break;
+    }
+    case Icon::Lock: {
+        // A body with a shackle over it. The body is a real rounded rect
+        // rather than a stroke, because at the sizes this is drawn - beside
+        // a name in a list - an outlined box and an outlined arc read as
+        // two unrelated marks.
+        // Sized so body and shackle together fill 0.62 x 0.68 of the box.
+        // The first pass drew it half that and it vanished next to the
+        // words it was meant to qualify.
+        Rect body { cx - s * 0.31f, cy - s * 0.08f, s * 0.62f, s * 0.42f };
+        r.roundRect(body, s * 0.10f, color);
+
+        int steps = 13;
+        for (int i = 0; i < steps; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(steps - 1);
+            float a = 3.14159265f * t; // half a turn, left round to right
+            r.circle(cx - std::cos(a) * s * 0.21f, body.y - std::sin(a) * s * 0.26f,
+                weight * 0.6f, color);
         }
         break;
     }

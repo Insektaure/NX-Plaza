@@ -121,6 +121,8 @@ namespace {
                 bare();
             if (input.pressed(HidNpadButton_X) && m_focus == Focus_Bag)
                 throwAway(app);
+            if (input.pressed(HidNpadButton_ZL))
+                flipLock();
             if (input.pressed(HidNpadButton_ZR))
                 sweep(app);
         }
@@ -132,11 +134,13 @@ namespace {
 
             if (m_focus == Focus_Bag) {
                 app.hint("A", "wear it");
-                if (!wornIsPicked())
+                if (!wornIsPicked() && !pickIsLocked())
                     app.hint("X", "throw away");
             } else if (!m_fits.empty()) {
                 app.hint("A", "what would fit");
             }
+            if (const Item* under = underCursor())
+                app.hint("ZL", under->locked ? "unlock" : "lock");
             app.hint("ZR", "clear out");
             if (wornHere() != 0)
                 app.hint("Y", "take it off");
@@ -308,6 +312,38 @@ namespace {
                 });
         }
 
+        bool pickIsLocked() const
+        {
+            return !m_fits.empty() && m_fits[size_t(m_pick)].locked;
+        }
+
+        // Whatever the cursor is on: the row in the bag column, or the piece
+        // on the peg. Nothing on an empty peg, which is the one place the
+        // cursor can sit with no piece under it.
+        const Item* underCursor() const
+        {
+            if (m_focus == Focus_Bag) {
+                if (m_fits.empty() || m_pick < 0 || m_pick >= int(m_fits.size()))
+                    return nullptr;
+                return &m_fits[size_t(m_pick)];
+            }
+            return QuestRecord::get().find(wornHere());
+        }
+
+        // Set here as well as in the bag, because this is the screen where
+        // you find out a piece is worth keeping. Locking something worn is
+        // allowed and does nothing until it comes off - which is the point,
+        // it is still safe when it does.
+        void flipLock()
+        {
+            const Item* item = underCursor();
+            if (!item)
+                return;
+            QuestRecord& record = QuestRecord::get();
+            record.setLocked(item->id, !item->locked);
+            record.flush();
+        }
+
         void throwAway(App& app)
         {
             if (m_fits.empty())
@@ -323,6 +359,12 @@ namespace {
             if (QuestRecord::get().wearer(gone.id, wearer)) {
                 app.toast(tr("Somebody is wearing that"),
                     tr("Take it off first, then throw it away."));
+                return;
+            }
+
+            if (gone.locked) {
+                app.toast(tr("That one is locked"),
+                    tr("Unlock it first, then throw it away."));
                 return;
             }
 
@@ -472,6 +514,13 @@ namespace {
                     drawQuality(r, Rect { inner.right() - 150.0f, inner.y + 28.0f,
                                     150.0f, 30.0f },
                         item->quality);
+
+                // Beside the slot name rather than the piece name: the line
+                // below already ends in the quality badge.
+                if (item && item->locked)
+                    ui::icon(r, Rect { inner.right() - 22.0f, inner.y - 2.0f,
+                                 22.0f, 22.0f },
+                        ui::Icon::Lock, theme::accent, 2.0f);
             }
         }
 
@@ -516,7 +565,13 @@ namespace {
                 name.size = theme::textBase;
                 name.weight = FontWeight::Bold;
                 name.color = theme::fg1;
-                r.text(inner.x, inner.y, tr(itemNoun(item)), name);
+                float nameX = inner.x;
+                if (item.locked) {
+                    ui::icon(r, Rect { inner.x, inner.y + 2.0f, 24.0f, 24.0f },
+                        ui::Icon::Lock, theme::accent, 2.0f);
+                    nameX += 32.0f;
+                }
+                r.text(nameX, inner.y, tr(itemNoun(item)), name);
 
                 TextStyle note;
                 note.size = theme::textXs;

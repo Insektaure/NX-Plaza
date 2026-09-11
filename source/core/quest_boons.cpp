@@ -42,7 +42,7 @@ namespace {
         { 5, "Reckless", "A third harder, and a quarter softer.", 0 },
         { 6, "Bulwark", "A third tougher, and a fifth weaker.", 0 },
         { 7, "Keen edge", "Telling blows land three times as often.", 0 },
-        { 8, "Second wind", "The first to fall gets up once, at a third.", 0 },
+        { 8, "Second wind", "The first to fall gets up once, at half.", 0 },
         { 9, "Rally", "Each one who falls makes the rest hit a fifth harder.", 0 },
         { 10, "Momentum", "The party hits a twentieth harder for every floor from "
                           "here.",

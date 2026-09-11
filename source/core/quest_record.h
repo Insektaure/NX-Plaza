@@ -105,7 +105,13 @@ public:
     // is the caller's cue to say so rather than to silently drop it.
     bool add(const Item& item);
 
-    // Removes it from the bag and from whoever was wearing it.
+    // Kept, or let go. A locked piece is refused by discard(), skipped by
+    // clearOut(), and never chosen as the worst spare when a drop needs
+    // room - that last one being the point, since nobody is asked first.
+    void setLocked(uint16_t itemId, bool on);
+
+    // Removes it from the bag and from whoever was wearing it. Does nothing
+    // at all if it is locked.
     void discard(uint16_t itemId);
 
     const Item* find(uint16_t itemId) const;

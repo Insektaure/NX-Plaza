@@ -1435,6 +1435,10 @@ namespace {
         { "Take it off first, then throw it away.", "Toglilo prima, poi buttalo." },
         { "Take it off in the gear screen first.",
             "Toglilo prima dalla schermata dell'equipaggiamento." },
+        { "lock", "blocca" },
+        { "unlock", "sblocca" },
+        { "That one is locked", "Quello è bloccato" },
+        { "Unlock it first, then throw it away.", "Sbloccalo prima, poi buttalo via." },
         { "%zu of %zu in the bag", "%zu su %zu nella sacca" },
         { "Nobody to dress", "Nessuno da equipaggiare" },
         { "Nothing here that would fit.", "Qui non c'è niente che vada." },
@@ -1451,6 +1455,10 @@ namespace {
             "Un pezzo %s dal piano %u. Non torna." },
         { "Throw it away", "Buttarlo" },
         { "Your bag is full", "La sacca è piena" },
+        { "Everything in it is worn or locked, so what fell stayed on "
+          "the floor.",
+            "Tutto quello che hai è indossato o bloccato, quindi il "
+            "bottino è rimasto a terra." },
         { "Nothing in it was worse than what fell, so what fell stayed "
           "on the floor.",
             "Niente dentro era peggio di ciò che è caduto, quindi è "
@@ -1535,8 +1543,8 @@ namespace {
         { "Telling blows land three times as often.",
             "I colpi decisivi cadono tre volte più spesso." },
         { "Second wind", "Secondo fiato" },
-        { "The first to fall gets up once, at a third.",
-            "Il primo a cadere si rialza una volta, a un terzo." },
+        { "The first to fall gets up once, at half.",
+            "Il primo a cadere si rialza una volta, a metà." },
         { "Rally", "Adunata" },
         { "Each one who falls makes the rest hit a fifth harder.",
             "Ogni caduto fa colpire gli altri un quinto più forte." },

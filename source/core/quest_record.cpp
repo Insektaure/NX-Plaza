@@ -93,7 +93,12 @@ std::string QuestRecord::body() const
     for (const Item& item : m_items) {
         put16(out, item.id);
         out.push_back(char(item.quality));
-        out.push_back(char(item.slot));
+        // The lock rides in the top bit of the slot, which only ever holds
+        // nought to three. It is masked straight back off on the way in, so
+        // nothing outside these two lines ever sees a slot it cannot index
+        // an array with - and a file written before locks existed reads
+        // back with the bit clear, which is exactly right.
+        out.push_back(char(item.slot | (item.locked ? 0x80 : 0x00)));
         put16(out, item.seed);
         put16(out, item.floor);
     }
@@ -167,7 +172,8 @@ void QuestRecord::load()
         Item item;
         item.id = get16(q);
         item.quality = q[2];
-        item.slot = q[3];
+        item.slot = uint8_t(q[3] & 0x7F);
+        item.locked = (q[3] & 0x80) != 0;
         item.seed = get16(q + 4);
         item.floor = get16(q + 6);
         // A quality or a slot this build does not have would index past the
@@ -295,13 +301,29 @@ bool QuestRecord::add(const Item& item)
     return true;
 }
 
+void QuestRecord::setLocked(uint16_t itemId, bool on)
+{
+    for (Item& item : m_items) {
+        if (item.id != itemId)
+            continue;
+        if (item.locked != on) {
+            item.locked = on;
+            m_dirty = true;
+        }
+        return;
+    }
+}
+
 void QuestRecord::discard(uint16_t itemId)
 {
     if (itemId == 0)
         return;
     auto it = std::find_if(m_items.begin(), m_items.end(),
         [itemId](const Item& i) { return i.id == itemId; });
-    if (it == m_items.end())
+    // A locked piece is refused here rather than only at the screens that
+    // ask, so nothing can route round it - the full bag evicts without
+    // asking anybody.
+    if (it == m_items.end() || it->locked)
         return;
     m_items.erase(it);
 
@@ -470,6 +492,8 @@ uint16_t QuestRecord::worstSpare() const
     uint16_t worst = 0;
     uint32_t rating = 0;
     for (const Item& item : m_items) {
+        if (item.locked)
+            continue;
         std::string ignored;
         if (wearer(item.id, ignored))
             continue;
@@ -491,6 +515,8 @@ size_t QuestRecord::clearOut(const Loadout& gear, bool apply)
         const Item* against = find(gear.worn[item.slot]);
         if (!against)
             continue; // nothing on that peg, so nothing to be worse than
+        if (item.locked)
+            continue;
         std::string ignored;
         if (wearer(item.id, ignored))
             continue; // never anything somebody is standing in
