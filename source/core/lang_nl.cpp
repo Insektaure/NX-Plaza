@@ -1409,6 +1409,8 @@ namespace {
         { "Nothing here yet. The tower is where it comes from.",
             "Nog niets. Het komt uit de toren." },
         { "Somebody is wearing that", "Iemand draagt dat" },
+        { "Take it off first, then throw it away.",
+            "Doe het eerst af en gooi het dan weg." },
         { "Take it off in the gear screen first.",
             "Doe het eerst af in het uitrustingsscherm." },
         { "%zu of %zu in the bag", "%zu van %zu in de tas" },

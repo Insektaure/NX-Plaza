@@ -1484,6 +1484,8 @@ namespace {
         { "Nothing here yet. The tower is where it comes from.",
             "Rien pour l'instant. C'est la tour qui en donne." },
         { "Somebody is wearing that", "Quelqu'un le porte" },
+        { "Take it off first, then throw it away.",
+            "Retirez-le d'abord, puis jetez-le." },
         { "Take it off in the gear screen first.",
             "Retirez-le d'abord depuis l'écran d'équipement." },
         { "%zu of %zu in the bag", "%zu sur %zu dans le sac" },

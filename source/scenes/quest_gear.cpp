@@ -132,7 +132,8 @@ namespace {
 
             if (m_focus == Focus_Bag) {
                 app.hint("A", "wear it");
-                app.hint("X", "throw away");
+                if (!wornIsPicked())
+                    app.hint("X", "throw away");
             } else if (!m_fits.empty()) {
                 app.hint("A", "what would fit");
             }
@@ -231,6 +232,16 @@ namespace {
             m_pick = (m_pick + by % count + count) % count;
         }
 
+        // Whether the cursor is on the piece that is being worn - the one
+        // thing in this list X cannot do anything with.
+        bool wornIsPicked() const
+        {
+            if (m_fits.empty() || m_pick < 0 || m_pick >= int(m_fits.size()))
+                return false;
+            std::string ignored;
+            return QuestRecord::get().wearer(m_fits[size_t(m_pick)].id, ignored);
+        }
+
         uint16_t wornHere() const
         {
             // Guarded because the hints ask this before anything else has
@@ -302,6 +313,19 @@ namespace {
             if (m_fits.empty())
                 return;
             const Item gone = m_fits[size_t(m_pick)];
+
+            // Never the piece somebody is standing in. The list shows it on
+            // purpose - that is what makes A take it off again - and
+            // discard() would quietly strip them on the way past, which is
+            // a lot to happen behind one button. The bag refuses the same
+            // thing for the same reason.
+            std::string wearer;
+            if (QuestRecord::get().wearer(gone.id, wearer)) {
+                app.toast(tr("Somebody is wearing that"),
+                    tr("Take it off first, then throw it away."));
+                return;
+            }
+
             std::string noun = tr(itemNoun(gone));
             std::string quality = tr(qualityName(gone.quality));
             app.askConfirm(format(tr("Throw away the %s?"), noun.c_str()),

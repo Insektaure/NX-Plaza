@@ -1227,6 +1227,7 @@ namespace {
         { "Somebody who has gone", "已經不在的人" },
         { "Nothing here yet. The tower is where it comes from.", "還什麼都沒有。這些都來自塔裡。" },
         { "Somebody is wearing that", "有人正裝備著它" },
+        { "Take it off first, then throw it away.", "請先取下，再丟掉。" },
         { "Take it off in the gear screen first.", "請先到裝備介面取下。" },
         { "%zu of %zu in the bag", "背包 %zu / %zu" },
         { "Nobody to dress", "沒有人可以裝備" },

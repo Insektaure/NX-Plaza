@@ -1248,6 +1248,7 @@ namespace {
         { "Nothing here yet. The tower is where it comes from.",
             "まだ何もありません。塔で手に入ります。" },
         { "Somebody is wearing that", "だれかがそうびしています" },
+        { "Take it off first, then throw it away.", "先にはずしてから、すててください。" },
         { "Take it off in the gear screen first.", "先にそうび画面ではずしてください。" },
         { "%zu of %zu in the bag", "ふくろ %zu / %zu" },
         { "Nobody to dress", "そうびさせる人がいません" },

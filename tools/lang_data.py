@@ -10032,3 +10032,35 @@ LANGS["zh_hant"].update({
     'keep going on its own': '自動繼續',
     'stop on each floor': '每層都停',
 })
+
+# ---- the gear screen refuses to throw away what is being worn.
+LANGS["de"].update({
+    'Take it off first, then throw it away.': 'Lege es erst ab, dann wirf es weg.',
+})
+LANGS["es"].update({
+    'Take it off first, then throw it away.': 'Quítalo primero y luego tíralo.',
+})
+LANGS["it"].update({
+    'Take it off first, then throw it away.': 'Toglilo prima, poi buttalo.',
+})
+LANGS["nl"].update({
+    'Take it off first, then throw it away.': 'Doe het eerst af en gooi het dan weg.',
+})
+LANGS["pt"].update({
+    'Take it off first, then throw it away.': 'Tire-o primeiro e depois deite-o fora.',
+})
+LANGS["ru"].update({
+    'Take it off first, then throw it away.': 'Сначала снимите, потом выбрасывайте.',
+})
+LANGS["ja"].update({
+    'Take it off first, then throw it away.': '先にはずしてから、すててください。',
+})
+LANGS["ko"].update({
+    'Take it off first, then throw it away.': '먼저 해제한 뒤 버리세요.',
+})
+LANGS["zh_hans"].update({
+    'Take it off first, then throw it away.': '请先取下，再丢掉。',
+})
+LANGS["zh_hant"].update({
+    'Take it off first, then throw it away.': '請先取下，再丟掉。',
+})

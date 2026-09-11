@@ -1409,6 +1409,8 @@ namespace {
         { "Nothing here yet. The tower is where it comes from.",
             "Пока ничего. Всё это даёт башня." },
         { "Somebody is wearing that", "Это кто-то носит" },
+        { "Take it off first, then throw it away.",
+            "Сначала снимите, потом выбрасывайте." },
         { "Take it off in the gear screen first.",
             "Сначала снимите это на экране снаряжения." },
         { "%zu of %zu in the bag", "%zu из %zu в сумке" },

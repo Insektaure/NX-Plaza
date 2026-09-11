@@ -1269,6 +1269,7 @@ namespace {
         { "Nothing here yet. The tower is where it comes from.",
             "아직 아무것도 없습니다. 탑에서 나옵니다." },
         { "Somebody is wearing that", "누군가 착용 중입니다" },
+        { "Take it off first, then throw it away.", "먼저 해제한 뒤 버리세요." },
         { "Take it off in the gear screen first.", "장비 화면에서 먼저 해제하세요." },
         { "%zu of %zu in the bag", "가방 %zu / %zu" },
         { "Nobody to dress", "장비시킬 사람이 없습니다" },
