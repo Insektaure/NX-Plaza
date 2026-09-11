@@ -1381,6 +1381,13 @@ namespace {
 
         { "%s stands in front", "%s встаёт впереди" },
         { "%s falls", "%s падает" },
+        { "%s cuts deep for %d", "%s рубит на %d" },
+        { "%s hits for %d", "%s бьёт на %d" },
+        { "%s mends %s for %d", "%s лечит %s на %d" },
+        { "%s saps the shadow for %d", "%s вытягивает из тени %d" },
+        { "the shadow hits %s for %d", "тень бьёт %s на %d" },
+        { "the shadow sweeps the whole party", "тень бьёт по всему отряду" },
+        { "what happened", "что произошло" },
         { "The party falls", "Отряд пал" },
         { "nothing this time", "в этот раз ничего" },
         { "next floor", "следующий этаж" },

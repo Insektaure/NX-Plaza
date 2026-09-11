@@ -1403,6 +1403,13 @@ namespace {
 
         { "%s stands in front", "%s si mette davanti" },
         { "%s falls", "%s cade" },
+        { "%s cuts deep for %d", "%s affonda il colpo per %d" },
+        { "%s hits for %d", "%s colpisce per %d" },
+        { "%s mends %s for %d", "%s cura %s di %d" },
+        { "%s saps the shadow for %d", "%s prosciuga l'ombra di %d" },
+        { "the shadow hits %s for %d", "l'ombra colpisce %s per %d" },
+        { "the shadow sweeps the whole party", "l'ombra travolge tutto il gruppo" },
+        { "what happened", "cosa è successo" },
         { "The party falls", "La squadra cade" },
         { "nothing this time", "niente stavolta" },
         { "next floor", "piano successivo" },

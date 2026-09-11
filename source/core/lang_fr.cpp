@@ -1450,6 +1450,13 @@ namespace {
         // down the screen mid-fight.
         { "%s stands in front", "%s se met devant" },
         { "%s falls", "%s tombe" },
+        { "%s cuts deep for %d", "%s tranche pour %d" },
+        { "%s hits for %d", "%s frappe pour %d" },
+        { "%s mends %s for %d", "%s soigne %s de %d" },
+        { "%s saps the shadow for %d", "%s draine l'ombre de %d" },
+        { "the shadow hits %s for %d", "l'ombre frappe %s pour %d" },
+        { "the shadow sweeps the whole party", "l'ombre balaie toute l'équipe" },
+        { "what happened", "ce qui s'est passé" },
         { "The party falls", "L'équipe tombe" },
         { "nothing this time", "rien cette fois" },
         { "next floor", "étage suivant" },

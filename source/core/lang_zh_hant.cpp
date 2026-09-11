@@ -1200,6 +1200,13 @@ namespace {
 
         { "%s stands in front", "%s 擋在前面" },
         { "%s falls", "%s 倒下了" },
+        { "%s cuts deep for %d", "%s 深深斬出 %d" },
+        { "%s hits for %d", "%s 攻擊造成 %d" },
+        { "%s mends %s for %d", "%s 治療 %s %d 點" },
+        { "%s saps the shadow for %d", "%s 消耗暗影 %d" },
+        { "the shadow hits %s for %d", "暗影攻擊 %s 造成 %d" },
+        { "the shadow sweeps the whole party", "暗影橫掃整個隊伍" },
+        { "what happened", "發生了什麼" },
         { "The party falls", "隊伍倒下了" },
         { "nothing this time", "這次什麼都沒有" },
         { "next floor", "下一層" },

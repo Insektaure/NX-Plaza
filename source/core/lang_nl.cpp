@@ -1380,6 +1380,13 @@ namespace {
 
         { "%s stands in front", "%s gaat ervoor staan" },
         { "%s falls", "%s valt" },
+        { "%s cuts deep for %d", "%s hakt diep voor %d" },
+        { "%s hits for %d", "%s raakt voor %d" },
+        { "%s mends %s for %d", "%s heelt %s voor %d" },
+        { "%s saps the shadow for %d", "%s put de schaduw uit voor %d" },
+        { "the shadow hits %s for %d", "de schaduw raakt %s voor %d" },
+        { "the shadow sweeps the whole party", "de schaduw veegt over de hele groep" },
+        { "what happened", "wat er gebeurde" },
         { "The party falls", "De groep valt" },
         { "nothing this time", "deze keer niets" },
         { "next floor", "volgende verdieping" },

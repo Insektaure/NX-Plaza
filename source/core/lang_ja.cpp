@@ -1220,6 +1220,13 @@ namespace {
 
         { "%s stands in front", "%sが前に出た" },
         { "%s falls", "%sが倒れた" },
+        { "%s cuts deep for %d", "%s がふかくきりこんで %d" },
+        { "%s hits for %d", "%s のこうげき %d" },
+        { "%s mends %s for %d", "%s が %s をかいふく %d" },
+        { "%s saps the shadow for %d", "%s がかげをけずって %d" },
+        { "the shadow hits %s for %d", "かげが %s にこうげき %d" },
+        { "the shadow sweeps the whole party", "かげがパーティぜんいんをなぎはらう" },
+        { "what happened", "なにがおきたか" },
         { "The party falls", "パーティーは倒れた" },
         { "nothing this time", "今回は何もなし" },
         { "next floor", "次の階" },

@@ -219,7 +219,7 @@ namespace {
             drawField(r);
             drawPanel(r, false);
             drawHeld(r);
-            drawSay(r);
+            drawLog(r);
             drawPops(r);
 
             if (m_phase == Phase_Boon) {
@@ -258,6 +258,20 @@ namespace {
             int amount = 0;
             bool heal = false;
             bool crit = false;
+        };
+
+        // A log line, with the one number in it marked out. The number is
+        // found rather than assembled: every one of these strings ends in
+        // its %d - the order of the specifiers is fixed across the eleven
+        // catalogues - so the last run of those digits in the finished line
+        // is the number itself and never part of somebody's name.
+        enum Tint : uint8_t { Tint_None, Tint_Dealt, Tint_Taken, Tint_Mend };
+
+        struct Line {
+            std::string text;
+            size_t at = std::string::npos; // where the number starts, in bytes
+            size_t len = 0;
+            uint8_t tint = Tint_None;
         };
 
         struct Member {
@@ -307,7 +321,17 @@ namespace {
         static constexpr float kPanelX = 1150.0f;
         static constexpr float kPanelY = 648.0f;
         static constexpr float kPanelRow = 56.0f;
-        static constexpr float kHeldY = 660.0f;
+        // Under the header rather than down in the corner: the corner is
+        // where the fight writes itself out now.
+        static constexpr float kHeldY = 168.0f;
+
+        // The fight log, in the empty ground under the shadow. Five lines is
+        // a little over one round of a four-strong party, which is as far
+        // back as anybody reads.
+        static constexpr float kLogY = 700.0f;
+        static constexpr float kLogW = 960.0f;
+        static constexpr float kLogLine = 34.0f;
+        static constexpr size_t kLogLines = 5;
         static constexpr float kWonBeat = 2.5f; // a floor read by itself
         static constexpr float kOrderY = 24.0f;
         // The box a head sits in, and how much of it the face may take.
@@ -469,8 +493,7 @@ namespace {
         void regroup(App& app)
         {
             m_pops.clear();
-            m_say.clear();
-            m_sayHold = 0.0f;
+            m_log.clear();
             m_spoils = Item {};
             m_floor = 1;
             buildRoster(app); // a climb can have changed what people carry
@@ -523,8 +546,7 @@ namespace {
             m_wiped = false;
             m_fallen = 0;
             m_pops.clear();
-            m_say.clear();
-            m_sayHold = 0.0f;
+            m_log.clear();
             m_spoils = Item {};
             QuestRecord::get().noteClimb();
 
@@ -566,8 +588,7 @@ namespace {
             m_arm = 0.0f;
             m_ring = 0.0f;
             m_sweep = 0.0f;
-            m_say.clear();
-            m_sayHold = 0.0f;
+            m_log.clear();
             m_phase = Phase_Fight;
             m_clock = 0.0f;
         }
@@ -688,7 +709,6 @@ namespace {
             m_arm = std::max(0.0f, m_arm - fade);
             m_ring = std::max(0.0f, m_ring - fade);
             m_sweep = std::max(0.0f, m_sweep - fade);
-            m_sayHold = std::max(0.0f, m_sayHold - dt);
             agePops(dt);
 
             m_beatClock += dt;
@@ -812,7 +832,10 @@ namespace {
                 if (hasMp) {
                     u.mp -= m_boons.skillCost;
                     m_flash = 1.0f;
-                    strike(hitFor(atkOf(u), m_boss.def, 1.8f, &crit), crit);
+                    int dealt = hitFor(atkOf(u), m_boss.def, 1.8f, &crit);
+                    strike(dealt, crit);
+                    note(format(tr("%s cuts deep for %d"), u.name.c_str(), dealt),
+                        dealt, Tint_Dealt);
                     return;
                 }
                 break;
@@ -827,6 +850,9 @@ namespace {
                         m_ringAt = int(hurt - m_units.data());
                         m_ring = 1.0f;
                         popOver(unitRect(m_ringAt), hurt->hp - before, true, false);
+                        note(format(tr("%s mends %s for %d"), u.name.c_str(),
+                                 hurt->name.c_str(), hurt->hp - before),
+                            hurt->hp - before, Tint_Mend);
                         return;
                     }
                 }
@@ -834,12 +860,16 @@ namespace {
             case Class_Spark:
                 if (hasMp) {
                     u.mp -= m_boons.skillCost;
-                    strike(hitFor(atkOf(u), m_boss.def, 1.3f, &crit), crit);
+                    int dealt = hitFor(atkOf(u), m_boss.def, 1.3f, &crit);
+                    strike(dealt, crit);
                     // Worn down rather than out-hit: the shadow's arm is
                     // what a Spark takes away, and it does not come back.
                     m_bossAtk = std::max(float(m_boss.atk) * 0.6f,
                         m_bossAtk * (1.0f - m_boons.sparkBite));
                     m_arm = 1.0f;
+                    note(format(tr("%s saps the shadow for %d"), u.name.c_str(),
+                             dealt),
+                        dealt, Tint_Dealt);
                     return;
                 }
                 break;
@@ -847,7 +877,7 @@ namespace {
                 if (hasMp && m_guard != index) {
                     u.mp -= m_boons.skillCost;
                     m_guard = index;
-                    say(format(tr("%s stands in front"), u.name.c_str()));
+                    note(format(tr("%s stands in front"), u.name.c_str()));
                     return;
                 }
                 break;
@@ -855,14 +885,16 @@ namespace {
                 break;
             }
 
-            strike(hitFor(atkOf(u), m_boss.def, 1.0f, &crit), crit);
+            int dealt = hitFor(atkOf(u), m_boss.def, 1.0f, &crit);
+            strike(dealt, crit);
+            note(format(tr("%s hits for %d"), u.name.c_str(), dealt), dealt,
+                Tint_Dealt);
         }
 
         void strike(int dealt, bool crit)
         {
             m_bossHp -= dealt;
             m_bossShake = 0.0f;
-            hush();
             popOver(bossRect(), dealt, false, crit);
         }
 
@@ -882,24 +914,44 @@ namespace {
             return out;
         }
 
-        // The line under the turn order, and the hold that keeps one line up
-        // through everything that happens after it. A sweep reaches the whole
-        // party in one instant, so "somebody gets back up" used to be
-        // overwritten by "somebody else falls" before it had been on screen
-        // for a frame.
-        void say(std::string line, float hold = 0.0f)
+        // One line per action, oldest first, capped. This replaced a single
+        // line of text under the turn order: a fight is a turn every half
+        // second and most of what happens - a Spark taking the shadow's arm
+        // off, a Mender catching somebody - was either a gesture that has
+        // already faded or a number that looked like every other number.
+        void note(std::string line, uint8_t tint = Tint_None)
         {
-            if (m_sayHold > 0.0f && hold <= 0.0f)
-                return;
-            m_say = std::move(line);
-            m_sayHold = hold;
+            m_log.push_back(Line { std::move(line), std::string::npos, 0, tint });
+            trim();
         }
 
-        // Back to silence, unless something is being held.
-        void hush()
+        void note(std::string line, int number, uint8_t tint)
         {
-            if (m_sayHold <= 0.0f)
-                m_say.clear();
+            std::string digits = format("%d", number);
+            size_t at = line.rfind(digits);
+            m_log.push_back(Line { std::move(line), at,
+                at == std::string::npos ? 0 : digits.size(), tint });
+            trim();
+        }
+
+        void trim()
+        {
+            if (m_log.size() > kLogLines)
+                m_log.erase(m_log.begin());
+        }
+
+        Color numberInk(uint8_t tint) const
+        {
+            switch (tint) {
+            case Tint_Taken:
+                return theme::danger;
+            case Tint_Mend:
+                return theme::success;
+            case Tint_Dealt:
+                return theme::accent;
+            default:
+                return theme::fg1;
+            }
         }
 
         // Somebody has just been brought to nothing. Returns true if they
@@ -924,14 +976,14 @@ namespace {
                 // its own is easy to read as one more hit landing.
                 m_ringAt = at;
                 m_ring = 1.0f;
-                say(format(tr("%s gets back up"), u.name.c_str()), 1.6f);
+                note(format(tr("%s gets back up"), u.name.c_str()), Tint_Mend);
                 return false;
             }
             m_fallen++;
             // Whoever was standing in front is not standing at all now.
             if (m_guard >= 0 && &u == &m_units[size_t(m_guard)])
                 m_guard = -1;
-            say(format(tr("%s falls"), u.name.c_str()));
+            note(format(tr("%s falls"), u.name.c_str()), Tint_Taken);
             return true;
         }
 
@@ -951,8 +1003,8 @@ namespace {
             // half, and a number lands on every head at once - which is the
             // whole reason the numbers are better than a line of text.
             if (m_round % 4 == 0) {
-                hush();
                 m_sweep = 1.0f;
+                note(tr("the shadow sweeps the whole party"));
                 for (size_t i = 0; i < m_units.size(); i++) {
                     Member& u = m_units[i];
                     if (u.hp <= 0)
@@ -991,11 +1043,10 @@ namespace {
             int dealt = hitFor(atk, target->sheet.def, bite, &crit);
             target->hp = std::max(0, target->hp - dealt);
             popOver(unitRect(int(target - m_units.data())), dealt, false, crit);
-            if (target->hp == 0) {
+            note(format(tr("the shadow hits %s for %d"), target->name.c_str(), dealt),
+                dealt, Tint_Taken);
+            if (target->hp == 0)
                 fell(*target);
-                return;
-            }
-            hush();
         }
 
         void clearedFloor(App& app)
@@ -1026,8 +1077,9 @@ namespace {
                 m_paidNow = kFloorCoins;
             }
 
-            m_say.clear();
-            m_sayHold = 0.0f;
+            // The log stays: the last thing it says is how the floor ended,
+            // and the victory screen is drawn over the top of it rather than
+            // instead of it. beginFloor() empties it for the next shadow.
             m_pops.clear();
             takeDrop(app, record);
 
@@ -1430,27 +1482,86 @@ namespace {
             for (uint8_t id : m_held) {
                 // Eight is more than any real climb takes - the pool is
                 // eighteen and they come one floor in five - but a run that
-                // went deep enough would otherwise write over the hint bar.
+                // went deep enough would otherwise reach the shadow.
                 if (y + 28.0f > kHeldY + 8.0f * 30.0f)
                     break;
-                r.text(theme::edge, y, tr(boonInfo(id).name), name);
+                // Held to 300, which is where the shadow's glow begins: a
+                // long name in a long language is the one thing that could
+                // reach across into it.
+                r.text(theme::edge, y,
+                    r.ellipsize(tr(boonInfo(id).name), name, 300.0f), name);
                 y += 30.0f;
             }
         }
 
-        // The one thing a number cannot say by itself - somebody stepping in
-        // front, somebody going down.
-        void drawSay(Renderer& r) const
+        // What just happened, in words, in the empty ground the shadow
+        // stands on. The numbers rising off people say how much; only this
+        // says who did what to whom, and it is the whole reason a fight that
+        // runs itself is worth watching.
+        void drawLog(Renderer& r) const
         {
-            if (m_say.empty())
-                return;
+            // Drawn empty rather than not drawn. A floor starts with nothing
+            // to say, and a box that appears on the first blow and vanishes
+            // on the next floor is a light going on and off under the fight.
+            float height = theme::s5 * 2.0f + 26.0f + theme::s3
+                + kLogLine * float(kLogLines);
+            Rect box { theme::edge, kLogY, kLogW, height };
+            r.roundRect(box, theme::r3, theme::bg1);
+            r.strokeRect(box, theme::r3, theme::stroke, theme::stroke1);
+            Rect inner = box.inset(theme::s5, theme::s5);
+
+            TextStyle label;
+            label.size = theme::textXs;
+            label.color = theme::fg4;
+            label.tracking = theme::trackingWider;
+            label.uppercase = true;
+            r.text(inner.x, inner.y, tr("what happened"), label);
+
+            // Newest at the bottom, and the older ones stepping back rather
+            // than vanishing, so the eye lands on the last line first.
             TextStyle line;
             line.size = theme::textSm;
-            line.color = theme::fg3;
-            line.tracking = theme::trackingWide;
-            r.text(Rect { theme::edge, kOrderY + kOrderCardH + theme::s3,
-                      Renderer::DesignWidth - theme::edge * 2.0f, 30.0f },
-                m_say, line, Align::Center, VAlign::Top);
+            float y = inner.y + 26.0f + theme::s3
+                + kLogLine * float(kLogLines - m_log.size());
+            for (size_t i = 0; i < m_log.size(); i++) {
+                const Line& entry = m_log[i];
+                bool newest = i + 1 == m_log.size();
+                float t = float(i + 1) / float(m_log.size());
+                float alpha = newest ? 1.0f : 0.40f + 0.45f * t;
+                line.color = newest ? theme::fg1 : theme::fg3.scaleAlpha(alpha);
+
+                // Three pieces, so the number can be coloured for what it
+                // did. A line that would not fit is drawn whole and cut
+                // short instead - the colour is worth less than the words.
+                if (entry.at == std::string::npos) {
+                    if (entry.tint != Tint_None)
+                        line.color = numberInk(entry.tint).scaleAlpha(alpha);
+                    r.text(inner.x, y, r.ellipsize(entry.text, line, inner.w), line);
+                    y += kLogLine;
+                    continue;
+                }
+                if (r.measure(entry.text, line) > inner.w) {
+                    r.text(inner.x, y, r.ellipsize(entry.text, line, inner.w), line);
+                    y += kLogLine;
+                    continue;
+                }
+
+                TextStyle figure = line;
+                figure.weight = FontWeight::Bold;
+                figure.color = numberInk(entry.tint).scaleAlpha(alpha);
+
+                std::string head = entry.text.substr(0, entry.at);
+                std::string number = entry.text.substr(entry.at, entry.len);
+                std::string tail = entry.text.substr(entry.at + entry.len);
+
+                float x = inner.x;
+                r.text(x, y, head, line);
+                x += r.measure(head, line);
+                r.text(x, y, number, figure);
+                x += r.measure(number, figure);
+                r.text(x, y, tail, line);
+                y += kLogLine;
+            }
         }
 
         // The numbers, rising and fading off whoever they happened to.
@@ -1904,8 +2015,7 @@ namespace {
         int m_guard = -1;  // who is standing in front, if anybody
         int m_fallen = 0;  // how many have gone down this climb, for Rally
         float m_beatClock = 0.0f;
-        std::string m_say; // the odd thing a number cannot say by itself
-        float m_sayHold = 0.0f; // seconds the current line refuses to be replaced
+        std::vector<Line> m_log; // what happened, oldest first
     };
 }
 

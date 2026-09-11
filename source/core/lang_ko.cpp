@@ -1241,6 +1241,13 @@ namespace {
 
         { "%s stands in front", "%s이(가) 앞에 섰다" },
         { "%s falls", "%s 쓰러짐" },
+        { "%s cuts deep for %d", "%s 이(가) 깊게 베어 %d" },
+        { "%s hits for %d", "%s 이(가) %d 피해" },
+        { "%s mends %s for %d", "%s 이(가) %s 을(를) %d 회복" },
+        { "%s saps the shadow for %d", "%s 이(가) 그림자를 %d 약화" },
+        { "the shadow hits %s for %d", "그림자가 %s 에게 %d 피해" },
+        { "the shadow sweeps the whole party", "그림자가 파티 전체를 휩씁니다" },
+        { "what happened", "무슨 일이 있었나" },
         { "The party falls", "파티가 쓰러졌습니다" },
         { "nothing this time", "이번에는 없음" },
         { "next floor", "다음 층" },

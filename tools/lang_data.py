@@ -10199,3 +10199,96 @@ LANGS["zh_hant"].update({
     'Everything in it is worn or locked, so what fell stayed on the floor.':
         '裡面的東西都在裝備中或已鎖定，掉落物留在了地上。',
 })
+
+# ---- the fight log: one line per action, in the ground under the shadow.
+
+LANGS["de"].update({
+    '%s cuts deep for %d': '%s trifft tief für %d',
+    '%s hits for %d': '%s trifft für %d',
+    '%s mends %s for %d': '%s heilt %s um %d',
+    '%s saps the shadow for %d': '%s schwächt den Schatten um %d',
+    'the shadow hits %s for %d': 'der Schatten trifft %s für %d',
+    'the shadow sweeps the whole party': 'der Schatten fegt über die ganze Gruppe',
+    'what happened': 'was geschehen ist',
+})
+LANGS["es"].update({
+    '%s cuts deep for %d': '%s corta hondo por %d',
+    '%s hits for %d': '%s golpea por %d',
+    '%s mends %s for %d': '%s cura a %s en %d',
+    '%s saps the shadow for %d': '%s drena a la sombra en %d',
+    'the shadow hits %s for %d': 'la sombra golpea a %s por %d',
+    'the shadow sweeps the whole party': 'la sombra barre a todo el grupo',
+    'what happened': 'qué ha pasado',
+})
+LANGS["it"].update({
+    '%s cuts deep for %d': '%s affonda il colpo per %d',
+    '%s hits for %d': '%s colpisce per %d',
+    '%s mends %s for %d': '%s cura %s di %d',
+    '%s saps the shadow for %d': "%s prosciuga l'ombra di %d",
+    'the shadow hits %s for %d': "l'ombra colpisce %s per %d",
+    'the shadow sweeps the whole party': "l'ombra travolge tutto il gruppo",
+    'what happened': 'cosa è successo',
+})
+LANGS["nl"].update({
+    '%s cuts deep for %d': '%s hakt diep voor %d',
+    '%s hits for %d': '%s raakt voor %d',
+    '%s mends %s for %d': '%s heelt %s voor %d',
+    '%s saps the shadow for %d': '%s put de schaduw uit voor %d',
+    'the shadow hits %s for %d': 'de schaduw raakt %s voor %d',
+    'the shadow sweeps the whole party': 'de schaduw veegt over de hele groep',
+    'what happened': 'wat er gebeurde',
+})
+LANGS["pt"].update({
+    '%s cuts deep for %d': '%s corta fundo por %d',
+    '%s hits for %d': '%s acerta por %d',
+    '%s mends %s for %d': '%s cura %s em %d',
+    '%s saps the shadow for %d': '%s drena a sombra em %d',
+    'the shadow hits %s for %d': 'a sombra acerta %s por %d',
+    'the shadow sweeps the whole party': 'a sombra varre todo o grupo',
+    'what happened': 'o que aconteceu',
+})
+LANGS["ru"].update({
+    '%s cuts deep for %d': '%s рубит на %d',
+    '%s hits for %d': '%s бьёт на %d',
+    '%s mends %s for %d': '%s лечит %s на %d',
+    '%s saps the shadow for %d': '%s вытягивает из тени %d',
+    'the shadow hits %s for %d': 'тень бьёт %s на %d',
+    'the shadow sweeps the whole party': 'тень бьёт по всему отряду',
+    'what happened': 'что произошло',
+})
+LANGS["ja"].update({
+    '%s cuts deep for %d': '%s がふかくきりこんで %d',
+    '%s hits for %d': '%s のこうげき %d',
+    '%s mends %s for %d': '%s が %s をかいふく %d',
+    '%s saps the shadow for %d': '%s がかげをけずって %d',
+    'the shadow hits %s for %d': 'かげが %s にこうげき %d',
+    'the shadow sweeps the whole party': 'かげがパーティぜんいんをなぎはらう',
+    'what happened': 'なにがおきたか',
+})
+LANGS["ko"].update({
+    '%s cuts deep for %d': '%s 이(가) 깊게 베어 %d',
+    '%s hits for %d': '%s 이(가) %d 피해',
+    '%s mends %s for %d': '%s 이(가) %s 을(를) %d 회복',
+    '%s saps the shadow for %d': '%s 이(가) 그림자를 %d 약화',
+    'the shadow hits %s for %d': '그림자가 %s 에게 %d 피해',
+    'the shadow sweeps the whole party': '그림자가 파티 전체를 휩씁니다',
+    'what happened': '무슨 일이 있었나',
+})
+LANGS["zh_hans"].update({
+    '%s cuts deep for %d': '%s 深深斩出 %d',
+    '%s hits for %d': '%s 攻击造成 %d',
+    '%s mends %s for %d': '%s 治疗 %s %d 点',
+    '%s saps the shadow for %d': '%s 消耗暗影 %d',
+    'the shadow hits %s for %d': '暗影攻击 %s 造成 %d',
+    'the shadow sweeps the whole party': '暗影横扫整个队伍',
+    'what happened': '发生了什么',
+})
+LANGS["zh_hant"].update({
+    '%s cuts deep for %d': '%s 深深斬出 %d',
+    '%s hits for %d': '%s 攻擊造成 %d',
+    '%s mends %s for %d': '%s 治療 %s %d 點',
+    '%s saps the shadow for %d': '%s 消耗暗影 %d',
+    'the shadow hits %s for %d': '暗影攻擊 %s 造成 %d',
+    'the shadow sweeps the whole party': '暗影橫掃整個隊伍',
+    'what happened': '發生了什麼',
+})
