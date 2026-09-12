@@ -179,8 +179,10 @@ namespace {
             "O jogo, suas horas nele e quantos jogos você tem. Jogos "
             "ocultos ficam ocultos, sempre" },
         { "Exchange passes automatically", "Trocar cartões automaticamente" },
-        { "Trades happen while the app is open",
-            "As trocas acontecem enquanto o app está aberto" },
+        { "Trades run while the app is open - the other console does "
+          "not have to be",
+            "As trocas acontecem enquanto o app está aberto - a outra "
+            "consola não precisa de estar" },
         { "How far a crossing reaches", "Alcance de um cruzamento" },
         { "Same network is the closest thing to walking past someone",
             "A mesma rede é o mais próximo de cruzar com alguém na rua" },

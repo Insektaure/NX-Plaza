@@ -443,8 +443,15 @@ private:
             break;
 
         case Sec_Exchange:
+            // Not "while the app is open" on its own: that reads as the 3DS
+            // radio, where both consoles had to be awake at once. The plaza
+            // looks three days back for somebody to cross and queues your
+            // pass for them to collect, which is the whole reason it is not
+            // empty.
             toggle(Id_AutoExchange, "Exchange passes automatically",
-                "Trades happen while the app is open", settings.autoExchange);
+                "Trades run while the app is open - the other console does not "
+                "have to be",
+                settings.autoExchange);
             segmented(Id_Reach, "How far a crossing reaches",
                 "Same network is the closest thing to walking past someone", reachOptions, 3,
                 static_cast<int>(settings.reach));

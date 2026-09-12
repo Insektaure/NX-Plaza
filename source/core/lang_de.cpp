@@ -181,8 +181,10 @@ namespace {
             "Das Spiel, deine Stunden darin und wie viele Spiele du hast. "
             "Verborgene Spiele bleiben verborgen, immer" },
         { "Exchange passes automatically", "Karten automatisch tauschen" },
-        { "Trades happen while the app is open",
-            "Getauscht wird, solange die App offen ist" },
+        { "Trades run while the app is open - the other console does "
+          "not have to be",
+            "Getauscht wird, solange die App offen ist - die andere "
+            "Konsole muss es nicht sein" },
         { "How far a crossing reaches", "Reichweite einer Begegnung" },
         { "Same network is the closest thing to walking past someone",
             "Gleiches Netz kommt dem echten Vorbeigehen am nächsten" },

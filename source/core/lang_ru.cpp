@@ -180,8 +180,10 @@ namespace {
             "Игра, ваши часы в ней и сколько у вас игр. Скрытые игры "
             "остаются скрытыми, всегда" },
         { "Exchange passes automatically", "Обмениваться карточками автоматически" },
-        { "Trades happen while the app is open",
-            "Обмен идёт, пока приложение открыто" },
+        { "Trades run while the app is open - the other console does "
+          "not have to be",
+            "Обмен идёт, пока приложение открыто, — другая консоль может "
+            "быть выключена" },
         { "How far a crossing reaches", "Дальность встречи" },
         { "Same network is the closest thing to walking past someone",
             "Та же сеть - ближе всего к настоящей встрече на улице" },

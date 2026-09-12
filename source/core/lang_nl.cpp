@@ -179,8 +179,10 @@ namespace {
             "Het spel, jouw uren erin en hoeveel spellen je hebt. "
             "Verborgen spellen blijven verborgen, altijd" },
         { "Exchange passes automatically", "Kaarten automatisch uitwisselen" },
-        { "Trades happen while the app is open",
-            "Uitwisselen gebeurt zolang de app open is" },
+        { "Trades run while the app is open - the other console does "
+          "not have to be",
+            "Uitwisselen gebeurt zolang de app open is - de andere "
+            "console hoeft dat niet te zijn" },
         { "How far a crossing reaches", "Bereik van een ontmoeting" },
         { "Same network is the closest thing to walking past someone",
             "Zelfde netwerk komt het dichtst bij elkaar echt tegenkomen" },

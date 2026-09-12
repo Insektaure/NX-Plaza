@@ -203,8 +203,9 @@ namespace {
             "Le jeu, vos heures dessus et combien de jeux vous avez. Les jeux "
             "masqués restent masqués, toujours" },
         { "Exchange passes automatically", "Échanger les cartes automatiquement" },
-        { "Trades happen while the app is open",
-            "Les échanges se font tant que l'app est ouverte" },
+        { "Trades run while the app is open - the other console does not have to be",
+            "Les échanges se font tant que l'app est ouverte - l'autre console "
+            "n'a pas besoin de l'être" },
         { "How far a crossing reaches", "Portée d'un croisement" },
         { "Same network is the closest thing to walking past someone",
             "Le même réseau est ce qui ressemble le plus à croiser quelqu'un dans "
