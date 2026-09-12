@@ -403,10 +403,10 @@ any damage or loss of data that may occur from using this app.
 | *The dice duel - roll for nothing, or two coins for three back.* | *The wheel - what every lantern pays, written up before you spin.* |
 | ![The bandit's cabinet on its pedestal, with the paytable on the wall beside it](screenshots/23.jpg) | ![The Mii tower, somebody swinging above the base](screenshots/24.jpg) |
 | *The bandit - three symbols or five, and every line it pays.* | *The tower - whoever is swinging drops where you let go.* |
-| ![Plaza dash, your own Mii on the start of a run](screenshots/25.jpg) | ![The quest's party screen: the floor's shadow on the left, three Miis ranged down the right, and the roster along the bottom](screenshots/26.jpg) |
+| ![Plaza dash, your own Mii on the start of a run](screenshots/25.jpg) | ![The quest's party screen: the floor's shadow on the left, three Miis ranged down the right, the roster along the bottom and the Climb button above it](screenshots/28.jpg) |
 | *Plaza dash - the market to jump, and a best distance.* | *The quest - who goes up, on the ground they will fight on.* |
-| ![The gear screen: one person's four pegs, their stats with the gear folded in, and the bag beside them](screenshots/27.jpg) |  |
-| *Their gear - four pegs, and what the bag has that would fit.* |  |
+| ![The gear screen: one person's four pegs with padlocks on two of them, their stats with the gear folded in, and the bag beside them](screenshots/29.jpg) | ![A floor being fought: the shadow's health, the turn order along the top, the party's bars, and the log of what just happened](screenshots/30.jpg) |
+| *Their gear - four pegs, what the bag would fit, and a padlock on what stays.* | *A floor, fighting itself - and the log saying who did what.* |
 
 **Your pass, your Mii, your settings.**
 
