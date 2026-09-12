@@ -37,6 +37,23 @@ namespace {
     };
 
     const Game kShelf[] = {
+        { ui::Icon::Shield, "The quest",
+            "A tower with no top, a shadow on every floor, and a party made "
+            "of the people you have crossed.\n"
+            "Every shadow can leave something behind. Gear them up, pick who "
+            "goes, and the fight runs itself.",
+            &makeQuestScene, nullptr, "floors", &questBest },
+        { ui::Icon::Stack, "The Mii tower",
+            "Stack the people you have crossed, one drop at a time.\n"
+            "Miss the shoulders below and they fall; drift too far from the base "
+            "and the lot goes over.",
+            &makeMiiTowerScene, "tower", "floors" },
+        { ui::Icon::Runner, "Plaza dash",
+            "Your own Mii running through the plaza, jumping what the market "
+            "leaves in the way.\n"
+            "It gets quicker. Nothing staked, nothing won - only how far you "
+            "got.",
+            &makePlazaDashScene, "dash", "m" },
         { ui::Icon::Flag, "The Mii race",
             "Three of the people you have crossed, against your own Mii, and "
             "nobody is faster than anybody.\n"
@@ -60,23 +77,6 @@ namespace {
             "A coin a spin, or spin for nothing - two bells hand the coin back, "
             "and the board on the wall lists every line it pays.",
             &makeSlotsScene, nullptr, nullptr },
-        { ui::Icon::Stack, "The Mii tower",
-            "Stack the people you have crossed, one drop at a time.\n"
-            "Miss the shoulders below and they fall; drift too far from the base "
-            "and the lot goes over.",
-            &makeMiiTowerScene, "tower", "floors" },
-        { ui::Icon::Shield, "The quest",
-            "A tower with no top, a shadow on every floor, and a party made "
-            "of the people you have crossed.\n"
-            "Every shadow can leave something behind. Gear them up, pick who "
-            "goes, and the fight runs itself.",
-            &makeQuestScene, nullptr, "floors", &questBest },
-        { ui::Icon::Runner, "Plaza dash",
-            "Your own Mii running through the plaza, jumping what the market "
-            "leaves in the way.\n"
-            "It gets quicker. Nothing staked, nothing won - only how far you "
-            "got.",
-            &makePlazaDashScene, "dash", "m" },
     };
     constexpr int kGames = int(sizeof(kShelf) / sizeof(kShelf[0]));
 
