@@ -58,16 +58,6 @@ played for nothing; where there is a bet it is optional, and the odds are
 honest and against you, so the games are a way to spend coins rather than a way
 to make them.
 
-- **The Mii race** - three people you have met against your own Mii, over four
-  lanes. Back your Mii for a coin, or call first and second for more.
-- **The dice duel** - one roll each against somebody you crossed, highest takes
-  it, a draw hands your bet back.
-- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
-  something and two of them pay a puzzle piece.
-- **The bandit** - a slot machine in a casino room, two sets of reels with
-  **X** to switch, and a board on the wall listing every line it pays.
-- **The Mii tower** - drop the people you have met on top of each other, one
-  floor at a time, and keep the tower standing.
 - **The quest** - a tower with no top, climbed by a party drawn from your
   collection: what everybody is worth comes off their Mii and how often you
   have crossed them. The fight runs itself, and what it is for is the gear the
@@ -78,9 +68,19 @@ to make them.
   without changing its rank. **ZL** locks a piece, in the bag or on the gear
   screen: a padlock appears beside its name and nothing throws it away until
   you unlock it.
+- **The Mii tower** - drop the people you have met on top of each other, one
+  floor at a time, and keep the tower standing.
 - **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
   gets quicker until you hit something. Nothing staked and nothing won: it
   keeps a best distance and that is all.
+- **The Mii race** - three people you have met against your own Mii, over four
+  lanes. Back your Mii for a coin, or call first and second for more.
+- **The dice duel** - one roll each against somebody you crossed, highest takes
+  it, a draw hands your bet back.
+- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
+  something and two of them pay a puzzle piece.
+- **The bandit** - a slot machine in a casino room, two sets of reels with
+  **X** to switch, and a board on the wall listing every line it pays.
 
 ## Identity
 
