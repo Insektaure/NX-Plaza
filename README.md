@@ -248,9 +248,12 @@ whole sound bank costs the `.nro` nothing: a note is a struck harmonic series
 with an exponential decay, rolled off with a one-pole lowpass and given a short
 stereo tail, which is roughly the difference between a sound and a beep.
 
-*Settings → Appearance → Sound* turns it off, and the console's own volume
-decides how loud. It goes quiet by itself behind the HOME menu, where the app
-carries on trading.
+*Settings → Sound* has two switches, because the two halves are disliked
+separately: **the interface** (the cursor tick, and a note for yes and no) is
+the half that sounds several times a second while you read a list, and
+**everything else** is a pass arriving, a coin, a trophy, and what happens in
+the games. The console's own volume decides how loud, and it goes quiet by
+itself behind the HOME menu, where the app carries on trading.
 
 ## Languages
 

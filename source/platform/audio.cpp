@@ -351,9 +351,11 @@ void Audio::run()
 
 void Audio::play(Sfx which)
 {
-    if (!m_started || !m_enabled || m_muted)
+    if (!m_started || m_muted)
         return;
     if (which >= Sfx::Count)
+        return;
+    if (!(isInterface(which) ? m_ui : m_events))
         return;
 
     std::lock_guard<std::mutex> lock(m_lock);
@@ -372,10 +374,14 @@ void Audio::setMuted(bool muted)
         silence();
 }
 
-void Audio::setEnabled(bool on)
+void Audio::setEnabled(bool ui, bool events)
 {
-    m_enabled = on;
-    if (!on)
+    bool wasOn = m_ui || m_events;
+    m_ui = ui;
+    m_events = events;
+    // Only when the last of it goes: turning the cursor tick off should not
+    // cut a trophy that is still ringing.
+    if (wasOn && !ui && !events)
         silence();
 }
 

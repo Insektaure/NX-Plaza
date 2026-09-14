@@ -464,6 +464,34 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         }
         break;
     }
+    case Icon::Speaker: {
+        // A cone and two waves. The cone is a filled box and a stack of
+        // slices rather than a triangle, because the renderer draws
+        // rectangles and circles and nothing else - the same way every
+        // pointed thing in here is made.
+        r.rect(Rect { cx - s * 0.36f, cy - s * 0.13f, s * 0.16f, s * 0.26f }, color);
+        int slices = 12;
+        for (int i = 0; i < slices; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(slices - 1);
+            float half = s * (0.13f + t * 0.22f);
+            float x = cx - s * 0.20f + t * s * 0.22f;
+            r.rect(Rect { x, cy - half, s * 0.03f, half * 2.0f }, color);
+        }
+        // Two arcs off the mouth of it, the outer one wider than the inner,
+        // which is what reads as sound rather than as a bracket.
+        for (int arc = 0; arc < 2; arc++) {
+            float radius = s * (arc == 0 ? 0.20f : 0.33f);
+            float spread = arc == 0 ? 0.62f : 0.85f; // radians either side
+            int steps = arc == 0 ? 7 : 9;
+            for (int i = 0; i < steps; i++) {
+                float t = static_cast<float>(i) / static_cast<float>(steps - 1);
+                float a = -spread + t * spread * 2.0f;
+                r.circle(cx + s * 0.10f + std::cos(a) * radius, cy + std::sin(a) * radius,
+                    weight * 0.55f, color);
+            }
+        }
+        break;
+    }
     case Icon::FastForward: {
         // Two chevrons, one behind the other. Drawn the same stepped way as
         // the chevron and the arrows so it sits with them rather than

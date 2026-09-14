@@ -134,6 +134,7 @@ private:
         Sec_Exchange,
         Sec_Notifications,
         Sec_Appearance,
+        Sec_Sound,
         Sec_Languages,
         Sec_Console,
         Sec_Data,
@@ -166,6 +167,11 @@ private:
             return { tr("Appearance"), ui::Icon::Sun, tr("Appearance"),
                 tr("The app opens in daylight. Dark is for a dim room, or match "
                    "whatever the console is set to.") };
+        case Sec_Sound:
+            return { tr("Sound"), ui::Icon::Speaker, tr("Sound"),
+                tr("Short tones for what happens, and no music: nothing plays in "
+                   "the background. How loud they are is the console's own "
+                   "volume.") };
         case Sec_Languages:
             return { tr("Languages"), ui::Icon::Globe, tr("Languages"),
                 tr("The app is written in English and says what it has been taught "
@@ -207,7 +213,8 @@ private:
         Id_Notify,
         Id_Theme,
         Id_ReduceMotion,
-        Id_Sound,
+        Id_SoundUi,
+        Id_SoundEvents,
         Id_ServerUrl,
         Id_PlaceToken,
         Id_TestConnection,
@@ -479,11 +486,18 @@ private:
                 "stops moving and only what you have to dodge does. Turn it off for "
                 "the full parallax",
                 settings.reduceMotion);
-            toggle(Id_Sound, "Sound",
-                "Short tones for what happens - a pass arriving, a coin, a blow in "
-                "the quest. Nothing plays in the background, and the console's own "
-                "volume decides how loud",
-                settings.sound);
+            break;
+
+        case Sec_Sound:
+            toggle(Id_SoundUi, "The interface",
+                "The tick as the cursor moves, and a note for yes and for no. This "
+                "is the half that sounds several times a second while you are "
+                "reading a list",
+                settings.soundUi);
+            toggle(Id_SoundEvents, "Everything else",
+                "A pass arriving, a coin, a trophy, and what happens in the games "
+                "and the quest",
+                settings.soundEvents);
             break;
 
         case Sec_Languages: {
@@ -788,11 +802,15 @@ private:
         case Id_ReduceMotion:
             settings.reduceMotion = !settings.reduceMotion;
             break;
-        case Id_Sound:
-            settings.sound = !settings.sound;
+        case Id_SoundUi:
+        case Id_SoundEvents:
+            if (id == Id_SoundUi)
+                settings.soundUi = !settings.soundUi;
+            else
+                settings.soundEvents = !settings.soundEvents;
             // Straight away, so the tone this press makes is the answer to
             // whether it is on.
-            Audio::get().setEnabled(settings.sound);
+            Audio::get().setEnabled(settings.soundUi, settings.soundEvents);
             break;
         case Id_AutoCheckUpdates:
             settings.checkUpdates = !settings.checkUpdates;
@@ -963,8 +981,8 @@ private:
 
         app.store().setSettings(settings);
         app.store().flush();
-        // Neither of these is on the pass, so neither is worth a republish.
-        if (id != Id_ReduceMotion && id != Id_Sound)
+        // None of these is on the pass, so none is worth a republish.
+        if (id != Id_ReduceMotion && id != Id_SoundUi && id != Id_SoundEvents)
             app.sync().publishPass();
     }
 

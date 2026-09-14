@@ -56,10 +56,23 @@ public:
     // running in the background to carry on trading.
     void setMuted(bool muted);
 
-    // The setting. Silence takes effect on the next buffer, so anything
-    // already sounding stops within about twenty milliseconds.
-    void setEnabled(bool on);
-    bool enabled() const { return m_enabled; }
+    // The two settings. The interface - the cursor, yes and no - is the half
+    // that fires several times a second while somebody is reading a list, and
+    // it is the half people turn off; everything else is a pass arriving, a
+    // coin, a trophy, and what happens in the games. Silence takes effect on
+    // the next buffer, so anything already sounding stops within about twenty
+    // milliseconds.
+    void setEnabled(bool ui, bool events);
+    bool uiEnabled() const { return m_ui; }
+    bool eventsEnabled() const { return m_events; }
+
+    // Which half a sound belongs to. Here rather than in a table somewhere
+    // else, because adding a sound and forgetting to file it is exactly the
+    // kind of thing nobody notices.
+    static bool isInterface(Sfx which)
+    {
+        return which == Sfx::Move || which == Sfx::Select || which == Sfx::Back;
+    }
 
 private:
     // One struck note, while it is ringing.
@@ -100,7 +113,8 @@ private:
     Thread m_thread {};
     std::atomic<bool> m_running { false };
     std::atomic<bool> m_started { false };
-    std::atomic<bool> m_enabled { true };
+    std::atomic<bool> m_ui { true };
+    std::atomic<bool> m_events { true };
     std::atomic<bool> m_muted { false };
 
     std::mutex m_lock;

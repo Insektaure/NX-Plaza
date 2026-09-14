@@ -200,12 +200,22 @@ namespace {
             "sfondo si ferma e si muove solo ciò da evitare. Disattivalo "
             "per la parallasse completa" },
         { "Sound", "Suono" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "Brevi suoni per quello che succede: una tessera in arrivo, "
-            "una moneta, un colpo nella ricerca. Niente suona in "
-            "sottofondo, e il volume lo decide la console" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "Brevi suoni per quello che succede, e nessuna musica: in "
+            "sottofondo non suona niente. Il volume lo decide la console." },
+        { "The interface", "L'interfaccia" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "Il tocco del cursore, e una nota per sì e per no. È la metà "
+            "che suona più volte al secondo mentre leggi un elenco" },
+        { "Everything else", "Tutto il resto" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "Una tessera in arrivo, una moneta, un trofeo, e quello che "
+            "succede nei giochi e nella ricerca" },
         { "Plaza server", "Server del plaza" },
         { "Wi-Fi match token", "Token Wi-Fi" },
         { "Check in now", "Connettiti ora" },

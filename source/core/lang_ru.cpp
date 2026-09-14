@@ -200,12 +200,23 @@ namespace {
             "плохо: фон замирает, движется только то, что нужно обходить. "
             "Выключите ради полного параллакса" },
         { "Sound", "Звук" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "Короткие сигналы на то, что происходит: пришла карточка, "
-            "монета, удар в походе. Ничего не играет фоном, а громкость "
-            "задаёт консоль" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "Короткие сигналы на то, что происходит, и никакой музыки: "
+            "фоном ничего не играет. Громкость задаёт консоль." },
+        { "The interface", "Интерфейс" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "Щелчок при движении курсора и по ноте на «да» и «нет». Эта "
+            "половина звучит по нескольку раз в секунду, пока вы читаете "
+            "список" },
+        { "Everything else", "Всё остальное" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "Пришедшая карточка, монета, трофей и то, что происходит в "
+            "играх и в походе" },
         { "Plaza server", "Сервер плазы" },
         { "Wi-Fi match token", "Токен Wi-Fi" },
         { "Check in now", "Подключиться сейчас" },

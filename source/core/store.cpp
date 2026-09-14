@@ -175,7 +175,9 @@ void Store::load()
             // written before the key existed comes up with the scenery still
             // rather than with the setting silently inverted.
             m_settings.reduceMotion = js::getBool(s, "reduce_motion", true);
-            m_settings.sound = js::getBool(s, "sound", true);
+            bool sound = js::getBool(s, "sound", true);
+            m_settings.soundUi = js::getBool(s, "sound_ui", sound);
+            m_settings.soundEvents = js::getBool(s, "sound_events", sound);
             // Objects now, holding the handle and when. A profile written
             // before that has bare id strings; reading both is what migrates
             // it, and an id on its own simply has no name to show.
@@ -302,7 +304,10 @@ void Store::saveProfileLocked()
     json_object_set_new(s, "theme", json_integer(m_settings.themeMode));
     json_object_set_new(s, "language", json_string(m_settings.language.c_str()));
     json_object_set_new(s, "reduce_motion", json_boolean(m_settings.reduceMotion));
-    json_object_set_new(s, "sound", json_boolean(m_settings.sound));
+    json_object_set_new(s, "sound",
+        json_boolean(m_settings.soundUi || m_settings.soundEvents));
+    json_object_set_new(s, "sound_ui", json_boolean(m_settings.soundUi));
+    json_object_set_new(s, "sound_events", json_boolean(m_settings.soundEvents));
     json_t* blocked = json_array();
     for (const BlockedConsole& b : m_settings.blocked) {
         json_t* e = json_object();

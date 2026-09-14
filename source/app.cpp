@@ -103,7 +103,7 @@ bool App::init()
     // Never a reason to stop launching: a console that cannot open the audio
     // device gets the app it has always had.
     Audio::get().init();
-    Audio::get().setEnabled(store().settings().sound);
+    Audio::get().setEnabled(store().settings().soundUi, store().settings().soundEvents);
 
     m_tabScenes[static_cast<int>(Tab::Plaza)] = makePlazaScene();
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();

@@ -199,12 +199,23 @@ namespace {
             "de achtergrond staat stil en alleen wat je moet ontwijken "
             "beweegt. Zet uit voor volle parallax" },
         { "Sound", "Geluid" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "Korte tonen voor wat er gebeurt: een pas die binnenkomt, een "
-            "munt, een klap in de queeste. Er speelt niets op de "
-            "achtergrond, en het volume bepaalt de console" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "Korte tonen voor wat er gebeurt, en geen muziek: op de "
+            "achtergrond speelt niets. Hoe hard bepaalt de console." },
+        { "The interface", "De interface" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "Het tikje als de cursor beweegt, en een noot voor ja en voor "
+            "nee. Dit is de helft die meerdere keren per seconde klinkt "
+            "terwijl je een lijst leest" },
+        { "Everything else", "Al het andere" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "Een pas die binnenkomt, een munt, een trofee, en wat er "
+            "gebeurt in de spellen en de queeste" },
         { "Plaza server", "Plaza-server" },
         { "Wi-Fi match token", "Wifi-token" },
         { "Check in now", "Nu aanmelden" },

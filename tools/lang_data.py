@@ -10293,55 +10293,158 @@ LANGS["zh_hant"].update({
     'what happened': '發生了什麼',
 })
 
-# ---- sound: one switch, and what it says it does.
+# ---- sound: the section, in each language.
 
 LANGS["de"].update({
     "Sound": "Ton",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Kurze Töne für das, was passiert: eine ankommende Karte, eine Münze, ein Treffer in der Quest. Im Hintergrund läuft nichts, und die Lautstärke bestimmt die Konsole",
 })
 LANGS["es"].update({
     "Sound": "Sonido",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Tonos breves para lo que ocurre: una tarjeta que llega, una moneda, un golpe en la misión. Nada suena de fondo, y el volumen lo decide la consola",
 })
 LANGS["it"].update({
     "Sound": "Suono",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Brevi suoni per quello che succede: una tessera in arrivo, una moneta, un colpo nella ricerca. Niente suona in sottofondo, e il volume lo decide la console",
 })
 LANGS["nl"].update({
     "Sound": "Geluid",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Korte tonen voor wat er gebeurt: een pas die binnenkomt, een munt, een klap in de queeste. Er speelt niets op de achtergrond, en het volume bepaalt de console",
 })
 LANGS["pt"].update({
     "Sound": "Som",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Tons curtos para o que acontece: um passe a chegar, uma moeda, um golpe na demanda. Nada toca em fundo, e o volume é o da consola",
 })
 LANGS["ru"].update({
     "Sound": "Звук",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "Короткие сигналы на то, что происходит: пришла карточка, монета, удар в походе. Ничего не играет фоном, а громкость задаёт консоль",
 })
 LANGS["ja"].update({
     "Sound": "サウンド",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "おきたことにみじかいおとを。カードのとうちゃく、コイン、クエストのいちげき。BGMはながれず、おおきさはほんたいのおんりょうしだい",
 })
 LANGS["ko"].update({
     "Sound": "소리",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "일어난 일에 짧은 소리를 냅니다. 패스 도착, 동전, 퀘스트의 일격. 배경 음악은 없고 음량은 본체가 정합니다",
 })
 LANGS["zh_hans"].update({
     "Sound": "声音",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "为发生的事配上短音：收到一张卡、一枚硬币、探险中的一击。不播放背景音乐，音量由主机决定",
 })
 LANGS["zh_hant"].update({
     "Sound": "聲音",
-    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
-        "為發生的事配上短音：收到一張卡、一枚硬幣、探險中的一擊。不播放背景音樂，音量由主機決定",
+})
+
+# ---- sound: two switches, and what each of them covers.
+
+LANGS["de"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Kurze Töne für das, was passiert, und keine Musik: im Hintergrund läuft nichts. Wie laut, entscheidet die Konsole.",
+    "The interface":
+        "Die Oberfläche",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "Das Ticken beim Bewegen des Cursors und je ein Ton für Ja und Nein. Diese Hälfte klingt mehrmals pro Sekunde, während du eine Liste liest",
+    "Everything else":
+        "Alles andere",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Eine ankommende Karte, eine Münze, eine Trophäe, und was in den Spielen und der Quest passiert",
+})
+LANGS["es"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Tonos breves para lo que ocurre, y nada de música: no suena nada de fondo. El volumen lo decide la consola.",
+    "The interface":
+        "La interfaz",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "El clic al mover el cursor, y una nota para sí y para no. Esta es la mitad que suena varias veces por segundo mientras lees una lista",
+    "Everything else":
+        "Todo lo demás",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Una tarjeta que llega, una moneda, un trofeo, y lo que pasa en los juegos y en la misión",
+})
+LANGS["it"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Brevi suoni per quello che succede, e nessuna musica: in sottofondo non suona niente. Il volume lo decide la console.",
+    "The interface":
+        "L'interfaccia",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "Il tocco del cursore, e una nota per sì e per no. È la metà che suona più volte al secondo mentre leggi un elenco",
+    "Everything else":
+        "Tutto il resto",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Una tessera in arrivo, una moneta, un trofeo, e quello che succede nei giochi e nella ricerca",
+})
+LANGS["nl"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Korte tonen voor wat er gebeurt, en geen muziek: op de achtergrond speelt niets. Hoe hard bepaalt de console.",
+    "The interface":
+        "De interface",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "Het tikje als de cursor beweegt, en een noot voor ja en voor nee. Dit is de helft die meerdere keren per seconde klinkt terwijl je een lijst leest",
+    "Everything else":
+        "Al het andere",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Een pas die binnenkomt, een munt, een trofee, en wat er gebeurt in de spellen en de queeste",
+})
+LANGS["pt"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Tons curtos para o que acontece, e nada de música: não toca nada em fundo. O volume é o da consola.",
+    "The interface":
+        "A interface",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "O toque ao mover o cursor, e uma nota para sim e para não. É a metade que soa várias vezes por segundo enquanto lês uma lista",
+    "Everything else":
+        "Tudo o resto",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Um passe a chegar, uma moeda, um troféu, e o que acontece nos jogos e na demanda",
+})
+LANGS["ru"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "Короткие сигналы на то, что происходит, и никакой музыки: фоном ничего не играет. Громкость задаёт консоль.",
+    "The interface":
+        "Интерфейс",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "Щелчок при движении курсора и по ноте на «да» и «нет». Эта половина звучит по нескольку раз в секунду, пока вы читаете список",
+    "Everything else":
+        "Всё остальное",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "Пришедшая карточка, монета, трофей и то, что происходит в играх и в походе",
+})
+LANGS["ja"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "おきたことにみじかいおとを。BGMはなく、ながれつづけるものもありません。おおきさはほんたいのおんりょうしだいです。",
+    "The interface":
+        "インターフェース",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "カーソルのいどうのおと、はいといいえのおと。リストをよんでいるあいだ、1びょうになんどもなるのがこちらです",
+    "Everything else":
+        "そのほかすべて",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "カードのとうちゃく、コイン、トロフィー、それにゲームとクエストでおきること",
+})
+LANGS["ko"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "일어난 일에 짧은 소리를 냅니다. 음악은 없고 배경에서 계속 흐르는 것도 없습니다. 음량은 본체가 정합니다.",
+    "The interface":
+        "인터페이스",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "커서가 움직일 때의 딸깍 소리와 예, 아니오에 대한 소리. 목록을 읽는 동안 1초에 여러 번 울리는 쪽입니다",
+    "Everything else":
+        "그 밖의 모든 것",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "패스 도착, 동전, 트로피, 그리고 게임과 퀘스트에서 일어나는 일",
+})
+LANGS["zh_hans"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "为发生的事配上短音，没有音乐：后台不播放任何声音。音量由主机决定。",
+    "The interface":
+        "界面",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "移动光标时的轻响，以及表示是与否的音。你在看列表时，每秒会响好几次的就是这一半",
+    "Everything else":
+        "其他所有",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "收到一张卡、一枚硬币、一座奖杯，以及游戏和探险里发生的事",
+})
+LANGS["zh_hant"].update({
+    "Short tones for what happens, and no music: nothing plays in the background. How loud they are is the console's own volume.":
+        "為發生的事配上短音，沒有音樂：背景不播放任何聲音。音量由主機決定。",
+    "The interface":
+        "介面",
+    "The tick as the cursor moves, and a note for yes and for no. This is the half that sounds several times a second while you are reading a list":
+        "移動游標時的輕響，以及表示是與否的音。你在看清單時，每秒會響好幾次的就是這一半",
+    "Everything else":
+        "其他所有",
+    "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
+        "收到一張卡、一枚硬幣、一座獎盃，以及遊戲和探險裡發生的事",
 })

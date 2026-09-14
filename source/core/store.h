@@ -72,10 +72,11 @@ struct Settings {
     // nothing by turning it off once.
     bool reduceMotion = true;
 
-    // Short tones for what happens. On, because an app with seven games in it
-    // that makes no noise reads as one that is broken rather than as one that
-    // is polite - and the console has a volume slider on the front of it.
-    bool sound = true;
+    // Separate because they are disliked separately: the interface half ticks
+    // several times a second while somebody reads a list, and turning that off
+    // should not cost anybody the sound of a pass arriving.
+    bool soundUi = true;
+    bool soundEvents = true;
 
     std::vector<BlockedConsole> blocked; // consoles we never accept again
 

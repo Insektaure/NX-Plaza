@@ -223,12 +223,22 @@ namespace {
             "s'arrête et seul ce qu'il faut éviter bouge. Désactivez-le pour la "
             "parallaxe complète" },
         { "Sound", "Son" },
-        { "Short tones for what happens - a pass arriving, a coin, a blow in "
-          "the quest. Nothing plays in the background, and the console's own "
-          "volume decides how loud",
-            "De brefs sons pour ce qui arrive : une carte reçue, une pièce, un "
-            "coup dans la quête. Rien ne joue en fond, et c'est le volume de la "
-            "console qui décide" },
+        { "Short tones for what happens, and no music: nothing plays in the "
+          "background. How loud they are is the console's own volume.",
+            "De brefs sons pour ce qui arrive, et pas de musique : rien ne joue "
+            "en fond. Le volume, c'est celui de la console." },
+        { "The interface", "L'interface" },
+        { "The tick as the cursor moves, and a note for yes and for no. This is "
+          "the half that sounds several times a second while you are reading a "
+          "list",
+            "Le tic du curseur, et une note pour oui et pour non. C'est la "
+            "moitié qui sonne plusieurs fois par seconde quand vous lisez une "
+            "liste" },
+        { "Everything else", "Tout le reste" },
+        { "A pass arriving, a coin, a trophy, and what happens in the games and "
+          "the quest",
+            "Une carte qui arrive, une pièce, un trophée, et ce qui se passe "
+            "dans les jeux et la quête" },
         { "Plaza server", "Serveur du plaza" },
         { "Wi-Fi match token", "Jeton de correspondance Wi-Fi" },
         { "Check in now", "Se connecter maintenant" },

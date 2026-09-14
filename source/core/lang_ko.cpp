@@ -180,11 +180,19 @@ namespace {
             "켜면, 플라자 대시로 멀미가 나는 사람을 위해 배경이 멈추고 피해야 할 것만 움직입니다. 전체 시차 효과를 "
             "원하면 끄세요" },
         { "Sound", "소리" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "일어난 일에 짧은 소리를 냅니다. 패스 도착, 동전, 퀘스트의 일격. 배경 음악은 없고 음량은 본체가 "
-            "정합니다" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "일어난 일에 짧은 소리를 냅니다. 음악은 없고 배경에서 계속 흐르는 것도 없습니다. 음량은 본체가 정합니다." },
+        { "The interface", "인터페이스" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "커서가 움직일 때의 딸깍 소리와 예, 아니오에 대한 소리. 목록을 읽는 동안 1초에 여러 번 울리는 쪽입니다" },
+        { "Everything else", "그 밖의 모든 것" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "패스 도착, 동전, 트로피, 그리고 게임과 퀘스트에서 일어나는 일" },
         { "Plaza server", "플라자 서버" },
         { "Wi-Fi match token", "Wi-Fi 매칭 토큰" },
         { "Check in now", "지금 접속" },

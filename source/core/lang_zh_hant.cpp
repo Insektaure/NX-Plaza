@@ -174,10 +174,19 @@ namespace {
           "does. Turn it off for the full parallax",
             "開啟後，為會被「廣場衝刺」晃得不適的人，背景靜止，只有要閃避的東西在動。想要完整視差就關掉" },
         { "Sound", "聲音" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "為發生的事配上短音：收到一張卡、一枚硬幣、探險中的一擊。不播放背景音樂，音量由主機決定" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "為發生的事配上短音，沒有音樂：背景不播放任何聲音。音量由主機決定。" },
+        { "The interface", "介面" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "移動游標時的輕響，以及表示是與否的音。你在看清單時，每秒會響好幾次的就是這一半" },
+        { "Everything else", "其他所有" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "收到一張卡、一枚硬幣、一座獎盃，以及遊戲和探險裡發生的事" },
         { "Plaza server", "廣場伺服器" },
         { "Wi-Fi match token", "Wi-Fi 配對權杖" },
         { "Check in now", "立即連線" },

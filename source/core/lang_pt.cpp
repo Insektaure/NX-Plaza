@@ -199,12 +199,23 @@ namespace {
             "fundo para e só se move o que você precisa desviar. Desative "
             "para a paralaxe completa" },
         { "Sound", "Som" },
-        { "Short tones for what happens - a pass arriving, a coin, a "
-          "blow in the quest. Nothing plays in the background, and the "
-          "console's own volume decides how loud",
-            "Tons curtos para o que acontece: um passe a chegar, uma "
-            "moeda, um golpe na demanda. Nada toca em fundo, e o volume é "
-            "o da consola" },
+        { "Short tones for what happens, and no music: nothing plays in "
+          "the background. How loud they are is the console's own "
+          "volume.",
+            "Tons curtos para o que acontece, e nada de música: não toca "
+            "nada em fundo. O volume é o da consola." },
+        { "The interface", "A interface" },
+        { "The tick as the cursor moves, and a note for yes and for no. "
+          "This is the half that sounds several times a second while "
+          "you are reading a list",
+            "O toque ao mover o cursor, e uma nota para sim e para não. É "
+            "a metade que soa várias vezes por segundo enquanto lês uma "
+            "lista" },
+        { "Everything else", "Tudo o resto" },
+        { "A pass arriving, a coin, a trophy, and what happens in the "
+          "games and the quest",
+            "Um passe a chegar, uma moeda, um troféu, e o que acontece "
+            "nos jogos e na demanda" },
         { "Plaza server", "Servidor do plaza" },
         { "Wi-Fi match token", "Token de Wi-Fi" },
         { "Check in now", "Conectar agora" },
