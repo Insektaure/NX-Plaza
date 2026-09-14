@@ -213,7 +213,8 @@ sdmc:/switch/nx-plaza/
   plaza.log        only when Settings turns it on; off by default
   plaza.log.1      the previous 256 KB, kept when the log rotates
   cacert.pem       needed for https connections to the plaza server
-  backup/          copies made by Settings -> Data, one folder per day
+  backup/          copies made by Settings -> Data, one folder per day: your
+                   identity, your pass, your collection and the quest
   export/          faces you saved, one JSON file each
 ```
 

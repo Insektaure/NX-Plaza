@@ -590,7 +590,8 @@ private:
         case Sec_Data:
         default:
             value(Id_Backup, "Copy everything to a backup folder",
-                "Your identity, your pass and your collection, into backup/ on this card",
+                "Your identity, your pass, your collection and the quest, into "
+                "backup/ on this card",
                 "", Kind::Action);
             {
                 // Doubles as its own progress display, the same way the update

@@ -225,8 +225,10 @@ namespace {
         { "none", "geen" },
         { "Write a log file", "Logbestand schrijven" },
         { "Copy everything to a backup folder", "Alles naar een back-upmap kopiëren" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "Jouw identiteit, kaart en collectie, naar backup/ op deze kaart" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "Je identiteit, je pas, je verzameling en de queeste, naar "
+            "backup/ op deze kaart" },
         { "Download puzzle art", "Puzzelafbeeldingen downloaden" },
         { "Delete every pass you have collected",
             "Alle verzamelde kaarten verwijderen" },

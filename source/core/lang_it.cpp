@@ -226,10 +226,10 @@ namespace {
         { "Write a log file", "Scrivi un file di log" },
         { "Copy everything to a backup folder",
             "Copia tutto in una cartella di backup" },
-        { "Your identity, your pass and your collection, into backup/ "
-          "on this card",
-            "La tua identità, la tua carta e la tua collezione, in "
-            "backup/ su questa scheda" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "La tua identità, la tua tessera, la tua collezione e la "
+            "ricerca, in backup/ su questa scheda" },
         { "Download puzzle art", "Scarica le immagini dei puzzle" },
         { "Delete every pass you have collected", "Elimina tutte le carte raccolte" },
         { "This cannot be undone", "Non si può annullare" },

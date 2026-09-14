@@ -18,12 +18,17 @@ namespace {
     // too - it is not the owner's data, it is a bundle anybody can download, and
     // a stale copy put back months later would break https in a way that took
     // an afternoon to work out last time.
+    //
+    // quest.dat does travel. It carries the gear, the deepest floor and the
+    // week's paid floors, and the first two are the things a lost card would
+    // actually be mourned for.
     const char* kContents[] = {
         "identity.json",
         "profile.json",
         "crossings.idx",
         "crossings.dat",
         "crossings.ext",
+        "quest.dat",
     };
     constexpr size_t kContentCount = sizeof(kContents) / sizeof(kContents[0]);
 

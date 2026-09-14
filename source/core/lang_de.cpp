@@ -228,10 +228,10 @@ namespace {
         { "Write a log file", "Protokolldatei schreiben" },
         { "Copy everything to a backup folder",
             "Alles in einen Backup-Ordner kopieren" },
-        { "Your identity, your pass and your collection, into backup/ "
-          "on this card",
-            "Deine Identität, deine Karte und deine Sammlung, nach "
-            "backup/ auf dieser Karte" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "Deine Identität, deine Karte, deine Sammlung und die Quest, "
+            "nach backup/ auf dieser Karte" },
         { "Download puzzle art", "Puzzlebilder herunterladen" },
         { "Delete every pass you have collected", "Alle gesammelten Karten löschen" },
         { "This cannot be undone", "Das lässt sich nicht zurücknehmen" },

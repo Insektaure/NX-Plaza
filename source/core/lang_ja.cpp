@@ -197,8 +197,9 @@ namespace {
         { "none", "なし" },
         { "Write a log file", "ログファイルを書く" },
         { "Copy everything to a backup folder", "バックアップフォルダーにすべてコピー" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "あなたの識別情報、カード、コレクションを、このSDカードのbackup/へ" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "みぶん、じぶんのカード、コレクション、そしてクエストを、このカードの backup/ へ" },
         { "Download puzzle art", "パズルの画像をダウンロード" },
         { "Delete every pass you have collected", "集めたカードをすべて削除" },
         { "This cannot be undone", "取り消せません" },

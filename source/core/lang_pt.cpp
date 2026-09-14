@@ -226,8 +226,10 @@ namespace {
         { "Write a log file", "Gravar um arquivo de log" },
         { "Copy everything to a backup folder",
             "Copiar tudo para uma pasta de backup" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "Sua identidade, seu cartão e sua coleção, em backup/ neste cartão" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "A tua identidade, o teu passe, a tua coleção e a demanda, "
+            "para backup/ neste cartão" },
         { "Download puzzle art", "Baixar as imagens dos quebra-cabeças" },
         { "Delete every pass you have collected",
             "Excluir todos os cartões coletados" },

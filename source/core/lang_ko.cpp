@@ -202,8 +202,9 @@ namespace {
         { "none", "없음" },
         { "Write a log file", "로그 파일 기록" },
         { "Copy everything to a backup folder", "모든 것을 백업 폴더로 복사" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "내 신원, 카드, 컬렉션을 이 카드의 backup/ 폴더로" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "신분, 내 패스, 수집품, 그리고 퀘스트를 이 카드의 backup/ 으로" },
         { "Download puzzle art", "퍼즐 그림 다운로드" },
         { "Delete every pass you have collected", "모아 둔 카드 전부 삭제" },
         { "This cannot be undone", "되돌릴 수 없습니다" },

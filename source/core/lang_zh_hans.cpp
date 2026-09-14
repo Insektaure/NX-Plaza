@@ -196,8 +196,9 @@ namespace {
         { "none", "无" },
         { "Write a log file", "写入日志文件" },
         { "Copy everything to a backup folder", "把所有内容复制到备份文件夹" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "你的身份、卡片和收藏，复制到这张卡的 backup/ 文件夹" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "把你的身份、你的卡、你的收藏和探险存到这张卡的 backup/ 里" },
         { "Download puzzle art", "下载拼图图片" },
         { "Delete every pass you have collected", "删除收集到的所有卡片" },
         { "This cannot be undone", "此操作无法撤销" },

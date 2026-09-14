@@ -227,8 +227,10 @@ namespace {
         { "Write a log file", "Вести файл журнала" },
         { "Copy everything to a backup folder",
             "Скопировать всё в папку резервной копии" },
-        { "Your identity, your pass and your collection, into backup/ on this card",
-            "Ваша личность, карточка и коллекция - в backup/ на этой карте" },
+        { "Your identity, your pass, your collection and the quest, "
+          "into backup/ on this card",
+            "Ваша личность, карточка, коллекция и поход — в backup/ на "
+            "этой карте" },
         { "Download puzzle art", "Скачать картинки пазлов" },
         { "Delete every pass you have collected", "Удалить все собранные карточки" },
         { "This cannot be undone", "Это необратимо" },

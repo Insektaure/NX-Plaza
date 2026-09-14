@@ -135,7 +135,8 @@ LANGS["de"] = {
     "none": "keine",
     "Write a log file": "Protokolldatei schreiben",
     "Copy everything to a backup folder": "Alles in einen Backup-Ordner kopieren",
-    "Your identity, your pass and your collection, into backup/ on this card": "Deine Identität, deine Karte und deine Sammlung, nach backup/ auf dieser Karte",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "Deine Identität, deine Karte, deine Sammlung und die Quest, nach backup/ auf dieser Karte",
     "Download puzzle art": "Puzzlebilder herunterladen",
     "Delete every pass you have collected": "Alle gesammelten Karten löschen",
     "This cannot be undone": "Das lässt sich nicht zurücknehmen",
@@ -994,7 +995,8 @@ LANGS["es"] = {
     "none": "ninguno",
     "Write a log file": "Escribir un archivo de registro",
     "Copy everything to a backup folder": "Copiar todo a una carpeta de respaldo",
-    "Your identity, your pass and your collection, into backup/ on this card": "Tu identidad, tu tarjeta y tu colección, en backup/ de esta tarjeta",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "Tu identidad, tu tarjeta, tu colección y la misión, en backup/ en esta tarjeta",
     "Download puzzle art": "Descargar las imágenes de los puzles",
     "Delete every pass you have collected": "Borrar todas las tarjetas recogidas",
     "This cannot be undone": "Esto no se puede deshacer",
@@ -1853,7 +1855,8 @@ LANGS["it"] = {
     "none": "nessuno",
     "Write a log file": "Scrivi un file di log",
     "Copy everything to a backup folder": "Copia tutto in una cartella di backup",
-    "Your identity, your pass and your collection, into backup/ on this card": "La tua identità, la tua carta e la tua collezione, in backup/ su questa scheda",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "La tua identità, la tua tessera, la tua collezione e la ricerca, in backup/ su questa scheda",
     "Download puzzle art": "Scarica le immagini dei puzzle",
     "Delete every pass you have collected": "Elimina tutte le carte raccolte",
     "This cannot be undone": "Non si può annullare",
@@ -2712,7 +2715,8 @@ LANGS["nl"] = {
     "none": "geen",
     "Write a log file": "Logbestand schrijven",
     "Copy everything to a backup folder": "Alles naar een back-upmap kopiëren",
-    "Your identity, your pass and your collection, into backup/ on this card": "Jouw identiteit, kaart en collectie, naar backup/ op deze kaart",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "Je identiteit, je pas, je verzameling en de queeste, naar backup/ op deze kaart",
     "Download puzzle art": "Puzzelafbeeldingen downloaden",
     "Delete every pass you have collected": "Alle verzamelde kaarten verwijderen",
     "This cannot be undone": "Dit kan niet worden teruggedraaid",
@@ -3571,7 +3575,8 @@ LANGS["pt"] = {
     "none": "nenhum",
     "Write a log file": "Gravar um arquivo de log",
     "Copy everything to a backup folder": "Copiar tudo para uma pasta de backup",
-    "Your identity, your pass and your collection, into backup/ on this card": "Sua identidade, seu cartão e sua coleção, em backup/ neste cartão",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "A tua identidade, o teu passe, a tua coleção e a demanda, para backup/ neste cartão",
     "Download puzzle art": "Baixar as imagens dos quebra-cabeças",
     "Delete every pass you have collected": "Excluir todos os cartões coletados",
     "This cannot be undone": "Isso não pode ser desfeito",
@@ -4430,7 +4435,8 @@ LANGS["ru"] = {
     "none": "нет",
     "Write a log file": "Вести файл журнала",
     "Copy everything to a backup folder": "Скопировать всё в папку резервной копии",
-    "Your identity, your pass and your collection, into backup/ on this card": "Ваша личность, карточка и коллекция - в backup/ на этой карте",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "Ваша личность, карточка, коллекция и поход — в backup/ на этой карте",
     "Download puzzle art": "Скачать картинки пазлов",
     "Delete every pass you have collected": "Удалить все собранные карточки",
     "This cannot be undone": "Это необратимо",
@@ -5289,7 +5295,8 @@ LANGS["ja"] = {
     "none": "なし",
     "Write a log file": "ログファイルを書く",
     "Copy everything to a backup folder": "バックアップフォルダーにすべてコピー",
-    "Your identity, your pass and your collection, into backup/ on this card": "あなたの識別情報、カード、コレクションを、このSDカードのbackup/へ",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "みぶん、じぶんのカード、コレクション、そしてクエストを、このカードの backup/ へ",
     "Download puzzle art": "パズルの画像をダウンロード",
     "Delete every pass you have collected": "集めたカードをすべて削除",
     "This cannot be undone": "取り消せません",
@@ -6209,7 +6216,8 @@ LANGS["ko"].update({
     "Clear the whole list": "목록 전체 비우기", "unblock": "차단 해제", "none": "없음",
     "Write a log file": "로그 파일 기록",
     "Copy everything to a backup folder": "모든 것을 백업 폴더로 복사",
-    "Your identity, your pass and your collection, into backup/ on this card": "내 신원, 카드, 컬렉션을 이 카드의 backup/ 폴더로",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "신분, 내 패스, 수집품, 그리고 퀘스트를 이 카드의 backup/ 으로",
     "Download puzzle art": "퍼즐 그림 다운로드",
     "Delete every pass you have collected": "모아 둔 카드 전부 삭제",
     "This cannot be undone": "되돌릴 수 없습니다",
@@ -6252,7 +6260,8 @@ LANGS["zh_hans"].update({
     "Clear the whole list": "清空整个列表", "unblock": "解除屏蔽", "none": "无",
     "Write a log file": "写入日志文件",
     "Copy everything to a backup folder": "把所有内容复制到备份文件夹",
-    "Your identity, your pass and your collection, into backup/ on this card": "你的身份、卡片和收藏，复制到这张卡的 backup/ 文件夹",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "把你的身份、你的卡、你的收藏和探险存到这张卡的 backup/ 里",
     "Download puzzle art": "下载拼图图片",
     "Delete every pass you have collected": "删除收集到的所有卡片",
     "This cannot be undone": "此操作无法撤销",
@@ -6295,7 +6304,8 @@ LANGS["zh_hant"].update({
     "Clear the whole list": "清空整個清單", "unblock": "解除封鎖", "none": "無",
     "Write a log file": "寫入紀錄檔",
     "Copy everything to a backup folder": "把所有內容複製到備份資料夾",
-    "Your identity, your pass and your collection, into backup/ on this card": "你的身分、卡片和收藏，複製到這張卡的 backup/ 資料夾",
+    "Your identity, your pass, your collection and the quest, into backup/ on this card":
+        "把你的身分、你的卡、你的收藏和探險存到這張卡的 backup/ 裡",
     "Download puzzle art": "下載拼圖圖片",
     "Delete every pass you have collected": "刪除收集到的所有卡片",
     "This cannot be undone": "此操作無法復原",
