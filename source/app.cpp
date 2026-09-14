@@ -13,6 +13,7 @@
 #include "core/log.h"
 #include "core/pieces.h"
 #include "core/util.h"
+#include "platform/audio.h"
 #include "ui/mii_render.h"
 #include "ui/theme.h"
 #include "ui/widgets.h"
@@ -99,6 +100,11 @@ bool App::init()
     theme::setMode(static_cast<theme::Mode>(store().settings().themeMode));
     setLanguage(langFromCode(store().settings().language.c_str()));
 
+    // Never a reason to stop launching: a console that cannot open the audio
+    // device gets the app it has always had.
+    Audio::get().init();
+    Audio::get().setEnabled(store().settings().sound);
+
     m_tabScenes[static_cast<int>(Tab::Plaza)] = makePlazaScene();
     m_tabScenes[static_cast<int>(Tab::Nearby)] = makeNearbyScene();
     m_tabScenes[static_cast<int>(Tab::Collection)] = makeCollectionScene();
@@ -124,6 +130,7 @@ bool App::init()
 void App::exit()
 {
     m_sync.stop();
+    Audio::get().exit();
     Update::get().shutdown();
     store().flush();
     Wallet::get().flush();
@@ -466,6 +473,9 @@ void App::pumpArrivals()
     if (!store().settings().notify)
         return;
 
+    // The one noise the app makes that nobody asked for by pressing anything.
+    playSfx(Sfx::Toast);
+
     Crossing first;
     std::string title;
     if (store().findCrossing(arrivals.front(), first)) {
@@ -612,6 +622,19 @@ void App::update(float dt)
     routeTouch(input.touch);
     pumpArrivals();
 
+    // A tick for the cursor and a note each for yes and no, here rather than
+    // in thirty scenes: every list in the app moves on the same four
+    // directions and the two buttons mean the same thing on all of them. A
+    // scene that plays with the buttons asks for silence and makes its own.
+    if (Scene* sounding = activeScene(); !sounding || !sounding->quietInput()) {
+        if (input.navUp || input.navDown || input.navLeft || input.navRight)
+            playSfx(Sfx::Move);
+        if (input.accept())
+            playSfx(Sfx::Select);
+        else if (input.back())
+            playSfx(Sfx::Back);
+    }
+
     if (!handleChromeInput(input)) {
         if (Scene* scene = activeScene())
             scene->update(*this, input, dt);
@@ -667,6 +690,9 @@ void App::checkTrophies()
             last = &all[i];
         }
     }
+
+    if (fresh > 0)
+        playSfx(Sfx::Trophy);
 
     if (fresh == 1 && last) {
         toast(tr(last->name), format(tr("A %s trophy."), tr(tierName(last->tier))));
@@ -962,6 +988,9 @@ void App::run()
                 focused = state == AppletFocusState_InFocus;
                 if (focused == wasFocused)
                     break;
+
+                // The app keeps running in the background to carry on trading.
+                Audio::get().setMuted(!focused);
 
                 if (focused) {
                     // Do not let time spent in the HOME menu land as one huge

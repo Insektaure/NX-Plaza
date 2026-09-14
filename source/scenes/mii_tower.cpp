@@ -2,6 +2,7 @@
 #include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
 #include "ui/plaza_scroll.h"
@@ -56,6 +57,9 @@ namespace {
         };
 
         bool coversChrome() const override { return true; }
+
+        // A drop is what A does here, all game long.
+        bool quietInput() const override { return true; }
 
         void onEnter(App& app) override
         {
@@ -333,6 +337,7 @@ namespace {
             if (std::abs(offset) > kCatch) {
                 // Nothing under it. The floor keeps going and the tower stands.
                 m_missed = true;
+                playSfx(Sfx::Fall);
                 m_blame = m_carried.name;
                 m_carried.vx = offset > 0.0f ? 240.0f : -240.0f;
                 m_carried.vy = 0.0f;
@@ -354,6 +359,7 @@ namespace {
                 m_centred = 0;
             }
 
+            playSfx(Sfx::Tick);
             m_carried.x = m_floors.back().x + offset;
             m_carried.vx = 0.0f;
             m_carried.vy = 0.0f;
@@ -374,6 +380,7 @@ namespace {
 
         void topple()
         {
+            playSfx(Sfx::Lose);
             m_missed = false;
             m_blame = m_floors.empty() ? std::string() : m_floors.back().name;
             m_phase = Phase_Fall;

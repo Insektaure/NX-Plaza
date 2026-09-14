@@ -179,6 +179,12 @@ namespace {
           "does. Turn it off for the full parallax",
             "켜면, 플라자 대시로 멀미가 나는 사람을 위해 배경이 멈추고 피해야 할 것만 움직입니다. 전체 시차 효과를 "
             "원하면 끄세요" },
+        { "Sound", "소리" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "일어난 일에 짧은 소리를 냅니다. 패스 도착, 동전, 퀘스트의 일격. 배경 음악은 없고 음량은 본체가 "
+            "정합니다" },
         { "Plaza server", "플라자 서버" },
         { "Wi-Fi match token", "Wi-Fi 매칭 토큰" },
         { "Check in now", "지금 접속" },

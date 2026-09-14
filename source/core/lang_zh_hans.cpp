@@ -173,6 +173,11 @@ namespace {
           "background stops moving and only what you have to dodge "
           "does. Turn it off for the full parallax",
             "开启后，为会被“广场冲刺”晃得难受的人，背景静止，只有要躲的东西在动。想要完整视差就关掉" },
+        { "Sound", "声音" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "为发生的事配上短音：收到一张卡、一枚硬币、探险中的一击。不播放背景音乐，音量由主机决定" },
         { "Plaza server", "广场服务器" },
         { "Wi-Fi match token", "Wi-Fi 匹配令牌" },
         { "Check in now", "立即连接" },

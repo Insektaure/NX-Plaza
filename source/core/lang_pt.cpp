@@ -198,6 +198,13 @@ namespace {
             "Ativado, para quem sente náusea com o minijogo Plaza Dash: o "
             "fundo para e só se move o que você precisa desviar. Desative "
             "para a paralaxe completa" },
+        { "Sound", "Som" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "Tons curtos para o que acontece: um passe a chegar, uma "
+            "moeda, um golpe na demanda. Nada toca em fundo, e o volume é "
+            "o da consola" },
         { "Plaza server", "Servidor do plaza" },
         { "Wi-Fi match token", "Token de Wi-Fi" },
         { "Check in now", "Conectar agora" },

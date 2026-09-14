@@ -239,6 +239,16 @@ Theme*: `Light`, `Dark`, or `Console` (follow the Switch's own light/dark
 setting, re-read whenever the app regains focus). The choice is saved in
 `profile.json`.
 
+## Sound
+
+Short tones for what happens - a pass arriving, a coin, a reel stopping, a blow
+in the quest - and nothing else: there is no music, and nothing plays in the
+background. Every one is synthesised from a handful of notes and an envelope
+rather than loaded from a file, so the whole sound bank costs the `.nro`
+nothing. *Settings → Appearance → Sound* turns it off, and the console's own
+volume decides how loud. It goes quiet by itself behind the HOME menu, where
+the app carries on trading.
+
 ## Languages
 
 *Settings → Languages* picks one; the choice takes effect straight away and is

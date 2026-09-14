@@ -10292,3 +10292,56 @@ LANGS["zh_hant"].update({
     'the shadow sweeps the whole party': '暗影橫掃整個隊伍',
     'what happened': '發生了什麼',
 })
+
+# ---- sound: one switch, and what it says it does.
+
+LANGS["de"].update({
+    "Sound": "Ton",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Kurze Töne für das, was passiert: eine ankommende Karte, eine Münze, ein Treffer in der Quest. Im Hintergrund läuft nichts, und die Lautstärke bestimmt die Konsole",
+})
+LANGS["es"].update({
+    "Sound": "Sonido",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Tonos breves para lo que ocurre: una tarjeta que llega, una moneda, un golpe en la misión. Nada suena de fondo, y el volumen lo decide la consola",
+})
+LANGS["it"].update({
+    "Sound": "Suono",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Brevi suoni per quello che succede: una tessera in arrivo, una moneta, un colpo nella ricerca. Niente suona in sottofondo, e il volume lo decide la console",
+})
+LANGS["nl"].update({
+    "Sound": "Geluid",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Korte tonen voor wat er gebeurt: een pas die binnenkomt, een munt, een klap in de queeste. Er speelt niets op de achtergrond, en het volume bepaalt de console",
+})
+LANGS["pt"].update({
+    "Sound": "Som",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Tons curtos para o que acontece: um passe a chegar, uma moeda, um golpe na demanda. Nada toca em fundo, e o volume é o da consola",
+})
+LANGS["ru"].update({
+    "Sound": "Звук",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "Короткие сигналы на то, что происходит: пришла карточка, монета, удар в походе. Ничего не играет фоном, а громкость задаёт консоль",
+})
+LANGS["ja"].update({
+    "Sound": "サウンド",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "おきたことにみじかいおとを。カードのとうちゃく、コイン、クエストのいちげき。BGMはながれず、おおきさはほんたいのおんりょうしだい",
+})
+LANGS["ko"].update({
+    "Sound": "소리",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "일어난 일에 짧은 소리를 냅니다. 패스 도착, 동전, 퀘스트의 일격. 배경 음악은 없고 음량은 본체가 정합니다",
+})
+LANGS["zh_hans"].update({
+    "Sound": "声音",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "为发生的事配上短音：收到一张卡、一枚硬币、探险中的一击。不播放背景音乐，音量由主机决定",
+})
+LANGS["zh_hant"].update({
+    "Sound": "聲音",
+    "Short tones for what happens - a pass arriving, a coin, a blow in the quest. Nothing plays in the background, and the console's own volume decides how loud":
+        "為發生的事配上短音：收到一張卡、一枚硬幣、探險中的一擊。不播放背景音樂，音量由主機決定",
+})

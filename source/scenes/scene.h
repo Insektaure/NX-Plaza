@@ -44,6 +44,14 @@ public:
     // says yes here must be certain to say no again shortly - nothing should
     // be able to hold the console hostage for longer than it takes to watch.
     virtual bool blocksExit() const { return false; }
+
+    // Silences the app's own button tones for a scene that plays with the
+    // buttons rather than navigating with them. A jump in the dash and a drop
+    // in the tower are not "select", and a blip on every one of them would be
+    // the first thing anybody turned off.
+    //
+    // Such a scene is free to make its own noises, and the games all do.
+    virtual bool quietInput() const { return false; }
 };
 
 std::unique_ptr<Scene> makePlazaScene();

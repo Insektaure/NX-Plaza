@@ -3,6 +3,7 @@
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
 #include "ui/plaza_scroll.h"
@@ -543,6 +544,7 @@ namespace {
             Wallet& wallet = Wallet::get();
             wallet.award(payout());
             wallet.flush();
+            playSfx(Sfx::Coin);
             m_paid = payout();
         }
 

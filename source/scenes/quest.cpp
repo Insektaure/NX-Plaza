@@ -6,6 +6,7 @@
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
 #include "ui/plaza_scroll.h"
@@ -735,6 +736,7 @@ namespace {
                 m_wiped = true;
                 m_phase = Phase_Over;
                 m_clock = 0.0f;
+                playSfx(Sfx::Lose);
                 return;
             }
             // Thirty rounds is not a fight any more, it is two walls, and
@@ -743,6 +745,7 @@ namespace {
                 m_wiped = true;
                 m_phase = Phase_Over;
                 m_clock = 0.0f;
+                playSfx(Sfx::Lose);
             }
         }
 
@@ -849,6 +852,7 @@ namespace {
                         hurt->hp = std::min(hurt->maxHp, hurt->hp + given);
                         m_ringAt = int(hurt - m_units.data());
                         m_ring = 1.0f;
+                        playSfx(Sfx::Heal);
                         popOver(unitRect(m_ringAt), hurt->hp - before, true, false);
                         note(format(tr("%s mends %s for %d"), u.name.c_str(),
                                  hurt->name.c_str(), hurt->hp - before),
@@ -895,6 +899,7 @@ namespace {
         {
             m_bossHp -= dealt;
             m_bossShake = 0.0f;
+            playSfx(crit ? Sfx::Crit : Sfx::Hit);
             popOver(bossRect(), dealt, false, crit);
         }
 
@@ -976,6 +981,7 @@ namespace {
                 // its own is easy to read as one more hit landing.
                 m_ringAt = at;
                 m_ring = 1.0f;
+                playSfx(Sfx::Heal);
                 note(format(tr("%s gets back up"), u.name.c_str()), Tint_Mend);
                 return false;
             }
@@ -983,6 +989,7 @@ namespace {
             // Whoever was standing in front is not standing at all now.
             if (m_guard >= 0 && &u == &m_units[size_t(m_guard)])
                 m_guard = -1;
+            playSfx(Sfx::Fall);
             note(format(tr("%s falls"), u.name.c_str()), Tint_Taken);
             return true;
         }
@@ -1004,6 +1011,7 @@ namespace {
             // whole reason the numbers are better than a line of text.
             if (m_round % 4 == 0) {
                 m_sweep = 1.0f;
+                playSfx(Sfx::Crit);
                 note(tr("the shadow sweeps the whole party"));
                 for (size_t i = 0; i < m_units.size(); i++) {
                     Member& u = m_units[i];
@@ -1042,6 +1050,7 @@ namespace {
             float bite = (guarded ? 0.5f : 1.0f) * m_boons.taken;
             int dealt = hitFor(atk, target->sheet.def, bite, &crit);
             target->hp = std::max(0, target->hp - dealt);
+            playSfx(crit ? Sfx::Crit : Sfx::Hit);
             popOver(unitRect(int(target - m_units.data())), dealt, false, crit);
             note(format(tr("the shadow hits %s for %d"), target->name.c_str(), dealt),
                 dealt, Tint_Taken);
@@ -1051,6 +1060,7 @@ namespace {
 
         void clearedFloor(App& app)
         {
+            playSfx(Sfx::Win);
             m_deepest = m_floor;
             m_guard = -1;
 

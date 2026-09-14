@@ -199,6 +199,13 @@ namespace {
             "Attivo, per chi ha la nausea col minigioco Plaza Dash: lo "
             "sfondo si ferma e si muove solo ciò da evitare. Disattivalo "
             "per la parallasse completa" },
+        { "Sound", "Suono" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "Brevi suoni per quello che succede: una tessera in arrivo, "
+            "una moneta, un colpo nella ricerca. Niente suona in "
+            "sottofondo, e il volume lo decide la console" },
         { "Plaza server", "Server del plaza" },
         { "Wi-Fi match token", "Token Wi-Fi" },
         { "Check in now", "Connettiti ora" },

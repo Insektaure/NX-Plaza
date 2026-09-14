@@ -199,6 +199,13 @@ namespace {
             "Включено для тех, кому от мини-игры Plaza Dash становится "
             "плохо: фон замирает, движется только то, что нужно обходить. "
             "Выключите ради полного параллакса" },
+        { "Sound", "Звук" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "Короткие сигналы на то, что происходит: пришла карточка, "
+            "монета, удар в походе. Ничего не играет фоном, а громкость "
+            "задаёт консоль" },
         { "Plaza server", "Сервер плазы" },
         { "Wi-Fi match token", "Токен Wi-Fi" },
         { "Check in now", "Подключиться сейчас" },

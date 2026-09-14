@@ -4,6 +4,7 @@
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/plaza_scroll.h"
 #include "ui/theme.h"
@@ -438,6 +439,7 @@ namespace {
             Wallet& wallet = Wallet::get();
             wallet.award(coins);
             wallet.flush();
+            playSfx(Sfx::Coin);
             m_paid = coins;
         }
 

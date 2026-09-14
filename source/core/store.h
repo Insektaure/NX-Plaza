@@ -72,6 +72,11 @@ struct Settings {
     // nothing by turning it off once.
     bool reduceMotion = true;
 
+    // Short tones for what happens. On, because an app with seven games in it
+    // that makes no noise reads as one that is broken rather than as one that
+    // is polite - and the console has a volume slider on the front of it.
+    bool sound = true;
+
     std::vector<BlockedConsole> blocked; // consoles we never accept again
 
     // The place label that actually leaves the console, honouring placeSharing.

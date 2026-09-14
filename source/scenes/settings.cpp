@@ -6,6 +6,7 @@
 #include "core/log.h"
 #include "core/place.h"
 #include "core/util.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
 #include "ui/theme.h"
@@ -206,6 +207,7 @@ private:
         Id_Notify,
         Id_Theme,
         Id_ReduceMotion,
+        Id_Sound,
         Id_ServerUrl,
         Id_PlaceToken,
         Id_TestConnection,
@@ -477,6 +479,11 @@ private:
                 "stops moving and only what you have to dodge does. Turn it off for "
                 "the full parallax",
                 settings.reduceMotion);
+            toggle(Id_Sound, "Sound",
+                "Short tones for what happens - a pass arriving, a coin, a blow in "
+                "the quest. Nothing plays in the background, and the console's own "
+                "volume decides how loud",
+                settings.sound);
             break;
 
         case Sec_Languages: {
@@ -781,6 +788,12 @@ private:
         case Id_ReduceMotion:
             settings.reduceMotion = !settings.reduceMotion;
             break;
+        case Id_Sound:
+            settings.sound = !settings.sound;
+            // Straight away, so the tone this press makes is the answer to
+            // whether it is on.
+            Audio::get().setEnabled(settings.sound);
+            break;
         case Id_AutoCheckUpdates:
             settings.checkUpdates = !settings.checkUpdates;
             break;
@@ -950,7 +963,8 @@ private:
 
         app.store().setSettings(settings);
         app.store().flush();
-        if (id != Id_ReduceMotion)
+        // Neither of these is on the pass, so neither is worth a republish.
+        if (id != Id_ReduceMotion && id != Id_Sound)
             app.sync().publishPass();
     }
 

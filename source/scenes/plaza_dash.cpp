@@ -2,6 +2,7 @@
 #include "core/i18n.h"
 #include "core/store.h"
 #include "core/util.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
 #include "ui/plaza_scroll.h"
@@ -33,6 +34,10 @@ namespace {
             Zone_Start = Touch_SceneBase,
             Zone_Back,
         };
+
+        // A jump is not "select", and a blip on every one of them at the rate
+        // this game is played would be the first thing anybody turned off.
+        bool quietInput() const override { return true; }
 
         bool coversChrome() const override { return true; }
 
@@ -130,8 +135,10 @@ namespace {
             if (m_nextSpawn <= 0.0f)
                 spawn();
 
-            if (hit())
+            if (hit()) {
+                playSfx(Sfx::Lose);
                 land(app);
+            }
         }
 
         void draw(App& app, Renderer& r) override
@@ -236,6 +243,7 @@ namespace {
         {
             if (!m_grounded)
                 return;
+            playSfx(Sfx::Tick);
             m_grounded = false;
             m_velocity = kJump;
             m_air = 0.0f;

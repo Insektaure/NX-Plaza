@@ -200,6 +200,13 @@ namespace {
             "Ein, für alle, denen vom Minispiel Plaza Dash schlecht wird: "
             "der Hintergrund steht still, und nur das bewegt sich, dem du "
             "ausweichen musst. Aus für die volle Parallaxe" },
+        { "Sound", "Ton" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "Kurze Töne für das, was passiert: eine ankommende Karte, "
+            "eine Münze, ein Treffer in der Quest. Im Hintergrund läuft "
+            "nichts, und die Lautstärke bestimmt die Konsole" },
         { "Plaza server", "Plaza-Server" },
         { "Wi-Fi match token", "WLAN-Kennung" },
         { "Check in now", "Jetzt anmelden" },

@@ -174,6 +174,11 @@ namespace {
           "background stops moving and only what you have to dodge "
           "does. Turn it off for the full parallax",
             "オンにすると、ミニゲーム「プラザダッシュ」で気分が悪くなる人向けに背景が止まり、避けるものだけが動きます。オフにすると全パララックスになります" },
+        { "Sound", "サウンド" },
+        { "Short tones for what happens - a pass arriving, a coin, a "
+          "blow in the quest. Nothing plays in the background, and the "
+          "console's own volume decides how loud",
+            "おきたことにみじかいおとを。カードのとうちゃく、コイン、クエストのいちげき。BGMはながれず、おおきさはほんたいのおんりょうしだい" },
         { "Plaza server", "プラザのサーバー" },
         { "Wi-Fi match token", "Wi-Fi照合トークン" },
         { "Check in now", "今すぐ接続" },

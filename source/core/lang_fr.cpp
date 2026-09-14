@@ -222,6 +222,13 @@ namespace {
             "Activé, pour qui a la nausée avec le mini-jeu Plaza Dash : le décor "
             "s'arrête et seul ce qu'il faut éviter bouge. Désactivez-le pour la "
             "parallaxe complète" },
+        { "Sound", "Son" },
+        { "Short tones for what happens - a pass arriving, a coin, a blow in "
+          "the quest. Nothing plays in the background, and the console's own "
+          "volume decides how loud",
+            "De brefs sons pour ce qui arrive : une carte reçue, une pièce, un "
+            "coup dans la quête. Rien ne joue en fond, et c'est le volume de la "
+            "console qui décide" },
         { "Plaza server", "Serveur du plaza" },
         { "Wi-Fi match token", "Jeton de correspondance Wi-Fi" },
         { "Check in now", "Se connecter maintenant" },

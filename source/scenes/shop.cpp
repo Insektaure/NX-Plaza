@@ -5,6 +5,7 @@
 #include "core/i18n.h"
 #include "core/util.h"
 #include "core/wallet.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/scroll.h"
 #include "ui/theme.h"
@@ -39,6 +40,7 @@ namespace {
         record.flush();
         wallet.spend(price);
         wallet.flush();
+        playSfx(Sfx::Coin);
         app.toast(tr("One whetstone"),
             format(tr("%u in the bag. Use one on a piece of gear to roll it again."),
                 unsigned(record.stones())));
@@ -68,6 +70,7 @@ namespace {
         }
         wallet.spend(price);
         wallet.flush();
+        playSfx(Sfx::Coin);
 
         // The picture is named even for the piece you chose: a random draw can
         // land in a puzzle you are not looking at, and the two toasts should

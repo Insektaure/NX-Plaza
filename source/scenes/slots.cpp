@@ -3,6 +3,7 @@
 #include "core/store.h"
 #include "core/util.h"
 #include "core/wallet.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/theme.h"
 #include "ui/widgets.h"
@@ -73,6 +74,10 @@ namespace {
 
         bool coversChrome() const override { return true; }
 
+        // The reels knock as they stop, which is the sound of a spin. A
+        // "select" over the top of the first one would only be in the way.
+        bool quietInput() const override { return true; }
+
         // Two and a bit seconds with coins already in the slot.
         bool blocksExit() const override { return m_phase == Phase_Spin; }
 
@@ -103,6 +108,12 @@ namespace {
                     float u = std::min(m_clock / stopAt(i), 1.0f);
                     float back = 1.0f - u;
                     m_pos[i] = m_from[i] + m_sweep[i] * (1.0f - back * back * back);
+                }
+                // One knock per reel as it comes to rest, which is the whole
+                // reason the three of them stop a third of a second apart.
+                while (m_stopped < kReels && m_clock >= stopAt(m_stopped)) {
+                    playSfx(Sfx::Tick);
+                    m_stopped++;
                 }
                 if (m_clock >= stopAt(kReels - 1) + kHold)
                     settle(app);
@@ -305,6 +316,7 @@ namespace {
             }
             m_phase = Phase_Spin;
             m_clock = 0.0f;
+            m_stopped = 0;
         }
 
         void settle(App& app)
@@ -331,8 +343,11 @@ namespace {
             if (!m_staked)
                 return;
             uint32_t won = landedPayout();
+            // A losing spin says nothing. A machine that groaned at you three
+            // times a minute would be a machine nobody pulls twice.
             if (won == 0)
                 return;
+            playSfx(Sfx::Coin);
             Wallet& wallet = Wallet::get();
             wallet.award(won);
             wallet.flush();
@@ -899,6 +914,7 @@ namespace {
         float m_pulse = 0.0f;
         int m_button = 0;
         bool m_staked = false;
+        int m_stopped = 0; // reels that have come to rest, for the knocks
         uint32_t m_paid = 0;
 
         int m_reel[kReels] = { 0, 0, 0 };
