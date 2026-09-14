@@ -340,8 +340,13 @@ namespace {
                 store.setScore(kMaskKey, mask);
             }
 
-            if (!m_staked)
+            if (!m_staked) {
+                // A free spin pays nothing, but lining three up is still the
+                // thing that was being watched for.
+                if (landedPayout() > 0)
+                    playSfx(Sfx::Win);
                 return;
+            }
             uint32_t won = landedPayout();
             // A losing spin says nothing. A machine that groaned at you three
             // times a minute would be a machine nobody pulls twice.

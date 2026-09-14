@@ -419,6 +419,10 @@ namespace {
                     m_best = uint32_t(floors());
                 m_recorded = true;
             }
+            // The tower has already made the noise of coming apart; this is
+            // the result screen saying it was worth it anyway.
+            if (m_beatBest)
+                playSfx(Sfx::Win);
         }
 
         // ---------------------------------------------------------- painting

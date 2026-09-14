@@ -26,7 +26,8 @@ enum class Sfx : uint8_t {
     Fall,   // somebody went down
     Win,    // a floor cleared, a bet won
     Lose,   // the party wiped, a bet lost
-    Tick,   // a reel stopping, a lantern passing
+    Tick,   // a reel stopping, a lantern passing, a die landing
+    Start,  // the countdown is over, the thing is off
     Count,
 };
 

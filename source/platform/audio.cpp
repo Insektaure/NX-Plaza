@@ -139,6 +139,13 @@ namespace {
         { 0.160f, 293.7f, 0.0f, 0.780f, 0.19f, Timbre_Soft },
     };
     const Note kTick[] = { { 0.000f, 1318.5f, 0.0f, 0.045f, 0.18f, Timbre_Wood } };
+    // Two bells struck together rather than one after the other: a chord is
+    // an instant, and "go" is an instant. The counts before it are kTick, so
+    // this has to be a different shape and not just a higher note.
+    const Note kStart[] = {
+        { 0.000f, 1046.5f, 0.0f, 0.240f, 0.15f, Timbre_Bell },
+        { 0.000f, 1568.0f, 0.0f, 0.380f, 0.13f, Timbre_Bell },
+    };
 
     struct Recipe {
         const Note* notes;
@@ -160,6 +167,7 @@ namespace {
         NXP_SOUND(kWin),
         NXP_SOUND(kLose),
         NXP_SOUND(kTick),
+        NXP_SOUND(kStart),
     };
 #undef NXP_SOUND
 
@@ -175,7 +183,7 @@ namespace {
     //
     //     move 0.27   select 0.43   back 0.42   toast 0.47   coin 0.37
     //     trophy 0.51   hit 0.77   crit 0.78   heal 0.34   fall 0.66
-    //     win 0.35   lose 0.51   tick 0.30
+    //     win 0.35   lose 0.51   tick 0.30   start 0.52
     //
     // Ticks a third of full scale, things that happened about half, a blow
     // three quarters, and nothing near the clamp. The volume anybody actually

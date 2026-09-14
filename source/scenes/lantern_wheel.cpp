@@ -80,6 +80,24 @@ namespace {
             m_clock += dt;
 
             if (m_phase == Phase_Spin) {
+                // A click for every lantern the needle passes. The spin eases
+                // out on a cubic, so this rattles at the start and slows to
+                // single clicks at the end without anything here saying so -
+                // which is the sound a wheel makes and the reason it is worth
+                // hearing at all.
+                int passed = int(m_sweep * spinProgress() / (kTau / float(kLanterns)));
+                if (passed > m_clicks) {
+                    // At most one every 55 ms. The needle passes fourteen
+                    // lanterns in the first quarter second, and fifty-six
+                    // knocks a second is a buzz rather than a wheel; the
+                    // limit thins the start out and lets the end - where the
+                    // clicks are worth counting - through untouched.
+                    if (m_clock - m_clicked >= 0.055f) {
+                        playSfx(Sfx::Tick);
+                        m_clicked = m_clock;
+                    }
+                    m_clicks = passed;
+                }
                 if (m_clock >= kSpin + kHold)
                     settle(app);
                 return;
@@ -378,6 +396,8 @@ namespace {
 
             m_phase = Phase_Spin;
             m_clock = 0.0f;
+            m_clicks = 0;
+            m_clicked = -1.0f;
             m_paid = 0;
             m_piece = false;
         }
@@ -402,6 +422,11 @@ namespace {
             // angle it was resting at before the spin - and the needle snapped
             // back to the top the instant the result appeared.
             m_angle = lanternAngle(m_landed);
+
+            // The needle has stopped on something, which is the result
+            // whether or not it pays: a free spin is watched for exactly this
+            // moment, and it used to be the one that made no sound at all.
+            playSfx(Sfx::Win);
 
             // Watched for nothing: the needle still lands somewhere and the
             // plate still says where, but nothing is handed over. A free spin
@@ -693,6 +718,8 @@ namespace {
         float m_from = 0.0f;  // where this spin started
         float m_sweep = 0.0f; // how far it turns
         int m_landed = -1;
+        int m_clicks = 0;      // lanterns the needle has passed
+        float m_clicked = -1.0f; // when the last one was heard
         bool m_staked = false;
         int m_button = 0; // 0 = watch it, 1 = ten coins on it
         uint32_t m_paid = 0;

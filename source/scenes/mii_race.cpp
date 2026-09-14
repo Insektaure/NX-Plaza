@@ -207,12 +207,21 @@ namespace {
             // A race is three seconds of countdown and at most fourteen of
             // running: short enough to be worth protecting from a stray thumb,
             // and far too short to be worth an escape hatch.
-            case Phase_Count:
+            case Phase_Count: {
+                // Four beats of eight tenths, the same ones drawCountdown()
+                // draws: three counts and the off. A while rather than an if,
+                // so a frame that ran long cannot swallow one.
+                int beat = std::min(int(m_clock / 0.8f), 3);
+                while (m_heard <= beat) {
+                    playSfx(m_heard == 3 ? Sfx::Start : Sfx::Tick);
+                    m_heard++;
+                }
                 if (m_clock >= kCountdown) {
                     m_phase = Phase_Run;
                     m_clock = 0.0f;
                 }
                 break;
+            }
 
             case Phase_Run:
                 // Held open a moment after the last one is home, so the finish
@@ -512,6 +521,7 @@ namespace {
             m_button = 0;
             draw_lots();
             m_phase = Phase_Count;
+            m_heard = 0;
             m_clock = 0.0f;
         }
 
@@ -538,6 +548,10 @@ namespace {
             // it, so zeroing it here sent everybody back to the start line and
             // ran the whole race again behind the result plate.
             m_called = called();
+            // Whether or not there was a coin on it. A free race is still a
+            // race, and watching one end in silence because you did not bet
+            // on it makes the free version feel like the broken version.
+            playSfx(m_called ? Sfx::Win : Sfx::Lose);
             if (!m_staked || !m_called)
                 return;
 
@@ -1091,6 +1105,7 @@ namespace {
 
         std::vector<Racer> m_racers;
         int m_phase = Phase_Ready;
+        int m_heard = 0; // countdown beats already sounded
         float m_clock = 0.0f;
         float m_slowest = kSlowest;
         bool m_staked = false;

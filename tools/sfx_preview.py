@@ -63,9 +63,11 @@ SOUNDS = {
     "lose": [(0.000, 392.0, 0, 0.420, 0.19, "soft"),
              (0.160, 293.7, 0, 0.780, 0.19, "soft")],
     "tick": [(0.000, 1318.5, 0, 0.045, 0.18, "wood")],
+    "start": [(0.000, 1046.5, 0, 0.240, 0.15, "bell"),
+              (0.000, 1568.0, 0, 0.380, 0.13, "bell")],
 }
 ORDER = ["move", "select", "back", "toast", "coin", "trophy", "hit", "crit",
-         "heal", "fall", "win", "lose", "tick"]
+         "heal", "fall", "win", "lose", "tick", "start"]
 
 MASTER = 2.8
 ROOM_SEND, ROOM_FEED, ROOM_DAMP = 0.26, 0.30, 0.38

@@ -86,7 +86,7 @@ namespace {
             // B gives up the run and keeps the distance: there is no stake, so
             // there is nothing to protect by trapping somebody in a game.
             if (input.back()) {
-                land(app);
+                land(app, false);
                 return;
             }
 
@@ -135,10 +135,8 @@ namespace {
             if (m_nextSpawn <= 0.0f)
                 spawn();
 
-            if (hit()) {
-                playSfx(Sfx::Lose);
-                land(app);
-            }
+            if (hit())
+                land(app, true);
         }
 
         void draw(App& app, Renderer& r) override
@@ -252,7 +250,7 @@ namespace {
 
         // One write per run, in the frame the run ends: drawing should not be
         // the thing that changes what is stored.
-        void land(App& app)
+        void land(App& app, bool crashed)
         {
             m_phase = Phase_Over;
             if (!m_recorded) {
@@ -261,6 +259,12 @@ namespace {
                     m_best = metres();
                 m_recorded = true;
             }
+            // A best outranks the crash that ended the run, and giving up on
+            // a run that beat nothing is not a defeat - it is just a stop.
+            if (m_beatBest)
+                playSfx(Sfx::Win);
+            else if (crashed)
+                playSfx(Sfx::Lose);
         }
 
         void spawn()

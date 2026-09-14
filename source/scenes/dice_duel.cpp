@@ -81,6 +81,16 @@ namespace {
             bool tapped = app.takeTap(tap);
 
             if (m_phase == Phase_Roll) {
+                // A knock as each one comes to rest. They are a fifth of a
+                // second apart on purpose, and two clacks is the whole reason
+                // that is worth doing.
+                if (m_landed < 1 && m_clock >= kSpin) {
+                    playSfx(Sfx::Tick);
+                    m_landed = 1;
+                } else if (m_landed < 2 && m_clock >= kSpin + kStagger) {
+                    playSfx(Sfx::Tick);
+                    m_landed = 2;
+                }
                 // Both dice down, plus a moment to look at them.
                 if (m_clock >= kSpin + kStagger + kHold)
                     settle(app);
@@ -224,6 +234,7 @@ namespace {
             m_myFace = 1 + int(randomBelow(6));
             m_theirFace = 1 + int(randomBelow(6));
             m_phase = Phase_Roll;
+            m_landed = 0;
             m_clock = 0.0f;
         }
 
@@ -234,6 +245,11 @@ namespace {
         {
             m_phase = Phase_Done;
             record(app);
+
+            // The result, whether or not there was a coin on it. A draw is
+            // neither of the other two, so it gets the app's own two-note
+            // chime rather than a verdict.
+            playSfx(drawn() ? Sfx::Toast : (won() ? Sfx::Win : Sfx::Lose));
 
             if (!m_staked)
                 return;
@@ -555,6 +571,7 @@ namespace {
         Pass m_mine;
         Pass m_theirs;
         int m_phase = Phase_Ready;
+        int m_landed = 0; // dice that have come to rest and been heard
         float m_clock = 0.0f;
         float m_pulse = 0.0f;
         int m_button = 0;
