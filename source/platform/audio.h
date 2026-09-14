@@ -32,11 +32,10 @@ enum class Sfx : uint8_t {
 
 // Sound, synthesised.
 //
-// Nothing is sampled: every noise is a handful of notes with an envelope,
-// mixed here and pushed to `audout` as one stereo stream. That is the whole
-// reason the app can have sound at all without the .nro growing - an app whose
-// entire artwork is drawn from arithmetic should not carry a megabyte of wav
-// files to say "a coin".
+// Nothing is sampled: every noise is a few struck notes and a small room,
+// mixed here and pushed to `audout`. That is the whole reason the app can have
+// sound at all without the .nro growing - an app whose entire artwork is drawn
+// from arithmetic should not carry a megabyte of wav files to say "a coin".
 //
 // A console that cannot open the audio device keeps working in silence: every
 // entry point checks and returns.
@@ -58,25 +57,27 @@ public:
     void setMuted(bool muted);
 
     // The setting. Silence takes effect on the next buffer, so anything
-    // already sounding stops within about forty milliseconds.
+    // already sounding stops within about twenty milliseconds.
     void setEnabled(bool on);
     bool enabled() const { return m_enabled; }
 
 private:
-    // One note of one sound, while it is sounding.
+    // One struck note, while it is ringing.
     struct Voice {
         bool live = false;
-        int32_t wait = 0;  // frames before it starts
-        int32_t at = 0;    // frames since it started
-        int32_t len = 1;   // how many it lasts
-        int32_t attack = 1;
-        int32_t release = 1;
+        int32_t wait = 0;   // frames before it is struck
+        int32_t at = 0;     // frames since
+        int32_t len = 1;    // frames until it has decayed to nothing
+        int32_t attack = 1; // frames of fade-in, so it does not click
         float from = 440.0f;
-        float to = 440.0f;
+        float to = 440.0f; // the same, unless the note bends
         float gain = 0.5f;
         float phase = 0.0f;
+        float decay = 1.0f; // per-frame multiplier on the envelope
+        float env = 1.0f;   // where that multiplier has got to
+        float lp = 0.0f;    // one-pole state, for the noise timbre
         uint32_t seed = 0x1234567u;
-        uint8_t wave = 0;
+        uint8_t timbre = 0;
     };
 
     static constexpr size_t kVoices = 24;
@@ -111,6 +112,15 @@ private:
 
     AudioOutBuffer m_slots[kBuffers] = {};
     Voice m_voices[kVoices] = {};
+
+    // The room: two delay lines of different lengths, cross-fed and damped.
+    // The cheapest thing that stops every note sounding like it was played
+    // inside a telephone.
+    size_t m_roomL = 0; // how far back each side reads
+    size_t m_roomR = 0;
+    size_t m_roomAt = 0; // where both of them write
+    float m_dampL = 0.0f;
+    float m_dampR = 0.0f;
 
     uint32_t m_rate = 48000;
     uint32_t m_channels = 2;
