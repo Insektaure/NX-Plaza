@@ -128,10 +128,10 @@ namespace {
     };
     const Note kFall[] = { { 0.000f, 330.0f, 90.0f, 0.460f, 0.26f, Timbre_Body } };
     const Note kWin[] = {
-        { 0.000f, 1046.5f, 0.0f, 0.300f, 0.19f, Timbre_Bell },
-        { 0.085f, 1318.5f, 0.0f, 0.300f, 0.19f, Timbre_Bell },
-        { 0.170f, 1568.0f, 0.0f, 0.300f, 0.19f, Timbre_Bell },
-        { 0.260f, 2093.0f, 0.0f, 1.000f, 0.22f, Timbre_Bell },
+        { 0.000f, 523.3f, 0.0f, 0.420f, 0.12f, Timbre_Soft },
+        { 0.130f, 784.0f, 0.0f, 0.520f, 0.11f, Timbre_Soft },
+        { 0.260f, 1046.5f, 0.0f, 1.200f, 0.08f, Timbre_Bell },
+        { 0.260f, 261.6f, 0.0f, 1.300f, 0.09f, Timbre_Soft },
     };
     // A soft falling third.
     const Note kLose[] = {
@@ -175,7 +175,7 @@ namespace {
     //
     //     move 0.27   select 0.43   back 0.42   toast 0.47   coin 0.37
     //     trophy 0.51   hit 0.77   crit 0.78   heal 0.34   fall 0.66
-    //     win 0.50   lose 0.51   tick 0.30
+    //     win 0.35   lose 0.51   tick 0.30
     //
     // Ticks a third of full scale, things that happened about half, a blow
     // three quarters, and nothing near the clamp. The volume anybody actually

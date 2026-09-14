@@ -622,22 +622,41 @@ void App::update(float dt)
     routeTouch(input.touch);
     pumpArrivals();
 
-    // A tick for the cursor and a note each for yes and no, here rather than
-    // in thirty scenes: every list in the app moves on the same four
-    // directions and the two buttons mean the same thing on all of them. A
-    // scene that plays with the buttons asks for silence and makes its own.
-    if (Scene* sounding = activeScene(); !sounding || !sounding->quietInput()) {
+    // A tick for the cursor and a note for yes, here rather than in thirty
+    // scenes: every list in the app moves on the same four directions and A
+    // means the same thing on all of them. A scene that plays with the
+    // buttons asks for silence and makes its own.
+    Scene* sounding = activeScene();
+    bool audible = !sounding || !sounding->quietInput();
+    if (audible) {
         if (input.navUp || input.navDown || input.navLeft || input.navRight)
             playSfx(Sfx::Move);
         if (input.accept())
             playSfx(Sfx::Select);
-        else if (input.back())
-            playSfx(Sfx::Back);
     }
+
+    // B is the one button that is often pressed at nothing - there is a
+    // "back" on most screens and no back at all on a few - and a note for a
+    // press that did nothing is worse than no note. So it is answered after
+    // the fact rather than on the press: if the overlay stack got shorter,
+    // the tab changed, or a dialog closed, something went back.
+    size_t overlaysWere = m_overlays.size();
+    Tab tabWas = m_tab;
+    bool dialogWas = m_dialog.active;
 
     if (!handleChromeInput(input)) {
         if (Scene* scene = activeScene())
             scene->update(*this, input, dt);
+    }
+
+    // Not gated on `audible`: quietInput() is about a button that plays the
+    // game rather than navigating it, and leaving the game is navigating it.
+    // Without this, backing out of the dash, the tower or the bandit
+    // was the one exit in the app that made no sound at all.
+    if (input.back()
+        && (m_overlays.size() < overlaysWere || m_tab != tabWas
+            || (dialogWas && !m_dialog.active))) {
+        playSfx(Sfx::Back);
     }
 
     // Nothing claimed it: drop it rather than let it fire on a later frame,

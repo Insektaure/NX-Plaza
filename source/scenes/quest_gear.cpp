@@ -3,6 +3,7 @@
 #include "core/quest_record.h"
 #include "core/quest_rules.h"
 #include "core/util.h"
+#include "platform/audio.h"
 #include "scenes/scene.h"
 #include "ui/mii_render.h"
 #include "ui/theme.h"
@@ -84,10 +85,15 @@ namespace {
             // category back to the list of them, and only then out of the
             // screen. A goes the other way.
             if (input.back()) {
-                if (m_focus == Focus_Bag)
+                // Stepping out of a column is a real B, but it leaves no
+                // screen behind it, so the app cannot hear it happen: this
+                // one says so itself.
+                if (m_focus == Focus_Bag) {
                     m_focus = Focus_Pegs;
-                else
+                    playSfx(Sfx::Back);
+                } else {
                     app.popOverlay();
+                }
                 return;
             }
             if (m_party.empty())
