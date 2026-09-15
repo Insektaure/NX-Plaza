@@ -34,6 +34,7 @@ namespace {
         enum Zone : int {
             Zone_Cell = Touch_SceneBase,
             Zone_Back,
+            Zone_Card,
         };
 
         bool coversChrome() const override { return true; }
@@ -60,18 +61,38 @@ namespace {
             }
 
             TouchTarget tap;
-            if (app.takeTap(tap) && !m_braked) {
+            bool tapped = app.takeTap(tap);
+            if (m_card) {
+                // A card is a modal: B and A both close it, and a tap
+                // anywhere outside it does too.
+                if (input.back() || input.accept()
+                    || (tapped && !tap.is(Zone_Card)))
+                    m_card = false;
+                return;
+            }
+
+            if (tapped && !m_braked) {
                 if (tap.is(Zone_Back)) {
                     app.popOverlay();
                     return;
                 }
-                if (tap.is(Zone_Cell) && tap.index >= 0 && tap.index < count())
+                if (tap.is(Zone_Cell) && tap.index >= 0 && tap.index < count()) {
+                    // A second tap on the one already under the cursor opens
+                    // it, which is the touch version of moving there and
+                    // pressing A.
+                    if (tap.index == m_pick)
+                        m_card = true;
                     m_pick = tap.index;
+                }
                 return;
             }
 
             if (input.back()) {
                 app.popOverlay();
+                return;
+            }
+            if (input.accept() && count() > 0) {
+                m_card = true;
                 return;
             }
 
@@ -90,11 +111,19 @@ namespace {
             r.clear(theme::bg0);
             app.touchZone(r.viewport(), Touch_None);
 
-            app.hint("B", "back");
+            if (m_card) {
+                app.hint("B", "close");
+            } else {
+                if (count() > 0)
+                    app.hint("A", "look closer");
+                app.hint("B", "back");
+            }
 
             drawHeader(app, r);
             drawGrid(app, r);
             drawFooter(r);
+            if (m_card)
+                drawCard(app, r);
         }
 
     private:
@@ -302,10 +331,147 @@ namespace {
                 stats, Align::Right, VAlign::Middle);
         }
 
+        // One shadow, close up. Everything on it is worked out rather than
+        // stored: the face and the name from the floor number, the numbers
+        // from bossFor(), and what it can leave from the same weight table
+        // the roll itself reads - so the odds printed here cannot drift away
+        // from the odds you actually get.
+        void drawCard(App& app, Renderer& r) const
+        {
+            int floor = floorAt(std::min(m_pick, count() - 1));
+            bool known = beaten(floor);
+            Boss boss = bossFor(floor);
+
+            r.rect(r.viewport(), theme::scrim);
+
+            // 940 x 560 at y 200. The height is what the contents need and
+            // no more: the head is 220, the divider sits 40 under it, and the
+            // three rows of tiers end 18 short of the bottom padding.
+            constexpr float kW = 940.0f;
+            constexpr float kH = 560.0f;
+            Rect panel { (Renderer::DesignWidth - kW) * 0.5f, 200.0f, kW, kH };
+            app.touchZone(panel, Zone_Card);
+            r.roundRect(panel, theme::r5, theme::bg1);
+            r.strokeRect(panel, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = panel.inset(theme::s7, theme::s6);
+
+            // ---- the face, and who it is beside it
+            Rect head { inner.x, inner.y, 220.0f, 220.0f };
+            Mii face = shadowFace(floor);
+            if (known) {
+                ui::miiHead(r, ui::headroom(head), face);
+            } else {
+                Color ink = kShadowInk;
+                ui::miiHead(r, ui::headroom(head), face, 1.0f, &ink);
+            }
+
+            float x = head.right() + theme::s7;
+            TextStyle eyebrow;
+            eyebrow.size = theme::textXs;
+            eyebrow.color = theme::accent;
+            eyebrow.tracking = theme::trackingWider;
+            eyebrow.uppercase = true;
+            r.text(x, inner.y + 6.0f, format(tr("Floor %d"), floor), eyebrow);
+
+            TextStyle name;
+            name.size = theme::textXl;
+            name.weight = FontWeight::Bold;
+            name.color = known ? theme::fg1 : theme::fg3;
+            name.tracking = theme::trackingTight;
+            r.text(x, inner.y + 40.0f,
+                r.ellipsize(known ? shadowName(floor) : std::string(tr("Not met yet")),
+                    name, inner.right() - x),
+                name);
+
+            // Measured against the floor below rather than written out: the
+            // slope lives in bossFor() and a copy of it here would be a
+            // second place to change it and a first place to be wrong.
+            if (floor > 1) {
+                Boss below = bossFor(floor - 1);
+                TextStyle note;
+                note.size = theme::textSm;
+                note.color = theme::fg3;
+                r.text(x, inner.y + 108.0f,
+                    format(tr("%u more health and %u more attack than the floor below"),
+                        unsigned(boss.hp - below.hp), unsigned(boss.atk - below.atk)),
+                    note);
+            }
+
+            // ---- its numbers
+            const char* labels[4] = { "HP", "ATK", "DEF", "SPD" };
+            unsigned values[4] = { unsigned(boss.hp), unsigned(boss.atk),
+                unsigned(boss.def), unsigned(boss.spd) };
+            float statY = inner.y + 158.0f;
+            float statW = (inner.right() - x) / 4.0f;
+            for (int i = 0; i < 4; i++) {
+                Rect box { x + float(i) * statW, statY, statW, 62.0f };
+                TextStyle cap;
+                cap.size = theme::textXs;
+                cap.color = theme::fg4;
+                cap.tracking = theme::trackingWide;
+                r.text(box.x, box.y, labels[i], cap);
+
+                TextStyle value;
+                value.size = theme::textMd;
+                value.weight = FontWeight::Bold;
+                value.color = theme::fg1;
+                r.text(box.x, box.y + 26.0f, format("%u", values[i]), value);
+            }
+
+            // ---- what it can leave
+            float y = head.bottom() + theme::s7;
+            ui::divider(r, inner.x, y, inner.w);
+            y += theme::s5;
+            r.text(inner.x, y, tr("what falls here"), eyebrow);
+            y += 34.0f;
+
+            TextStyle body;
+            body.size = theme::textSm;
+            body.color = theme::fg3;
+            r.text(inner.x, y, tr("One floor in two leaves something behind."), body);
+            y += 40.0f;
+
+            uint32_t weights[Quality_Count] = {};
+            dropWeights(floor, weights);
+            uint32_t total = 0;
+            for (uint32_t w : weights)
+                total += w;
+            if (total == 0)
+                return;
+
+            // Two columns of three, so the six tiers fit on one card without
+            // a scroll and the eye can compare the top of one column with the
+            // bottom of the other.
+            float column = inner.w * 0.5f;
+            for (uint8_t q = 0; q < Quality_Count; q++) {
+                float cx = inner.x + float(q / 3) * column;
+                float cy = y + float(q % 3) * 44.0f;
+
+                TextStyle tier;
+                tier.size = theme::textBase;
+                tier.weight = FontWeight::Bold;
+                tier.color = weights[q] > 0 ? ui::qualityColour(q) : theme::fg4;
+                r.text(cx, cy, tr(qualityName(q)), tier);
+
+                // Rounded, and never rounded up to a share that cannot
+                // happen: a tier with no weight at this depth says so in
+                // words rather than as "0%", which reads like bad luck.
+                TextStyle share;
+                share.size = theme::textBase;
+                share.color = weights[q] > 0 ? theme::fg2 : theme::fg4;
+                r.text(Rect { cx, cy, column - theme::s7, 32.0f },
+                    weights[q] > 0
+                        ? format("%u%%", unsigned((weights[q] * 100 + total / 2) / total))
+                        : std::string(tr("never")),
+                    share, Align::Right, VAlign::Top);
+            }
+        }
+
         // The same ink the fight draws a shadow in, so an unbeaten one on this
         // wall is the same colour as the thing standing in front of you.
         static const Color kShadowInk;
 
+        bool m_card = false;
         ui::ScrollView m_scroll;
         Rect m_grid {};
         int m_pick = 0;

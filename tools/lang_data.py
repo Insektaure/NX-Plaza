@@ -10531,3 +10531,126 @@ LANGS["zh_hant"].update({
     "next": "下一個",
     "the shadows": "暗影們",
 })
+
+# ---- a shadow's card: its numbers, and what it can leave.
+
+LANGS["de"].update({
+    "look closer":
+        "genauer ansehen",
+    "what falls here":
+        "was hier fällt",
+    "One floor in two leaves something behind.":
+        "Jedes zweite Stockwerk lässt etwas zurück.",
+    "%u more health and %u more attack than the floor below":
+        "%u mehr Leben und %u mehr Angriff als das Stockwerk darunter",
+    "never":
+        "nie",
+})
+LANGS["es"].update({
+    "look closer":
+        "mirar de cerca",
+    "what falls here":
+        "lo que cae aquí",
+    "One floor in two leaves something behind.":
+        "Uno de cada dos pisos deja algo.",
+    "%u more health and %u more attack than the floor below":
+        "%u de vida y %u de ataque más que el piso de abajo",
+    "never":
+        "nunca",
+})
+LANGS["it"].update({
+    "look closer":
+        "guardare da vicino",
+    "what falls here":
+        "cosa cade qui",
+    "One floor in two leaves something behind.":
+        "Un piano su due lascia qualcosa.",
+    "%u more health and %u more attack than the floor below":
+        "%u salute e %u attacco in più del piano sotto",
+    "never":
+        "mai",
+})
+LANGS["nl"].update({
+    "look closer":
+        "van dichtbij bekijken",
+    "what falls here":
+        "wat hier valt",
+    "One floor in two leaves something behind.":
+        "Elke tweede verdieping laat iets achter.",
+    "%u more health and %u more attack than the floor below":
+        "%u meer leven en %u meer aanval dan de verdieping eronder",
+    "never":
+        "nooit",
+})
+LANGS["pt"].update({
+    "look closer":
+        "ver de perto",
+    "what falls here":
+        "o que cai aqui",
+    "One floor in two leaves something behind.":
+        "Um piso em cada dois deixa alguma coisa.",
+    "%u more health and %u more attack than the floor below":
+        "%u de vida e %u de ataque a mais do que o piso abaixo",
+    "never":
+        "nunca",
+})
+LANGS["ru"].update({
+    "look closer":
+        "рассмотреть",
+    "what falls here":
+        "что падает здесь",
+    "One floor in two leaves something behind.":
+        "Каждый второй этаж что-нибудь оставляет.",
+    "%u more health and %u more attack than the floor below":
+        "на %u здоровья и на %u атаки больше, чем этажом ниже",
+    "never":
+        "никогда",
+})
+LANGS["ja"].update({
+    "look closer":
+        "よくみる",
+    "what falls here":
+        "ここでおちるもの",
+    "One floor in two leaves something behind.":
+        "2かいに1かいはなにかをのこします。",
+    "%u more health and %u more attack than the floor below":
+        "したのかいより たいりょく %u、こうげき %u たかい",
+    "never":
+        "おちない",
+})
+LANGS["ko"].update({
+    "look closer":
+        "자세히 보기",
+    "what falls here":
+        "여기서 떨어지는 것",
+    "One floor in two leaves something behind.":
+        "두 층에 한 번은 무언가를 남깁니다.",
+    "%u more health and %u more attack than the floor below":
+        "아래 층보다 체력 %u, 공격 %u 높음",
+    "never":
+        "없음",
+})
+LANGS["zh_hans"].update({
+    "look closer":
+        "细看",
+    "what falls here":
+        "这里会掉落什么",
+    "One floor in two leaves something behind.":
+        "每两层会留下一件东西。",
+    "%u more health and %u more attack than the floor below":
+        "比下一层多 %u 生命、%u 攻击",
+    "never":
+        "不会",
+})
+LANGS["zh_hant"].update({
+    "look closer":
+        "細看",
+    "what falls here":
+        "這裡會掉落什麼",
+    "One floor in two leaves something behind.":
+        "每兩層會留下一件東西。",
+    "%u more health and %u more attack than the floor below":
+        "比下一層多 %u 生命、%u 攻擊",
+    "never":
+        "不會",
+})

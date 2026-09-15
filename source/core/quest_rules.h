@@ -169,6 +169,14 @@ uint32_t itemRating(const Item& item);
 // every climb otherwise: the weekly reset pays in coins and nothing else,
 // because a certain drop on reset day would make the first climb of a week
 // worth twice any other.
+// What a floor's shadow can leave, as raw weights over the six qualities -
+// not percentages, because the card that shows them and the roll that uses
+// them have to be reading the same numbers, and the roll wants integers.
+//
+// Declared here rather than up beside shadowName() for the dull reason that
+// it names Quality_Count, which is declared below that.
+void dropWeights(int floor, uint32_t out[Quality_Count]);
+
 Item rollDrop(int floor, uint16_t nextId, int chance = 50);
 
 } // namespace nxp

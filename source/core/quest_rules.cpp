@@ -339,6 +339,20 @@ uint32_t itemRating(const Item& item)
     return uint32_t(b.hp) / kHpPerPoint + b.atk + b.def + b.spd + b.mp;
 }
 
+void dropWeights(int floor, uint32_t out[Quality_Count])
+{
+    int f = std::min(999, std::max(1, floor));
+    // Deeper is better, and past floor twenty it is the only place the good
+    // things are: common falls away to nothing while the top three tiers
+    // only start once the tower is worth the trouble.
+    out[Quality_Common] = uint32_t(std::max(1, 60 - 3 * f));
+    out[Quality_Uncommon] = uint32_t(25 + f);
+    out[Quality_Rare] = uint32_t(8 + f);
+    out[Quality_Epic] = uint32_t(std::max(0, f - 3));
+    out[Quality_Legendary] = uint32_t(std::max(0, (f - 8) / 2));
+    out[Quality_Godlike] = uint32_t(std::max(0, (f - 15) / 4));
+}
+
 Item rollDrop(int floor, uint16_t nextId, int chance)
 {
     Item item;
@@ -347,18 +361,15 @@ Item rollDrop(int floor, uint16_t nextId, int chance)
     if (int(randomBelow(100)) >= std::max(0, std::min(100, chance)))
         return item;
 
+    // Clamped here as well as inside dropWeights(), because the floor is
+    // written into the piece and a piece from floor 0 is a piece whose
+    // provenance is a lie.
     int f = std::min(999, std::max(1, floor));
-    // Deeper is better, and past floor twenty it is the only place the good
-    // things are: common falls away to nothing while the top three tiers
-    // only start once the tower is worth the trouble.
-    uint32_t weights[Quality_Count] = {
-        uint32_t(std::max(1, 60 - 3 * f)),
-        uint32_t(25 + f),
-        uint32_t(8 + f),
-        uint32_t(std::max(0, f - 3)),
-        uint32_t(std::max(0, (f - 8) / 2)),
-        uint32_t(std::max(0, (f - 15) / 4)),
-    };
+
+    // The same table the shadow's card prints, read from one place so the
+    // odds somebody was shown and the odds they got cannot drift apart.
+    uint32_t weights[Quality_Count] = {};
+    dropWeights(f, weights);
     uint32_t total = 0;
     for (uint32_t w : weights)
         total += w;
