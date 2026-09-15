@@ -51,37 +51,6 @@ you can wear both.
 A pass that has never been through the maker still shows a face: one derived
 from the portrait seed the pass already carries. Nobody is a blank silhouette.
 
-## Games
-
-Seven things to play with the people you have crossed. All of them can be
-played for nothing; where there is a bet it is optional, and the odds are
-honest and against you, so the games are a way to spend coins rather than a way
-to make them.
-
-- **The quest** - a tower with no top, climbed by a party drawn from your
-  collection: what everybody is worth comes off their Mii and how often you
-  have crossed them. The fight runs itself, and what it is for is the gear the
-  shadows drop, common up to godlike. A floor pays one coin the first time you
-  reach it in a week and the tower resets every Monday, so the ground you have
-  already covered is worth climbing again. **Y** to equip the party, **ZR**
-  opens the bag, and the shop sells whetstones that roll a piece of gear again
-  without changing its rank. **ZL** locks a piece, in the bag or on the gear
-  screen: a padlock appears beside its name and nothing throws it away until
-  you unlock it.
-- **The Mii tower** - drop the people you have met on top of each other, one
-  floor at a time, and keep the tower standing.
-- **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
-  gets quicker until you hit something. Nothing staked and nothing won: it
-  keeps a best distance and that is all.
-- **The Mii race** - three people you have met against your own Mii, over four
-  lanes. Back your Mii for a coin, or call first and second for more.
-- **The dice duel** - one roll each against somebody you crossed, highest takes
-  it, a draw hands your bet back.
-- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
-  something and two of them pay a puzzle piece.
-- **The bandit** - a slot machine in a casino room, two sets of reels with
-  **X** to switch, and a board on the wall listing every line it pays.
-
 ## Identity
 
 On the very first launch the app generates:
@@ -131,6 +100,49 @@ StreetPass actually was.
 
 Exchanges are mutual and rate limited: at most 12 crossings a day by default,
 one crossing per pair per six hours.
+
+## Games
+
+Seven things to play with the people you have crossed. All of them can be
+played for nothing; where there is a bet it is optional, and the odds are
+honest and against you, so the games are a way to spend coins rather than a way
+to make them.
+
+- **The quest** - a tower with no top, climbed by a party drawn from your
+  collection. The fight runs itself; what it is for is the gear the shadows
+  drop. [More below.](#the-quest)
+- **The Mii tower** - drop the people you have met on top of each other, one
+  floor at a time, and keep the tower standing.
+- **Plaza dash** - your own Mii runs through the plaza, **A** jumps, and it
+  gets quicker until you hit something. Nothing staked and nothing won: it
+  keeps a best distance and that is all.
+- **The Mii race** - three people you have met against your own Mii, over four
+  lanes. Back your Mii for a coin, or call first and second for more.
+- **The dice duel** - one roll each against somebody you crossed, highest takes
+  it, a draw hands your bet back.
+- **The lantern wheel** - twelve lanterns and a needle. Every lantern pays
+  something and two of them pay a puzzle piece.
+- **The bandit** - a slot machine in a casino room, two sets of reels with
+  **X** to switch, and a board on the wall listing every line it pays.
+
+### The quest
+
+The one game with something to keep. A party of the people you have crossed
+climbs a tower that has no top, the fight runs itself, and how far up you got
+is the score.
+
+| | |
+| --- | --- |
+| **Who climbs** | Their numbers come off their Mii and how often you have crossed them; their favourite colour decides whether they guard, strike, sap or mend. Three go up, four once you have met ten people, five at twenty-five. |
+| **What falls** | Half the shadows leave a piece of gear - a weapon, armour, a ring or an accessory, common up to godlike. Deeper is better, and two pieces of the same rank are never the same piece. |
+| **Blessings** | Every fifth floor offers three out of eighteen, and the one you take is yours for the rest of the climb. |
+| **Coins** | A floor pays one the first time you reach it in a week. The week turns on Monday, so ground you have already covered is worth climbing again. |
+| **Starting higher** | Once the week has paid as far as floor ten, the chevrons beside the Climb button start you at 10, 20, and so on. Nothing below pays twice and the blessings start again from there - the quick way into the deep floors for gear, not a shortcut to a record. |
+| **The shadows** | Every floor has the same face and the same name on every console. **ZL** on the climb screen is the wall of the ones you have beaten, and beating a floor unmasks it; [`SHADOWS.md`](SHADOWS.md) lists all 999. |
+
+**Y** opens the gear, **ZR** the bag, and **ZL** in either of those locks a
+piece so that nothing - not a clear-out, not a full bag - can throw it away.
+The shop sells whetstones, which roll a piece again without changing its rank.
 
 ## Building
 

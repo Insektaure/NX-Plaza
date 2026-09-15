@@ -47,6 +47,8 @@ namespace {
         enum Zone : int {
             Zone_Roster = Touch_SceneBase,
             Zone_Climb,
+            Zone_StartDown,
+            Zone_StartUp,
             Zone_Boon,
             Zone_Back,
         };
@@ -134,6 +136,13 @@ namespace {
                     app.popOverlay();
                 else if (tap.is(Zone_Climb))
                     startOrAgain();
+                else if (tap.is(Zone_StartDown)) {
+                    m_focus = Focus_Climb;
+                    stepStart(-1);
+                } else if (tap.is(Zone_StartUp)) {
+                    m_focus = Focus_Climb;
+                    stepStart(1);
+                }
                 else if (tap.is(Zone_Roster) && tap.index >= 0
                     && tap.index < int(m_roster.size())) {
                     m_focus = Focus_Roster;
@@ -182,8 +191,16 @@ namespace {
                     moveCursor(1);
                 if (input.accept())
                     toggle();
-            } else if (input.accept()) {
-                startOrAgain();
+            } else {
+                // On the button, left and right are the only two directions
+                // with nothing else to do, so they choose where the climb
+                // begins.
+                if (input.navLeft)
+                    stepStart(-1);
+                if (input.navRight)
+                    stepStart(1);
+                if (input.accept())
+                    startOrAgain();
             }
             // And X sets off from either, because it always has.
             if (input.pressed(HidNpadButton_X))
@@ -572,7 +589,14 @@ namespace {
             //
             // which is the trade: the shallow end of the tower is now
             // plain, and gear is the only thing that moves it.
-            m_floor = 1;
+            //
+            // A climb that begins higher up begins with nothing, and the
+            // floor it begins on is its first floor: no blessing for clearing
+            // it, the next one five floors later. Starting at thirty means
+            // arriving at forty with two where the long way carries eight,
+            // which is the price of the ten minutes it saved.
+            m_start = std::min(m_start, std::max(1, topStart()));
+            m_floor = m_start;
             beginFloor();
         }
 
@@ -611,13 +635,45 @@ namespace {
             m_clock = 0.0f;
         }
 
+        // The highest floor a climb may begin at: the last multiple of ten
+        // the week has already paid for.
+        //
+        // Tied to the week's payments rather than to the record on purpose.
+        // A floor pays its coin once a week, and the coin is a high-water
+        // mark rather than a list, so starting above it would mark the floors
+        // underneath as paid without anybody having climbed them - the week's
+        // coins would quietly vanish. Bounding the jump by what has already
+        // been paid means no coin ever moves: every floor you skip is a floor
+        // that has already paid this week.
+        //
+        // The shape that falls out of it is a good one. Monday resets the
+        // week and the first climb is the long one, from the bottom, which is
+        // what pays; afterwards you can drop straight into the deep floors
+        // for the gear, with none of the blessings and none of the coins.
+        static int topStart()
+        {
+            return int(QuestRecord::get().paidThisWeek() / 10) * 10;
+        }
+
+        // Walks 1, 10, 20 ... and back, and never past what the week allows.
+        void stepStart(int by)
+        {
+            int top = topStart();
+            int at = m_start <= 1 ? 0 : m_start / 10;
+            int most = top / 10;
+            at = std::min(most, std::max(0, at + by));
+            m_start = at == 0 ? 1 : at * 10;
+        }
+
         // On to the next floor, or to the blessing that comes before it.
         // A blessing always waits for you however the spoils were left -
         // carrying on by itself is about not reading the same drop screen
         // ten times, not about skipping the one decision in the climb.
         void onward()
         {
-            if (m_floor % 5 == 0 && offer())
+            // Not on the floor the climb began on: that one is this run's
+            // floor one, and floor one has never paid a blessing.
+            if (m_floor % 5 == 0 && m_floor != m_start && offer())
                 return;
             nextFloor();
         }
@@ -1763,14 +1819,58 @@ namespace {
             // The way up, as a button rather than as a hint alone: the
             // stick reaches it with up or down, a finger reaches it
             // directly, and X still does it from anywhere.
-            std::string go = tr("Climb");
+            //
+            // Where it starts is worked out every frame rather than only when
+            // it changes: the week can turn over while this screen is open,
+            // and Monday puts the top back to floor one.
+            int top = topStart();
+            if (m_start > std::max(1, top))
+                m_start = std::max(1, top);
+
+            if (onButton && top >= 10)
+                app.hint("L/R", "where to start");
+
+            std::string go = m_start > 1 ? format(tr("Climb from %d"), m_start)
+                                         : std::string(tr("Climb"));
             float width = ui::actionButtonWidth(r, go);
-            Rect climb { Renderer::DesignWidth - theme::edge - width, 156.0f, width,
-                72.0f };
+
+            // A chevron either side when there is anywhere else to start.
+            bool canPick = top >= 10;
+            constexpr float kChev = 44.0f;
+            constexpr float kChevGap = 12.0f;
+            float shift = canPick ? kChev + kChevGap : 0.0f;
+            Rect climb { Renderer::DesignWidth - theme::edge - width - shift, 156.0f,
+                width, 72.0f };
             app.touchZone(climb, Zone_Climb);
             ui::actionButton(r, climb, go, onButton,
                 app.touchHeld(Zone_Climb) ? 1.0f
                                           : (onButton ? 0.7f + 0.3f * m_pulse : 0.0f));
+
+            if (canPick) {
+                // Lit when there is something that way, dimmed when there is
+                // not, so the pair says where you are in the list as well as
+                // what the buttons do.
+                Rect down { climb.x - kChevGap - kChev, climb.y + 12.0f, kChev, 48.0f };
+                Rect up { climb.right() + kChevGap, climb.y + 12.0f, kChev, 48.0f };
+                app.touchZone(down.inset(-theme::s2, -theme::s2), Zone_StartDown);
+                app.touchZone(up.inset(-theme::s2, -theme::s2), Zone_StartUp);
+                ui::icon(r, down, ui::Icon::StepLeft,
+                    m_start > 1 ? theme::accent : theme::fg4, 3.5f);
+                ui::icon(r, up, ui::Icon::StepRight,
+                    m_start < top ? theme::accent : theme::fg4, 3.5f);
+            }
+
+            // What it costs, said before it is chosen rather than discovered
+            // at floor forty with nothing in hand.
+            if (m_start > 1) {
+                TextStyle small;
+                small.size = theme::textSm;
+                small.color = theme::fg3;
+                r.text(Rect { Renderer::DesignWidth - theme::edge - 560.0f,
+                           climb.bottom() + theme::s3, 560.0f, 28.0f },
+                    tr("Those floors have already paid, and the blessings start again."),
+                    small, Align::Right, VAlign::Top);
+            }
         }
 
         // Three, side by side, and the run keeps whichever one you take.
@@ -1970,7 +2070,7 @@ namespace {
                 ? std::string(tr("Not one floor. Cross a few more people and bring "
                                  "them along."))
                 : format(tr("%d floors, and %u coins for the ones you had not reached."),
-                    m_deepest, unsigned(m_earned));
+                    m_deepest - m_start + 1, unsigned(m_earned));
             if (m_found == 1) {
                 line += " ";
                 line += format(tr("One %s piece came back with you."),
@@ -2008,6 +2108,9 @@ namespace {
         std::vector<Member> m_units; // the party as it stands this climb
         int m_floor = 1;
         int m_deepest = 0;
+        // Where a climb begins. Always 1 until the week has paid for
+        // something higher; see topStart().
+        int m_start = 1;
         uint32_t m_best = 0;
         uint32_t m_earned = 0;   // the whole climb's purse
         uint32_t m_paidNow = 0;  // and what the floor just cleared was worth

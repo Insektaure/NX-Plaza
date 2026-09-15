@@ -520,6 +520,21 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         }
         break;
     }
+    case Icon::StepLeft:
+    case Icon::StepRight: {
+        // The same shape as the chevron and twice the size, mirrored the way
+        // the two arrows are: 0.30 of the box wide and 0.52 tall, which is a
+        // mark you can see beside a 72px button rather than beside a word.
+        float dir = which == Icon::StepLeft ? -1.0f : 1.0f;
+        int steps = 9;
+        for (int i = 0; i < steps; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(steps - 1);
+            float x = cx + dir * (-s * 0.15f + t * s * 0.30f);
+            r.circle(x, cy - s * 0.26f + t * s * 0.26f, weight * 0.62f, color);
+            r.circle(x, cy + s * 0.26f - t * s * 0.26f, weight * 0.62f, color);
+        }
+        break;
+    }
     case Icon::ArrowLeft:
     case Icon::ArrowRight: {
         // A shaft with two arms swept back from the point, drawn the same way

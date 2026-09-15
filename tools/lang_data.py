@@ -10654,3 +10654,86 @@ LANGS["zh_hant"].update({
     "never":
         "不會",
 })
+
+# ---- starting a climb higher up the tower.
+
+LANGS["de"].update({
+    "Climb from %d":
+        "Aufstieg ab %d",
+    "where to start":
+        "wo es losgeht",
+    "Those floors have already paid, and the blessings start again.":
+        "Diese Stockwerke haben schon gezahlt, und die Segen fangen von vorn an.",
+})
+LANGS["es"].update({
+    "Climb from %d":
+        "Subir desde %d",
+    "where to start":
+        "dónde empezar",
+    "Those floors have already paid, and the blessings start again.":
+        "Esos pisos ya han pagado, y las bendiciones empiezan de nuevo.",
+})
+LANGS["it"].update({
+    "Climb from %d":
+        "Sali dal %d",
+    "where to start":
+        "da dove partire",
+    "Those floors have already paid, and the blessings start again.":
+        "Quei piani hanno già pagato, e le benedizioni ricominciano.",
+})
+LANGS["nl"].update({
+    "Climb from %d":
+        "Klim vanaf %d",
+    "where to start":
+        "waar je begint",
+    "Those floors have already paid, and the blessings start again.":
+        "Die verdiepingen hebben al betaald, en de zegeningen beginnen opnieuw.",
+})
+LANGS["pt"].update({
+    "Climb from %d":
+        "Subir a partir de %d",
+    "where to start":
+        "onde começar",
+    "Those floors have already paid, and the blessings start again.":
+        "Esses pisos já pagaram, e as bênçãos recomeçam.",
+})
+LANGS["ru"].update({
+    "Climb from %d":
+        "Подъём с %d",
+    "where to start":
+        "откуда начать",
+    "Those floors have already paid, and the blessings start again.":
+        "Эти этажи уже заплатили, а благословения начинаются заново.",
+})
+LANGS["ja"].update({
+    "Climb from %d":
+        "%d かいからのぼる",
+    "where to start":
+        "どこからはじめるか",
+    "Those floors have already paid, and the blessings start again.":
+        "そのかいはもうしはらいずみで、めぐみもさいしょからです。",
+})
+LANGS["ko"].update({
+    "Climb from %d":
+        "%d 층부터 오르기",
+    "where to start":
+        "어디서 시작할지",
+    "Those floors have already paid, and the blessings start again.":
+        "그 층들은 이미 지급되었고, 축복도 처음부터 다시 시작합니다.",
+})
+LANGS["zh_hans"].update({
+    "Climb from %d":
+        "从第 %d 层开始",
+    "where to start":
+        "从哪里开始",
+    "Those floors have already paid, and the blessings start again.":
+        "那些层已经付过了，祝福也要重新开始。",
+})
+LANGS["zh_hant"].update({
+    "Climb from %d":
+        "從第 %d 層開始",
+    "where to start":
+        "從哪裡開始",
+    "Those floors have already paid, and the blessings start again.":
+        "那些層已經付過了，祝福也要重新開始。",
+})
