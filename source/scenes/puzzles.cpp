@@ -786,8 +786,8 @@ namespace {
         }
 
         // Room kept clear on the right of a row so the scrollbar never sits on
-        // top of the chevron.
-        static constexpr float kScrollGutter = 24.0f;
+        // top of the chevron + Room for the scrollbar.
+        static constexpr float kScrollGutter = 44.0f;
 
         PieceInventory m_inventory;
         ui::ScrollView m_scroll;

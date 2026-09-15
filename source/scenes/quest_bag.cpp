@@ -150,6 +150,8 @@ namespace {
     private:
         static constexpr float kTop = 236.0f;
         static constexpr float kRow = 92.0f;
+        // Room for the scrollbar.
+        static constexpr float kScrollGutter = 44.0f;
         static constexpr float kFilterY = 150.0f;
         static constexpr float kFilterH = 52.0f;
 
@@ -490,7 +492,7 @@ namespace {
             float y = list.y - m_scroll.offset();
             const QuestRecord& record = QuestRecord::get();
             for (int i = 0; i < int(m_shown.size()); i++) {
-                Rect row { list.x, y, list.w - 24.0f, kRow - theme::s2 };
+                Rect row { list.x, y, list.w - kScrollGutter, kRow - theme::s2 };
                 if (row.bottom() >= list.y - theme::focusRoom
                     && row.y <= list.bottom() + theme::focusRoom)
                     drawRow(app, r, row, i, record);

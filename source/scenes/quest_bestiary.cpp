@@ -100,11 +100,23 @@ namespace {
     private:
         static constexpr int kColumns = 6;
         static constexpr float kTop = 150.0f;
-        static constexpr float kCellW = 288.0f;
+        static constexpr float kCellW = 268.0f;
         static constexpr float kCellH = 268.0f;
-        static constexpr float kGap = 12.0f;
-        static constexpr float kHead = 132.0f;
-        static constexpr float kFooter = 104.0f;
+        // Wide enough for a focused card to grow into. ui::card lifts a
+        // focused one by up to 14px an edge and then draws its ring three
+        // outside that, so anything less than about thirty here puts the ring
+        // on top of the neighbours.
+        static constexpr float kGap = 28.0f;
+        static constexpr float kHead = 128.0f;
+        // The head's well is taller than the head: miiHead stands the chin on
+        // the bottom of what it is given and lets a beard hang below it, so
+        // the floor number needs clearing under the box as well as hair room
+        // above it.
+        static constexpr float kHeadY = 14.0f;
+        static constexpr float kNumberY = 172.0f;
+        static constexpr float kNameY = 200.0f;
+        // Clear of the hint strip, which owns the bottom 88 pixels.
+        static constexpr float kFooter = 160.0f;
 
         // Floors 1 to the deepest, plus the one after it: the next shadow is
         // the only unbeaten one worth drawing, and a wall of nine hundred
@@ -171,17 +183,29 @@ namespace {
             m_scroll.setBounds(grid.h, float(rows) * (kCellH + kGap));
 
             r.pushClipVertical(grid.inset(0.0f, -theme::focusRoom));
-            for (int i = 0; i < n; i++) {
-                float x = grid.x + float(i % kColumns) * (kCellW + kGap);
-                float y = grid.y + float(i / kColumns) * (kCellH + kGap)
-                    - m_scroll.offset();
-                Rect cell { x, y, kCellW, kCellH };
-                if (cell.bottom() < grid.y - theme::focusRoom
-                    || cell.y > grid.bottom() + theme::focusRoom)
-                    continue;
-                drawCell(app, r, cell, i);
+            // The highlighted one last, so its ring is drawn over its
+            // neighbours rather than under the next card painted.
+            for (int pass = 0; pass < 2; pass++) {
+                for (int i = 0; i < n; i++) {
+                    if ((i == m_pick) != (pass == 1))
+                        continue;
+                    float x = grid.x + float(i % kColumns) * (kCellW + kGap);
+                    float y = grid.y + float(i / kColumns) * (kCellH + kGap)
+                        - m_scroll.offset();
+                    Rect cell { x, y, kCellW, kCellH };
+                    if (cell.bottom() < grid.y - theme::focusRoom
+                        || cell.y > grid.bottom() + theme::focusRoom)
+                        continue;
+                    drawCell(app, r, cell, i);
+                }
             }
             r.popClip();
+
+            // The grid is six wide and the tower is deep.
+            if (m_scroll.scrollable()) {
+                ui::scrollbar(r, Rect { grid.right() - 8.0f, grid.y, 8.0f, grid.h },
+                    m_scroll.progress(), m_scroll.visibleFraction());
+            }
         }
 
         void drawCell(App& app, Renderer& r, const Rect& cell, int index)
@@ -197,7 +221,7 @@ namespace {
             // The reveal. Everywhere else in the app a shadow is one flat ink,
             // which is what makes it a shadow; the ones you have put down are
             // drawn as whoever was under it.
-            Rect head { cell.x + (cell.w - kHead) * 0.5f, cell.y + theme::s4, kHead,
+            Rect head { cell.x + (cell.w - kHead) * 0.5f, cell.y + kHeadY, kHead,
                 kHead };
             Mii face = shadowFace(floor);
             if (known) {
@@ -212,17 +236,18 @@ namespace {
             number.color = theme::fg4;
             number.tracking = theme::trackingWide;
             number.uppercase = true;
-            r.text(Rect { cell.x, head.bottom() + theme::s3, cell.w, 26.0f },
+            r.text(Rect { cell.x, cell.y + kNumberY, cell.w, 26.0f },
                 format(tr("Floor %d"), floor), number, Align::Center, VAlign::Top);
 
             TextStyle name;
             name.size = theme::textBase;
             name.weight = FontWeight::Bold;
             name.color = known ? theme::fg1 : theme::fg4;
-            r.text(Rect { cell.x + theme::s3, head.bottom() + theme::s3 + 30.0f,
-                       cell.w - theme::s5, 34.0f },
-                known ? shadowName(floor) : std::string("???"), name, Align::Center,
-                VAlign::Top);
+            r.text(Rect { cell.x + theme::s3, cell.y + kNameY, cell.w - theme::s5,
+                       34.0f },
+                r.ellipsize(known ? shadowName(floor) : std::string("???"), name,
+                    cell.w - theme::s5),
+                name, Align::Center, VAlign::Top);
 
             if (!known) {
                 TextStyle next;
@@ -230,7 +255,7 @@ namespace {
                 next.color = theme::accent;
                 next.tracking = theme::trackingWide;
                 next.uppercase = true;
-                r.text(Rect { cell.x, cell.bottom() - 34.0f, cell.w, 26.0f },
+                r.text(Rect { cell.x, cell.bottom() - 32.0f, cell.w, 26.0f },
                     tr("next"), next, Align::Center, VAlign::Top);
             }
         }
@@ -246,25 +271,35 @@ namespace {
             int floor = floorAt(std::min(m_pick, count() - 1));
             Boss boss = bossFor(floor);
 
-            Rect foot { theme::edge, Renderer::DesignHeight - kFooter + theme::s3,
-                Renderer::DesignWidth - theme::edge * 2.0f, 48.0f };
+            // Its own band, painted after the grid and running to the foot of
+            // the screen.
+            float top = Renderer::DesignHeight - kFooter;
+            r.rect(Rect { 0.0f, top, Renderer::DesignWidth, kFooter }, theme::bg0);
+            r.rect(Rect { 0.0f, top, Renderer::DesignWidth, theme::stroke },
+                theme::stroke1);
+
+            // Both halves on one line, centred in the band rather than sitting
+            // on its top edge, so the 26px name and the 22px numbers line up
+            // through their middles instead of through their tops.
+            Rect foot { theme::edge, top + theme::s4,
+                Renderer::DesignWidth - theme::edge * 2.0f, 44.0f };
 
             TextStyle who;
             who.size = theme::textBase;
             who.weight = FontWeight::Bold;
             who.color = beaten(floor) ? theme::fg1 : theme::fg3;
-            r.text(foot.x, foot.y,
+            r.text(foot,
                 beaten(floor) ? shadowName(floor) : std::string(tr("Not met yet")),
-                who);
+                who, Align::Left, VAlign::Middle);
 
             TextStyle stats;
             stats.size = theme::textSm;
             stats.color = theme::fg3;
             stats.tracking = theme::trackingWide;
-            r.text(Rect { foot.x, foot.y, foot.w, 34.0f },
+            r.text(foot,
                 format("HP %u   ATK %u   DEF %u   SPD %u", unsigned(boss.hp),
                     unsigned(boss.atk), unsigned(boss.def), unsigned(boss.spd)),
-                stats, Align::Right, VAlign::Top);
+                stats, Align::Right, VAlign::Middle);
         }
 
         // The same ink the fight draws a shadow in, so an unbeaten one on this

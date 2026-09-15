@@ -520,7 +520,8 @@ private:
         float y = box.y - m_scroll.offset();
 
         for (int i = 0; i < Row_Count; i++) {
-            Rect row { box.x, y, box.w, kRowHeight };
+            // Short of the scrollbar, which sits just outside this column.
+            Rect row { box.x, y, box.w - theme::s6, kRowHeight };
             app.touchZone(row, Zone_Row, i);
 
             // The cursor is either on the card or in this list, never both, so a

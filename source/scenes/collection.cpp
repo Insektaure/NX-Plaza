@@ -26,6 +26,7 @@ public:
     // Six across, matching the inbox tile rhythm. One column count for every
     // console: a Lite cannot dock, so there is no second layout.
     static constexpr int kColumns = 6;
+    static constexpr float kScrollGutter = 24.0f;
 
     void onEnter(App& app) override
     {
@@ -176,7 +177,11 @@ public:
 
         int columns = kColumns;
         float gap = theme::s4;
-        float cellWidth = (grid.w - gap * static_cast<float>(columns - 1))
+        // The scrollbar sits 14 outside this grid, and a focused card grows
+        // fourteen pixels an edge with its ring six beyond that.
+        // Without the gutter the ring of a card in the last column lands
+        // on the track.
+        float cellWidth = (grid.w - kScrollGutter - gap * static_cast<float>(columns - 1))
             / static_cast<float>(columns);
         // 404/300, the inbox tile's own ratio.
         float cellHeight = cellWidth * (404.0f / 300.0f);

@@ -201,7 +201,8 @@ namespace {
 
     private:
         static constexpr float kRowHeight = 120.0f;
-        static constexpr float kScrollGutter = 24.0f;
+        // Room for the scrollbar.
+        static constexpr float kScrollGutter = 44.0f;
         // As wide as the row is tall inside its insets: 120 less two 24px
         // insets leaves exactly 72, so the disc fills the height it has.
         static constexpr float kMedal = 72.0f;

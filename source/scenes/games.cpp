@@ -215,7 +215,8 @@ namespace {
 
     private:
         static constexpr float kRowHeight = 148.0f;
-        static constexpr float kScrollGutter = 24.0f;
+        // Room for the scrollbar.
+        static constexpr float kScrollGutter = 44.0f;
         static constexpr float kIconBox = 76.0f;
 
         void open(App& app, int index)

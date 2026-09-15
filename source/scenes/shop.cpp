@@ -219,7 +219,8 @@ namespace {
         // 667px the header leaves, so the grid shows ten and scrolls at eleven.
         static constexpr int kColumns = 5;
         static constexpr float kGap = theme::s5;
-        static constexpr float kScrollGutter = 24.0f;
+        // Room for the scrollbar.
+        static constexpr float kScrollGutter = 44.0f;
         // Inside a 312px tile: 24 inset, 96 of icon, 16, up to three 30.7px
         // lines of name ending at 228, and the pill on the floor at 250.
         static constexpr float kIconBox = 96.0f;

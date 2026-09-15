@@ -1084,7 +1084,10 @@ private:
         r.popClip();
 
         if (m_scroll.scrollable())
-            ui::scrollbar(r, Rect { rows.right() + theme::s4, rows.y, 8.0f, rows.h },
+            // s6 rather than s4: a focused row reaches twenty past its own
+            // edge once ui::card has grown it and drawn its ring, and the pane
+            // is capped at 1280 so there is room out here to give it.
+            ui::scrollbar(r, Rect { rows.right() + theme::s6, rows.y, 8.0f, rows.h },
                 m_scroll.progress(), m_scroll.visibleFraction());
 
 
