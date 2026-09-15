@@ -344,11 +344,12 @@ namespace {
 
             r.rect(r.viewport(), theme::scrim);
 
-            // 940 x 560 at y 200. The height is what the contents need and
-            // no more: the head is 220, the divider sits 40 under it, and the
-            // three rows of tiers end 18 short of the bottom padding.
+            // 940 x 600 at y 200. The column beside the head is 584 wide,
+            // which is one line of English and not one line of anything else,
+            // so the sentence in it wraps to two and the numbers under it
+            // start low enough to leave room.
             constexpr float kW = 940.0f;
-            constexpr float kH = 560.0f;
+            constexpr float kH = 600.0f;
             Rect panel { (Renderer::DesignWidth - kW) * 0.5f, 200.0f, kW, kH };
             app.touchZone(panel, Zone_Card);
             r.roundRect(panel, theme::r5, theme::bg1);
@@ -391,17 +392,21 @@ namespace {
                 TextStyle note;
                 note.size = theme::textSm;
                 note.color = theme::fg3;
-                r.text(x, inner.y + 108.0f,
+                // Wrapped rather than drawn on one line. At 22px this sentence is
+                // 583 pixels of English in a 584-pixel column, which is to say it
+                // fitted by one pixel in one language and ran off the card in the
+                // other eleven.
+                r.textWrapped(Rect { x, inner.y + 104.0f, inner.right() - x, 70.0f },
                     format(tr("%u more health and %u more attack than the floor below"),
                         unsigned(boss.hp - below.hp), unsigned(boss.atk - below.atk)),
-                    note);
+                    note, 2);
             }
 
             // ---- its numbers
             const char* labels[4] = { "HP", "ATK", "DEF", "SPD" };
             unsigned values[4] = { unsigned(boss.hp), unsigned(boss.atk),
                 unsigned(boss.def), unsigned(boss.spd) };
-            float statY = inner.y + 158.0f;
+            float statY = inner.y + 186.0f;
             float statW = (inner.right() - x) / 4.0f;
             for (int i = 0; i < 4; i++) {
                 Rect box { x + float(i) * statW, statY, statW, 62.0f };
@@ -419,7 +424,11 @@ namespace {
             }
 
             // ---- what it can leave
-            float y = head.bottom() + theme::s7;
+            //
+            // Under whichever column is longer: the head is 220 tall and the
+            // numbers beside it now end lower than that, so a divider hung
+            // off the head alone would be drawn through them.
+            float y = std::max(head.bottom(), statY + 62.0f) + theme::s6;
             ui::divider(r, inner.x, y, inner.w);
             y += theme::s5;
             r.text(inner.x, y, tr("what falls here"), eyebrow);
