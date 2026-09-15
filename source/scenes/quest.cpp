@@ -1868,10 +1868,11 @@ namespace {
                 TextStyle small;
                 small.size = theme::textSm;
                 small.color = theme::fg3;
-                r.text(Rect { Renderer::DesignWidth - theme::edge - 560.0f,
-                           climb.bottom() + theme::s3, 560.0f, 28.0f },
+                // Wrapped, and to the right of the party rather than over it.
+                r.textWrapped(Rect { Renderer::DesignWidth - theme::edge - 560.0f,
+                                  climb.bottom() + theme::s3, 560.0f, 70.0f },
                     tr("Those floors have already paid, and the blessings start again."),
-                    small, Align::Right, VAlign::Top);
+                    small, 2, Align::Right);
             }
         }
 
