@@ -192,9 +192,9 @@ namespace {
                 if (input.accept())
                     toggle();
             } else {
-                // On the button, left and right are the only two directions
-                // with nothing else to do, so they choose where the climb
-                // begins.
+                // On the button, left and right have nothing else to do, so
+                // they step the start floor as well - the chevrons are right
+                // there and the stick is already pointing at them.
                 if (input.navLeft)
                     stepStart(-1);
                 if (input.navRight)
@@ -202,9 +202,14 @@ namespace {
                 if (input.accept())
                     startOrAgain();
             }
-            // And X sets off from either, because it always has.
-            if (input.pressed(HidNpadButton_X))
-                startOrAgain();
+
+            // The shoulders choose where a climb begins, from anywhere on
+            // this screen rather than only with the button focused.
+            if (input.pressed(HidNpadButton_L))
+                stepStart(-1);
+            if (input.pressed(HidNpadButton_R))
+                stepStart(1);
+
             if (input.pressed(HidNpadButton_Y))
                 app.pushOverlay(makeQuestGearScene(party()));
             if (input.pressed(HidNpadButton_ZR))
@@ -1800,8 +1805,8 @@ namespace {
             app.hint("A",
                 onButton ? "climb"
                          : (inParty(m_cursor) ? "leave behind" : "bring along"));
-            if (!onButton)
-                app.hint("X", "climb");
+            if (topStart() >= 10)
+                app.hint("L/R", "where to start");
             app.hint("Y", "gear");
             app.hint("ZL", "the shadows");
             app.hint("ZR", "the bag");
@@ -1826,9 +1831,6 @@ namespace {
             int top = topStart();
             if (m_start > std::max(1, top))
                 m_start = std::max(1, top);
-
-            if (onButton && top >= 10)
-                app.hint("L/R", "where to start");
 
             std::string go = m_start > 1 ? format(tr("Climb from %d"), m_start)
                                          : std::string(tr("Climb"));
