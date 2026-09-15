@@ -192,6 +192,8 @@ namespace {
                 app.pushOverlay(makeQuestGearScene(party()));
             if (input.pressed(HidNpadButton_ZR))
                 app.pushOverlay(makeQuestBagScene());
+            if (input.pressed(HidNpadButton_ZL))
+                app.pushOverlay(makeQuestBestiaryScene());
         }
 
         void draw(App& app, Renderer& r) override
@@ -1012,7 +1014,8 @@ namespace {
             if (m_round % 4 == 0) {
                 m_sweep = 1.0f;
                 playSfx(Sfx::Crit);
-                note(tr("the shadow sweeps the whole party"));
+                note(format(tr("%s sweeps the whole party"),
+                    shadowName(m_floor).c_str()));
                 for (size_t i = 0; i < m_units.size(); i++) {
                     Member& u = m_units[i];
                     if (u.hp <= 0)
@@ -1052,7 +1055,8 @@ namespace {
             target->hp = std::max(0, target->hp - dealt);
             playSfx(crit ? Sfx::Crit : Sfx::Hit);
             popOver(unitRect(int(target - m_units.data())), dealt, false, crit);
-            note(format(tr("the shadow hits %s for %d"), target->name.c_str(), dealt),
+            note(format(tr("%s hits %s for %d"), shadowName(m_floor).c_str(),
+                     target->name.c_str(), dealt),
                 dealt, Tint_Taken);
             if (target->hp == 0)
                 fell(*target);
@@ -1249,6 +1253,22 @@ namespace {
                 r.glow(Rect { box.x - 60.0f, y - 40.0f, box.w + 120.0f, 90.0f },
                     theme::accentGlow.scaleAlpha(0.5f * m_flash), 1.6f);
             }
+
+            // Who it is, over its head. A shadow with a name is a thing you
+            // beat rather than a floor you passed.
+            //
+            // Above rather than below, and centred on kBossX rather than on
+            // the screen. Below its feet is where the ground shadow is drawn
+            // and where the health bar starts forty pixels later; above its
+            // head is clear from the turn order at 128 down to the top of the
+            // glow at 230.
+            TextStyle who;
+            who.size = theme::textMd;
+            who.weight = FontWeight::Bold;
+            who.color = beaten ? theme::fg3 : theme::fg1;
+            who.tracking = theme::trackingTight;
+            r.text(Rect { kBossX - 400.0f, 186.0f, 800.0f, 34.0f },
+                shadowName(m_floor), who, Align::Center, VAlign::Top);
 
             constexpr float kBarW = 620.0f;
             Rect bar { kBossX - kBarW * 0.5f, kBossGround + 40.0f, kBarW, 24.0f };
@@ -1727,6 +1747,7 @@ namespace {
             if (!onButton)
                 app.hint("X", "climb");
             app.hint("Y", "gear");
+            app.hint("ZL", "the shadows");
             app.hint("ZR", "the bag");
             app.hint("B", "back");
 

@@ -10217,8 +10217,8 @@ LANGS["de"].update({
     '%s hits for %d': '%s trifft für %d',
     '%s mends %s for %d': '%s heilt %s um %d',
     '%s saps the shadow for %d': '%s schwächt den Schatten um %d',
-    'the shadow hits %s for %d': 'der Schatten trifft %s für %d',
-    'the shadow sweeps the whole party': 'der Schatten fegt über die ganze Gruppe',
+    '%s hits %s for %d': '%s trifft %s für %d',
+    '%s sweeps the whole party': '%s fegt über die ganze Gruppe',
     'what happened': 'was geschehen ist',
 })
 LANGS["es"].update({
@@ -10226,8 +10226,8 @@ LANGS["es"].update({
     '%s hits for %d': '%s golpea por %d',
     '%s mends %s for %d': '%s cura a %s en %d',
     '%s saps the shadow for %d': '%s drena a la sombra en %d',
-    'the shadow hits %s for %d': 'la sombra golpea a %s por %d',
-    'the shadow sweeps the whole party': 'la sombra barre a todo el grupo',
+    '%s hits %s for %d': '%s golpea a %s por %d',
+    '%s sweeps the whole party': '%s barre a todo el grupo',
     'what happened': 'qué ha pasado',
 })
 LANGS["it"].update({
@@ -10235,8 +10235,8 @@ LANGS["it"].update({
     '%s hits for %d': '%s colpisce per %d',
     '%s mends %s for %d': '%s cura %s di %d',
     '%s saps the shadow for %d': "%s prosciuga l'ombra di %d",
-    'the shadow hits %s for %d': "l'ombra colpisce %s per %d",
-    'the shadow sweeps the whole party': "l'ombra travolge tutto il gruppo",
+    '%s hits %s for %d': '%s colpisce %s per %d',
+    '%s sweeps the whole party': '%s travolge tutto il gruppo',
     'what happened': 'cosa è successo',
 })
 LANGS["nl"].update({
@@ -10244,8 +10244,8 @@ LANGS["nl"].update({
     '%s hits for %d': '%s raakt voor %d',
     '%s mends %s for %d': '%s heelt %s voor %d',
     '%s saps the shadow for %d': '%s put de schaduw uit voor %d',
-    'the shadow hits %s for %d': 'de schaduw raakt %s voor %d',
-    'the shadow sweeps the whole party': 'de schaduw veegt over de hele groep',
+    '%s hits %s for %d': '%s raakt %s voor %d',
+    '%s sweeps the whole party': '%s veegt over de hele groep',
     'what happened': 'wat er gebeurde',
 })
 LANGS["pt"].update({
@@ -10253,8 +10253,8 @@ LANGS["pt"].update({
     '%s hits for %d': '%s acerta por %d',
     '%s mends %s for %d': '%s cura %s em %d',
     '%s saps the shadow for %d': '%s drena a sombra em %d',
-    'the shadow hits %s for %d': 'a sombra acerta %s por %d',
-    'the shadow sweeps the whole party': 'a sombra varre todo o grupo',
+    '%s hits %s for %d': '%s acerta %s por %d',
+    '%s sweeps the whole party': '%s varre todo o grupo',
     'what happened': 'o que aconteceu',
 })
 LANGS["ru"].update({
@@ -10262,8 +10262,8 @@ LANGS["ru"].update({
     '%s hits for %d': '%s бьёт на %d',
     '%s mends %s for %d': '%s лечит %s на %d',
     '%s saps the shadow for %d': '%s вытягивает из тени %d',
-    'the shadow hits %s for %d': 'тень бьёт %s на %d',
-    'the shadow sweeps the whole party': 'тень бьёт по всему отряду',
+    '%s hits %s for %d': '%s бьёт %s на %d',
+    '%s sweeps the whole party': '%s бьёт по всему отряду',
     'what happened': 'что произошло',
 })
 LANGS["ja"].update({
@@ -10271,8 +10271,8 @@ LANGS["ja"].update({
     '%s hits for %d': '%s のこうげき %d',
     '%s mends %s for %d': '%s が %s をかいふく %d',
     '%s saps the shadow for %d': '%s がかげをけずって %d',
-    'the shadow hits %s for %d': 'かげが %s にこうげき %d',
-    'the shadow sweeps the whole party': 'かげがパーティぜんいんをなぎはらう',
+    '%s hits %s for %d': '%s が %s にこうげき %d',
+    '%s sweeps the whole party': '%s がパーティぜんいんをなぎはらう',
     'what happened': 'なにがおきたか',
 })
 LANGS["ko"].update({
@@ -10280,8 +10280,8 @@ LANGS["ko"].update({
     '%s hits for %d': '%s 이(가) %d 피해',
     '%s mends %s for %d': '%s 이(가) %s 을(를) %d 회복',
     '%s saps the shadow for %d': '%s 이(가) 그림자를 %d 약화',
-    'the shadow hits %s for %d': '그림자가 %s 에게 %d 피해',
-    'the shadow sweeps the whole party': '그림자가 파티 전체를 휩씁니다',
+    '%s hits %s for %d': '%s 이(가) %s 에게 %d 피해',
+    '%s sweeps the whole party': '%s 이(가) 파티 전체를 휩씁니다',
     'what happened': '무슨 일이 있었나',
 })
 LANGS["zh_hans"].update({
@@ -10289,8 +10289,8 @@ LANGS["zh_hans"].update({
     '%s hits for %d': '%s 攻击造成 %d',
     '%s mends %s for %d': '%s 治疗 %s %d 点',
     '%s saps the shadow for %d': '%s 消耗暗影 %d',
-    'the shadow hits %s for %d': '暗影攻击 %s 造成 %d',
-    'the shadow sweeps the whole party': '暗影横扫整个队伍',
+    '%s hits %s for %d': '%s 攻击 %s 造成 %d',
+    '%s sweeps the whole party': '%s 横扫整个队伍',
     'what happened': '发生了什么',
 })
 LANGS["zh_hant"].update({
@@ -10298,8 +10298,8 @@ LANGS["zh_hant"].update({
     '%s hits for %d': '%s 攻擊造成 %d',
     '%s mends %s for %d': '%s 治療 %s %d 點',
     '%s saps the shadow for %d': '%s 消耗暗影 %d',
-    'the shadow hits %s for %d': '暗影攻擊 %s 造成 %d',
-    'the shadow sweeps the whole party': '暗影橫掃整個隊伍',
+    '%s hits %s for %d': '%s 攻擊 %s 造成 %d',
+    '%s sweeps the whole party': '%s 橫掃整個隊伍',
     'what happened': '發生了什麼',
 })
 
@@ -10457,4 +10457,77 @@ LANGS["zh_hant"].update({
         "其他所有",
     "A pass arriving, a coin, a trophy, and what happens in the games and the quest":
         "收到一張卡、一枚硬幣、一座獎盃，以及遊戲和探險裡發生的事",
+})
+
+# ---- the bestiary: the shadows you have put down, and the next one.
+
+LANGS["de"].update({
+    "%u shadows behind you": "%u Schatten hinter dir",
+    "No shadow has fallen yet": "Noch ist kein Schatten gefallen",
+    "Not met yet": "Noch nicht getroffen",
+    "next": "nächster",
+    "the shadows": "die Schatten",
+})
+LANGS["es"].update({
+    "%u shadows behind you": "%u sombras a tus espaldas",
+    "No shadow has fallen yet": "Aún no ha caído ninguna sombra",
+    "Not met yet": "Aún sin conocer",
+    "next": "siguiente",
+    "the shadows": "las sombras",
+})
+LANGS["it"].update({
+    "%u shadows behind you": "%u ombre alle tue spalle",
+    "No shadow has fallen yet": "Nessuna ombra è ancora caduta",
+    "Not met yet": "Non ancora incontrata",
+    "next": "prossima",
+    "the shadows": "le ombre",
+})
+LANGS["nl"].update({
+    "%u shadows behind you": "%u schaduwen achter je",
+    "No shadow has fallen yet": "Er is nog geen schaduw gevallen",
+    "Not met yet": "Nog niet ontmoet",
+    "next": "volgende",
+    "the shadows": "de schaduwen",
+})
+LANGS["pt"].update({
+    "%u shadows behind you": "%u sombras atrás de ti",
+    "No shadow has fallen yet": "Ainda não caiu nenhuma sombra",
+    "Not met yet": "Ainda por conhecer",
+    "next": "seguinte",
+    "the shadows": "as sombras",
+})
+LANGS["ru"].update({
+    "%u shadows behind you": "%u теней позади вас",
+    "No shadow has fallen yet": "Пока не пала ни одна тень",
+    "Not met yet": "Ещё не встречена",
+    "next": "следующая",
+    "the shadows": "тени",
+})
+LANGS["ja"].update({
+    "%u shadows behind you": "うしろにかげが %u たい",
+    "No shadow has fallen yet": "まだかげはたおれていません",
+    "Not met yet": "まだであっていない",
+    "next": "つぎ",
+    "the shadows": "かげたち",
+})
+LANGS["ko"].update({
+    "%u shadows behind you": "뒤에 남은 그림자 %u",
+    "No shadow has fallen yet": "아직 쓰러진 그림자가 없습니다",
+    "Not met yet": "아직 만나지 않음",
+    "next": "다음",
+    "the shadows": "그림자들",
+})
+LANGS["zh_hans"].update({
+    "%u shadows behind you": "身后有 %u 道暗影",
+    "No shadow has fallen yet": "还没有暗影倒下",
+    "Not met yet": "尚未遇见",
+    "next": "下一个",
+    "the shadows": "暗影们",
+})
+LANGS["zh_hant"].update({
+    "%u shadows behind you": "身後有 %u 道暗影",
+    "No shadow has fallen yet": "還沒有暗影倒下",
+    "Not met yet": "尚未遇見",
+    "next": "下一個",
+    "the shadows": "暗影們",
 })

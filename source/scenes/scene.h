@@ -105,6 +105,11 @@ std::unique_ptr<Scene> makeQuestGearScene(std::vector<GearPerson> party);
 // Everything the tower has given up, in one list. The gear screen shows
 // one peg for one person; this shows the lot, and needs to know nobody.
 std::unique_ptr<Scene> makeQuestBagScene();
+
+// Every shadow the tower has put in front of you, and the next one. Stores
+// nothing: a shadow's face and name both come off its floor number, and the
+// deepest floor reached is already on the record.
+std::unique_ptr<Scene> makeQuestBestiaryScene();
 std::unique_ptr<Scene> makePassportScene();
 std::unique_ptr<Scene> makeStatsScene();
 std::unique_ptr<Scene> makeSettingsScene();

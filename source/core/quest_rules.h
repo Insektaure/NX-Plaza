@@ -95,6 +95,14 @@ Boss bossFor(int floor);
 // rather than a shuffle.
 Mii shadowFace(int floor);
 
+// And the same name, for the same reason. Made of three syllables out of three
+// tables of sixteen, picked by a permutation of the floor rather than by a
+// hash of it: no two floors in the tower share a name, and neighbours look
+// unrelated. It is a proper noun, so - unlike almost everything else the app
+// says - it is the same in all twelve languages and costs the catalogues
+// nothing.
+std::string shadowName(int floor);
+
 // ----------------------------------------------------------------- the loot
 
 enum Quality : uint8_t {

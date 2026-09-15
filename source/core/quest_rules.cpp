@@ -9,6 +9,25 @@ namespace nxp {
 
 namespace {
 
+    // The syllables a shadow's name is made of: sixteen of each, so there are
+    // 4,096 names for 999 floors and the permutation that picks them never
+    // has to repeat. Invented on purpose - a proper noun is the same word in
+    // every language, which is the whole reason the names are not "the Pale
+    // Watcher": an adjective and a noun would need reordering per language,
+    // and the catalogues have no positional format specifiers to do it with.
+    const char* const kShadowHeads[16] = {
+        "Var", "Mor", "Kel", "Thas", "Ru", "Sel", "Bran", "Oth",
+        "Ny", "Dre", "Iss", "Gorm", "Ael", "Vex", "Tor", "Umb"
+    };
+    const char* const kShadowMiddles[16] = {
+        "", "a", "en", "i", "ul", "or", "esh", "ya",
+        "o", "ae", "is", "ur", "aer", "av", "yn", "ou"
+    };
+    const char* const kShadowTails[16] = {
+        "ka", "dros", "eth", "un", "mir", "sha", "ax", "il",
+        "rok", "ven", "tha", "os", "zar", "neth", "gorn", "ric"
+    };
+
     uint32_t randomBelow(uint32_t n)
     {
         uint32_t bits = 0;
@@ -188,6 +207,27 @@ Mii shadowFace(int floor)
     Pass p;
     p.portrait = 0x9E3779B9u * uint32_t(floor) + 0x85EBCA6Bu;
     return p.face();
+}
+
+std::string shadowName(int floor)
+{
+    // A four-round Feistel over twelve bits. Every round is invertible,
+    // which makes the whole thing a permutation - 999 floors, 999 different
+    // names, no repeat anywhere in the tower - and the rounds are nonlinear
+    // enough that floor eight and floor nine are strangers.
+    uint32_t x = uint32_t(std::min(4095, std::max(1, floor)));
+    uint32_t l = (x >> 6) & 63u;
+    uint32_t r = x & 63u;
+    const uint32_t keys[4] = { 0x2Du, 0x17u, 0x3Bu, 0x09u };
+    for (uint32_t k : keys) {
+        uint32_t next = l ^ (((r * 29u + k) ^ (r >> 2)) & 63u);
+        l = r;
+        r = next;
+    }
+    uint32_t i = ((l << 6) | r) & 4095u;
+
+    return std::string(kShadowHeads[i & 15u]) + kShadowMiddles[(i >> 4) & 15u]
+        + kShadowTails[(i >> 8) & 15u];
 }
 
 // ----------------------------------------------------------------- the loot
