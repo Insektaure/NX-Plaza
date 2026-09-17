@@ -10993,3 +10993,86 @@ LANGS["zh_hant"].update({
     "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
         "這個等級沒有多餘：你擁有的都在裝備中、已鎖定，或者根本沒有。",
 })
+
+# ---- and the peg the rank sweep is working on.
+
+LANGS["de"].update({
+    "everything in the bag":
+        "der ganze Beutel",
+    "only what goes on the %s peg":
+        "nur was auf den Platz %s gehört",
+    "Throw away %zu %s pieces from the %s peg?":
+        "%zu Stücke vom Rang %s vom Platz %s wegwerfen?",
+})
+LANGS["es"].update({
+    "everything in the bag":
+        "toda la bolsa",
+    "only what goes on the %s peg":
+        "solo lo que va en la ranura %s",
+    "Throw away %zu %s pieces from the %s peg?":
+        "¿Tirar %zu piezas de rango %s de la ranura %s?",
+})
+LANGS["it"].update({
+    "everything in the bag":
+        "tutta la sacca",
+    "only what goes on the %s peg":
+        "solo quello che va nello slot %s",
+    "Throw away %zu %s pieces from the %s peg?":
+        "Buttare %zu pezzi di rango %s dallo slot %s?",
+})
+LANGS["nl"].update({
+    "everything in the bag":
+        "de hele tas",
+    "only what goes on the %s peg":
+        "alleen wat op plek %s hoort",
+    "Throw away %zu %s pieces from the %s peg?":
+        "%zu stukken van rang %s van plek %s weggooien?",
+})
+LANGS["pt"].update({
+    "everything in the bag":
+        "o saco inteiro",
+    "only what goes on the %s peg":
+        "só o que vai no lugar %s",
+    "Throw away %zu %s pieces from the %s peg?":
+        "Deitar fora %zu peças de nível %s do lugar %s?",
+})
+LANGS["ru"].update({
+    "everything in the bag":
+        "весь мешок",
+    "only what goes on the %s peg":
+        "только то, что идёт в слот %s",
+    "Throw away %zu %s pieces from the %s peg?":
+        "Выбросить %zu предметов ранга %s из слота %s?",
+})
+LANGS["ja"].update({
+    "everything in the bag":
+        "ふくろぜんぶ",
+    "only what goes on the %s peg":
+        "%s のスロットにつけるものだけ",
+    "Throw away %zu %s pieces from the %s peg?":
+        "%zu てんの %s ランクを %s スロットからすてますか？",
+})
+LANGS["ko"].update({
+    "everything in the bag":
+        "가방 전체",
+    "only what goes on the %s peg":
+        "%s 칸에 들어가는 것만",
+    "Throw away %zu %s pieces from the %s peg?":
+        "%zu개의 %s 등급 장비를 %s 칸에서 버릴까요?",
+})
+LANGS["zh_hans"].update({
+    "everything in the bag":
+        "整个背包",
+    "only what goes on the %s peg":
+        "只包括放在 %s 栏位的",
+    "Throw away %zu %s pieces from the %s peg?":
+        "丢弃 %zu 件 %s 装备（%s 栏位）？",
+})
+LANGS["zh_hant"].update({
+    "everything in the bag":
+        "整個背包",
+    "only what goes on the %s peg":
+        "只包括放在 %s 欄位的",
+    "Throw away %zu %s pieces from the %s peg?":
+        "丟棄 %zu 件 %s 裝備（%s 欄位）？",
+})

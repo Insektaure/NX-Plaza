@@ -180,13 +180,15 @@ public:
     // about what "spare" means.
     bool spare(const Item& item) const;
 
-    // How many of a rank are spare. Const, because a screen that only wants
-    // the number should not need a bag it could change.
-    size_t spareOfRank(uint8_t quality) const;
+    // How many of a rank are spare, on one peg or on all of them - a `slot`
+    // outside 0..Slot_Count-1 means every peg. Const, because a screen that
+    // only wants the number should not need a bag it could change.
+    size_t spareOfRank(uint8_t quality, int slot) const;
 
-    // And the same rank, thrown away. Returns how many went, which is always
-    // what spareOfRank() said a moment earlier.
-    size_t clearRank(uint8_t quality);
+    // And the same rank on the same peg, thrown away. Returns how many went,
+    // which is always what spareOfRank() said a moment earlier for the same
+    // two arguments.
+    size_t clearRank(uint8_t quality, int slot);
 
     // Everything unworn that is worse than the piece on the same peg of
     // `gear` - which is to say everything that could never be an upgrade for

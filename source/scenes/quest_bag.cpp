@@ -280,6 +280,12 @@ namespace {
             record.flush();
         }
 
+        // Which peg the sweep works on: the one the list is filtered to, or
+        // all of them when it is not. The panel says which, every time, since
+        // a bulk delete whose reach depends on a chip somebody tapped two
+        // minutes ago is how things go missing.
+        int sweepSlot() const { return m_filter == 0 ? -1 : m_filter - 1; }
+
         // Everything of one rank at once, which at two hundred and fifty
         // pieces is the difference between tidying and not bothering.
         //
@@ -293,7 +299,7 @@ namespace {
             m_rank = 0;
             // Open on something worth doing rather than on an empty rank.
             for (uint8_t q = 0; q < Quality_Count; q++) {
-                if (QuestRecord::get().spareOfRank(q) > 0) {
+                if (QuestRecord::get().spareOfRank(q, sweepSlot()) > 0) {
                     m_rank = q;
                     break;
                 }
@@ -303,7 +309,8 @@ namespace {
         void askRank(App& app)
         {
             uint8_t quality = uint8_t(std::min(m_rank, int(Quality_Count) - 1));
-            size_t many = QuestRecord::get().spareOfRank(quality);
+            int slot = sweepSlot();
+            size_t many = QuestRecord::get().spareOfRank(quality, slot);
             if (many == 0) {
                 app.toast(tr("Nothing to throw away"),
                     tr("Nothing of that rank is spare: what you have is worn, "
@@ -311,12 +318,16 @@ namespace {
                 return;
             }
             std::string rank = tr(qualityName(quality));
-            app.askConfirm(format(tr("Throw away %zu %s pieces?"), many, rank.c_str()),
+            std::string title = slot < 0
+                ? format(tr("Throw away %zu %s pieces?"), many, rank.c_str())
+                : format(tr("Throw away %zu %s pieces from the %s peg?"), many,
+                    rank.c_str(), tr(slotName(uint8_t(slot))));
+            app.askConfirm(title,
                 tr("Nothing worn and nothing locked goes with them. It does not "
                    "come back."),
-                tr("Throw them away"), [quality]() {
+                tr("Throw them away"), [quality, slot]() {
                     QuestRecord& record = QuestRecord::get();
-                    record.clearRank(quality);
+                    record.clearRank(quality, slot);
                     record.flush();
                 });
             m_ranks = false;
@@ -381,7 +392,7 @@ namespace {
 
             constexpr float kRow = 64.0f;
             float boxW = 720.0f;
-            float boxH = 44.0f + theme::s5 + kRow * float(Quality_Count)
+            float boxH = 44.0f + 34.0f + theme::s5 + kRow * float(Quality_Count)
                 + theme::s7 * 2.0f;
             Rect box { Renderer::DesignWidth * 0.5f - boxW * 0.5f,
                 Renderer::DesignHeight * 0.5f - boxH * 0.5f, boxW, boxH };
@@ -397,13 +408,25 @@ namespace {
             r.text(Rect { inner.x, inner.y, inner.w, 44.0f },
                 tr("Throw away a whole rank"), head, Align::Center, VAlign::Top);
 
+            // How far it reaches, under the title and in the same breath as
+            // the counts, which are the same number read the same way.
+            int slot = sweepSlot();
+            TextStyle scope;
+            scope.size = theme::textSm;
+            scope.color = theme::fg3;
+            r.text(Rect { inner.x, inner.y + 46.0f, inner.w, 28.0f },
+                slot < 0 ? std::string(tr("everything in the bag"))
+                         : format(tr("only what goes on the %s peg"),
+                             tr(slotName(uint8_t(slot)))),
+                scope, Align::Center, VAlign::Top);
+
             const QuestRecord& record = QuestRecord::get();
-            float y = inner.y + 44.0f + theme::s5;
+            float y = inner.y + 44.0f + 34.0f + theme::s5;
             for (uint8_t q = 0; q < Quality_Count; q++) {
                 Rect row { inner.x, y + float(q) * kRow, inner.w, kRow - theme::s2 };
                 app.touchZone(row, Zone_Rank, q);
                 bool here = int(q) == m_rank;
-                size_t many = record.spareOfRank(q);
+                size_t many = record.spareOfRank(q, slot);
                 if (here)
                     ui::card(r, row, 1.0f, theme::bg2, theme::r2);
 

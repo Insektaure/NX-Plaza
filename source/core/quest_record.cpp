@@ -535,27 +535,40 @@ bool QuestRecord::spare(const Item& item) const
     return !wearer(item.id, ignored);
 }
 
-size_t QuestRecord::spareOfRank(uint8_t quality) const
+namespace {
+    // One rule for "is this one of the ones we mean", so the count and the
+    // deletion cannot read the peg differently either.
+    bool onPeg(const Item& item, uint8_t quality, int slot)
+    {
+        if (item.quality != quality)
+            return false;
+        return slot < 0 || slot >= Slot_Count || int(item.slot) == slot;
+    }
+}
+
+size_t QuestRecord::spareOfRank(uint8_t quality, int slot) const
 {
     size_t many = 0;
     for (const Item& item : m_items) {
-        if (item.quality == quality && spare(item))
+        if (onPeg(item, quality, slot) && spare(item))
             many++;
     }
     return many;
 }
 
-size_t QuestRecord::clearRank(uint8_t quality)
+size_t QuestRecord::clearRank(uint8_t quality, int slot)
 {
     std::vector<uint16_t> doomed;
     for (const Item& item : m_items) {
-        if (item.quality == quality && spare(item))
+        if (onPeg(item, quality, slot) && spare(item))
             doomed.push_back(item.id);
     }
     for (uint16_t id : doomed)
         discard(id);
-    if (!doomed.empty())
-        LOG("quest: threw away %zu of rank %u", doomed.size(), unsigned(quality));
+    if (!doomed.empty()) {
+        LOG("quest: threw away %zu of rank %u on peg %d", doomed.size(),
+            unsigned(quality), slot);
+    }
     return doomed.size();
 }
 
