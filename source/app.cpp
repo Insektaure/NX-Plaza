@@ -940,16 +940,23 @@ void App::drawDialog(Renderer& r)
 
     Rect inner = box.inset(theme::s8, theme::s7);
 
+    // Two lines at most, and the body starts under however many it used, so a
+    // short question keeps the old layout exactly.
     TextStyle title;
     title.size = theme::textLg;
     title.weight = FontWeight::Bold;
     title.color = theme::fg1;
-    r.text(inner.x, inner.y, m_dialog.title, title);
+    float titleHeight = r.textWrapped(Rect { inner.x, inner.y, inner.w, 120.0f },
+        m_dialog.title, title, 2);
 
     TextStyle body;
     body.size = theme::textBase;
     body.color = theme::fg2;
-    r.textWrapped(Rect { inner.x, inner.y + 62.0f, inner.w, 150.0f }, m_dialog.body, body, 3);
+    float bodyY = inner.y + std::max(titleHeight + theme::s3, 62.0f);
+    // Whatever is left above the buttons, which own the bottom 96 and the
+    // space before them.
+    float bodyRoom = std::max(0.0f, inner.bottom() - 96.0f - theme::s5 - bodyY);
+    r.textWrapped(Rect { inner.x, bodyY, inner.w, bodyRoom }, m_dialog.body, body, 3);
 
     float buttonWidth = (inner.w - theme::s4) * 0.5f;
     Rect confirm { inner.x, inner.bottom() - 96.0f, buttonWidth, 96.0f };
