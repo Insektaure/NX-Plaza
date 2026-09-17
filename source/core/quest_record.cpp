@@ -29,11 +29,21 @@ namespace {
     // week.
     constexpr size_t kHead = 4 + 2 + 2 + 4 + 4 + 4 + 2 + 2 + 2 + 2 + 2 + 2;
 
-    // Mondays since the epoch. The epoch itself was a Thursday, so the shift
-    // is what makes a week turn at Monday midnight UTC rather than at
-    // Thursday midnight - the sort of thing nobody notices until a reset
-    // lands in the middle of a Wednesday evening.
-    constexpr uint64_t kMondayShift = 345600;
+    // Mondays since the epoch. The epoch itself was a Thursday, so a shift is
+    // what moves the boundary off Thursday midnight - the sort of thing
+    // nobody notices until a reset lands in the middle of a Wednesday
+    // evening.
+    //
+    // Three days, not four. Four was the distance from the epoch to the first
+    // Monday, which is the obvious number and the wrong one: the boundary
+    // falls where (t + shift) divides the week exactly, so a shift of four
+    // days put it a day *early*, on Sunday midnight.
+    // 1970-01-05 was a Monday, and
+    //
+    //     (345600 + 345600) % 604800 = 86400   a day out
+    //     (345600 + 259200) % 604800 = 0       the boundary
+    //
+    constexpr uint64_t kMondayShift = 259200;
     constexpr uint64_t kWeekSeconds = 604800;
     constexpr size_t kItemBytes = 8;
     constexpr size_t kHash = 32;
@@ -417,6 +427,13 @@ bool QuestRecord::wearer(uint16_t itemId, std::string& owner) const
         }
     }
     return false;
+}
+
+uint64_t QuestRecord::weekEndsAt() const
+{
+    if (m_week == 0)
+        return 0;
+    return (uint64_t(m_week) + 1) * kWeekSeconds - kMondayShift;
 }
 
 void QuestRecord::notePlazaTime(uint64_t serverTime)

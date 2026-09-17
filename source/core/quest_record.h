@@ -80,6 +80,16 @@ public:
     // answered even once.
     uint32_t week() const { return m_week; }
 
+    // When this week turns, in unix seconds; 0 when no week is known yet.
+    //
+    // For saying how long is left and nothing else. The week itself turns on
+    // the plaza's clock, which is the only one that can be trusted to mint a
+    // coin - this is worked out from the week the plaza last gave us and then
+    // compared against the console's own clock, which is wrong on plenty of
+    // consoles. A countdown that is an hour out is a countdown; a coin that
+    // is an hour out is a bug.
+    uint64_t weekEndsAt() const;
+
     // The deepest floor already paid for this week.
     uint32_t paidThisWeek() const { return m_paidThisWeek; }
 

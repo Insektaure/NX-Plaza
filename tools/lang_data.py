@@ -10737,3 +10737,56 @@ LANGS["zh_hant"].update({
     "Those floors have already paid, and the blessings start again.":
         "那些層已經付過了，祝福也要重新開始。",
 })
+
+# ---- how long the quest's week has left.
+
+LANGS["de"].update({
+    "resets in %u days": "Reset in %u Tagen",
+    "resets in %u hours": "Reset in %u Stunden",
+    "resets within the hour": "Reset noch in dieser Stunde",
+})
+LANGS["es"].update({
+    "resets in %u days": "se reinicia en %u días",
+    "resets in %u hours": "se reinicia en %u horas",
+    "resets within the hour": "se reinicia dentro de una hora",
+})
+LANGS["it"].update({
+    "resets in %u days": "si azzera fra %u giorni",
+    "resets in %u hours": "si azzera fra %u ore",
+    "resets within the hour": "si azzera entro un'ora",
+})
+LANGS["nl"].update({
+    "resets in %u days": "reset over %u dagen",
+    "resets in %u hours": "reset over %u uur",
+    "resets within the hour": "reset binnen het uur",
+})
+LANGS["pt"].update({
+    "resets in %u days": "reinicia em %u dias",
+    "resets in %u hours": "reinicia em %u horas",
+    "resets within the hour": "reinicia dentro de uma hora",
+})
+LANGS["ru"].update({
+    "resets in %u days": "сброс через %u дн.",
+    "resets in %u hours": "сброс через %u ч.",
+    "resets within the hour": "сброс в течение часа",
+})
+LANGS["ja"].update({
+    "resets in %u days": "%u にちごにリセット",
+    "resets in %u hours": "%u じかんごにリセット",
+    "resets within the hour": "1じかんいないにリセット",
+})
+LANGS["ko"].update({
+    "resets in %u days": "%u일 후 초기화",
+    "resets in %u hours": "%u시간 후 초기화",
+    "resets within the hour": "한 시간 안에 초기화",
+})
+LANGS["zh_hans"].update({
+    "resets in %u days": "%u 天后重置",
+    "resets in %u hours": "%u 小时后重置",
+    "resets within the hour": "一小时内重置",
+})
+LANGS["zh_hant"].update({
+    "resets in %u days": "%u 天後重置",
+    "resets in %u hours": "%u 小時後重置",
+    "resets within the hour": "一小時內重置",
+})

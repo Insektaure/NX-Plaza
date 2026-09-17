@@ -1205,6 +1205,25 @@ namespace {
 
         // ------------------------------------------------------ the painting
 
+        // How long this week has left, in the largest unit that still says
+        // something. Days while there are two of them, hours after that, and
+        // "within the hour" at the end rather than a zero that sits there for
+        // sixty minutes.
+        static std::string untilReset(const QuestRecord& record)
+        {
+            uint64_t ends = record.weekEndsAt();
+            uint64_t now = nowUnix();
+            if (ends == 0 || now == 0 || ends <= now)
+                return std::string();
+
+            uint64_t left = ends - now;
+            if (left >= 2 * 86400)
+                return format(tr("resets in %u days"), unsigned(left / 86400));
+            if (left >= 2 * 3600)
+                return format(tr("resets in %u hours"), unsigned(left / 3600));
+            return std::string(tr("resets within the hour"));
+        }
+
         void drawHeader(Renderer& r) const
         {
             TextStyle label;
@@ -1261,6 +1280,20 @@ namespace {
                              : format(tr("floors up to %u have paid this week"),
                                  unsigned(paid)));
             r.text(right, week, note, Align::Right, VAlign::Top);
+
+            // And when it turns over, on a line of its own rather than tacked
+            // onto that one. Both together is a long sentence in English and
+            // a longer one in German, and a long right-aligned line at this
+            // height reaches back under the turn order.
+            //
+            // The week itself is the plaza's; this counts down against the
+            // console's own clock, so it is a sentence rather than a number
+            // anything hangs on.
+            std::string left = untilReset(record);
+            if (!left.empty()) {
+                right.y = 144.0f;
+                r.text(right, left, note, Align::Right, VAlign::Top);
+            }
         }
 
         Rect bossRect() const
@@ -1841,7 +1874,7 @@ namespace {
             constexpr float kChev = 44.0f;
             constexpr float kChevGap = 12.0f;
             float shift = canPick ? kChev + kChevGap : 0.0f;
-            Rect climb { Renderer::DesignWidth - theme::edge - width - shift, 156.0f,
+            Rect climb { Renderer::DesignWidth - theme::edge - width - shift, 180.0f,
                 width, 72.0f };
             app.touchZone(climb, Zone_Climb);
             ui::actionButton(r, climb, go, onButton,
