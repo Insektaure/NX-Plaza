@@ -38,6 +38,7 @@ namespace {
             Zone_Filter,
             Zone_Back,
             Zone_Forge,
+            Zone_Rank,
         };
 
         bool coversChrome() const override { return true; }
@@ -101,6 +102,23 @@ namespace {
                 return;
             }
 
+            if (m_ranks) {
+                if (input.back()) {
+                    m_ranks = false;
+                } else if (input.navUp) {
+                    m_rank = (m_rank + Quality_Count - 1) % Quality_Count;
+                } else if (input.navDown) {
+                    m_rank = (m_rank + 1) % Quality_Count;
+                } else if (input.accept()
+                    || (tapped && tap.is(Zone_Rank) && tap.index >= 0
+                        && tap.index < Quality_Count)) {
+                    if (tapped)
+                        m_rank = tap.index;
+                    askRank(app);
+                }
+                return;
+            }
+
             if (input.back()) {
                 app.popOverlay();
                 return;
@@ -113,6 +131,8 @@ namespace {
                 step(-1);
             if (input.navDown)
                 step(1);
+            if (input.accept())
+                openRanks();
             if (input.pressed(HidNpadButton_ZL))
                 flipLock();
             if (input.pressed(HidNpadButton_X))
@@ -134,6 +154,15 @@ namespace {
                 return;
             }
 
+            if (m_ranks) {
+                drawHeader(app, r);
+                drawFilters(app, r);
+                drawList(app, r);
+                drawRanks(app, r);
+                return;
+            }
+
+            app.hint("A", "clear a rank");
             if (!m_shown.empty()) {
                 app.hint("ZL", m_shown[size_t(m_pick)].locked ? "unlock" : "lock");
                 if (!m_shown[size_t(m_pick)].locked)
@@ -156,8 +185,8 @@ namespace {
         static constexpr float kFilterH = 52.0f;
 
         // Everything that passes the filter, the best of it first. Rebuilt
-        // every frame because throwing something away changes it and the
-        // list is at most a hundred and twenty rows of eight bytes.
+        // every frame because throwing something away changes it, and a full
+        // bag is 250 rows of eight bytes.
         void gather()
         {
             m_shown.clear();
@@ -251,6 +280,48 @@ namespace {
             record.flush();
         }
 
+        // Everything of one rank at once, which at two hundred and fifty
+        // pieces is the difference between tidying and not bothering.
+        //
+        // The two exemptions are the point of it: a locked piece and a worn
+        // piece both stay, whatever their rank, and the number in the
+        // question comes from the same walk that does the throwing away - so
+        // "throw away 42 common pieces" throws away exactly those forty-two.
+        void openRanks()
+        {
+            m_ranks = true;
+            m_rank = 0;
+            // Open on something worth doing rather than on an empty rank.
+            for (uint8_t q = 0; q < Quality_Count; q++) {
+                if (QuestRecord::get().spareOfRank(q) > 0) {
+                    m_rank = q;
+                    break;
+                }
+            }
+        }
+
+        void askRank(App& app)
+        {
+            uint8_t quality = uint8_t(std::min(m_rank, int(Quality_Count) - 1));
+            size_t many = QuestRecord::get().spareOfRank(quality);
+            if (many == 0) {
+                app.toast(tr("Nothing to throw away"),
+                    tr("Nothing of that rank is spare: what you have is worn, "
+                       "locked, or not there at all."));
+                return;
+            }
+            std::string rank = tr(qualityName(quality));
+            app.askConfirm(format(tr("Throw away %zu %s pieces?"), many, rank.c_str()),
+                tr("Nothing worn and nothing locked goes with them. It does not "
+                   "come back."),
+                tr("Throw them away"), [quality]() {
+                    QuestRecord& record = QuestRecord::get();
+                    record.clearRank(quality);
+                    record.flush();
+                });
+            m_ranks = false;
+        }
+
         void throwAway(App& app)
         {
             if (m_shown.empty())
@@ -298,6 +369,60 @@ namespace {
         }
 
         // ---------------------------------------------------------- drawing
+
+        // Six rows, one a rank, each saying how many are actually spare.
+        // The count is what makes it usable: "common 42" is a decision and
+        // "common" is a gamble.
+        void drawRanks(App& app, Renderer& r)
+        {
+            app.hint("A", "throw them away");
+            app.hint("B", "close");
+            r.rect(r.viewport(), theme::scrim);
+
+            constexpr float kRow = 64.0f;
+            float boxW = 720.0f;
+            float boxH = 44.0f + theme::s5 + kRow * float(Quality_Count)
+                + theme::s7 * 2.0f;
+            Rect box { Renderer::DesignWidth * 0.5f - boxW * 0.5f,
+                Renderer::DesignHeight * 0.5f - boxH * 0.5f, boxW, boxH };
+            r.roundRect(box, theme::r5, theme::bg1);
+            r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
+            Rect inner = box.inset(theme::s7, theme::s7);
+
+            TextStyle head;
+            head.size = theme::textLg;
+            head.weight = FontWeight::Bold;
+            head.color = theme::fg1;
+            head.tracking = theme::trackingTight;
+            r.text(Rect { inner.x, inner.y, inner.w, 44.0f },
+                tr("Throw away a whole rank"), head, Align::Center, VAlign::Top);
+
+            const QuestRecord& record = QuestRecord::get();
+            float y = inner.y + 44.0f + theme::s5;
+            for (uint8_t q = 0; q < Quality_Count; q++) {
+                Rect row { inner.x, y + float(q) * kRow, inner.w, kRow - theme::s2 };
+                app.touchZone(row, Zone_Rank, q);
+                bool here = int(q) == m_rank;
+                size_t many = record.spareOfRank(q);
+                if (here)
+                    ui::card(r, row, 1.0f, theme::bg2, theme::r2);
+
+                Rect pad = row.inset(theme::s5, 0.0f);
+                TextStyle rank;
+                rank.size = theme::textBase;
+                rank.weight = FontWeight::Bold;
+                rank.color = many > 0 ? ui::qualityColour(q) : theme::fg4;
+                r.text(pad, tr(qualityName(q)), rank, Align::Left, VAlign::Middle);
+
+                TextStyle count;
+                count.size = theme::textBase;
+                count.color = many > 0 ? theme::fg2 : theme::fg4;
+                r.text(pad,
+                    many > 0 ? format(tr("%zu spare"), many)
+                             : std::string(tr("none spare")),
+                    count, Align::Right, VAlign::Middle);
+            }
+        }
 
         // The piece, and what a whetstone made of it, over a veil - the
         // same shape the quest uses when it offers a blessing. The roll is
@@ -566,6 +691,8 @@ namespace {
         Item m_now {};        // what the newest roll made of it; id 0 until then
         bool m_forge = false; // whether the whetstone overlay is up
 
+        bool m_ranks = false; // the "throw away a whole rank" panel
+        int m_rank = 0;
         std::vector<Item> m_shown;
         std::vector<std::pair<std::string, std::string>> m_names; // id -> handle
         int m_filter = 0; // 0 is everything, otherwise the slot plus one

@@ -523,6 +523,42 @@ uint16_t QuestRecord::worstSpare() const
     return worst;
 }
 
+bool QuestRecord::spare(const Item& item) const
+{
+    // The two exemptions, in the order somebody would say them out loud.
+    // discard() refuses a locked piece as well, which makes the first of
+    // these belt and braces - but a count that included pieces the deletion
+    // then refused would promise to throw away forty and throw away thirty.
+    if (item.locked)
+        return false;
+    std::string ignored;
+    return !wearer(item.id, ignored);
+}
+
+size_t QuestRecord::spareOfRank(uint8_t quality) const
+{
+    size_t many = 0;
+    for (const Item& item : m_items) {
+        if (item.quality == quality && spare(item))
+            many++;
+    }
+    return many;
+}
+
+size_t QuestRecord::clearRank(uint8_t quality)
+{
+    std::vector<uint16_t> doomed;
+    for (const Item& item : m_items) {
+        if (item.quality == quality && spare(item))
+            doomed.push_back(item.id);
+    }
+    for (uint16_t id : doomed)
+        discard(id);
+    if (!doomed.empty())
+        LOG("quest: threw away %zu of rank %u", doomed.size(), unsigned(quality));
+    return doomed.size();
+}
+
 size_t QuestRecord::clearOut(const Loadout& gear, bool apply)
 {
     std::vector<uint16_t> doomed;

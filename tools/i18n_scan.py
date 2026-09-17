@@ -544,18 +544,29 @@ def main():
             done = sum(1 for s, t in seen.items() if t != s and t)
             same = sum(1 for s, t in seen.items() if t == s)
             stale = sum(1 for s in seen if s not in said)
+            # The same test --lang runs, for the same reason: a translation
+            # whose specifiers are in a different order hands format() an int
+            # where it expects a string. --all used to count stale rows and
+            # say nothing about these, so a mismatch could pass the check that
+            # every language is run through and fail only the one nobody runs.
+            mismatched = sum(
+                1 for source, target in seen.items()
+                if SPECIFIER.findall(source) != SPECIFIER.findall(target))
             notes = ""
             if stale:
                 notes += ", %d stale" % stale
             if duplicated:
                 notes += ", %d duplicated" % duplicated
+            if mismatched:
+                notes += ", %d with the wrong specifiers" % mismatched
             print("%s: %4d of %d translated, %2d the same in both%s"
                   % (code, done, len(said), same, notes))
-            if stale or duplicated:
+            if stale or duplicated or mismatched:
                 bad += 1
         if args.check and bad:
-            print("%d of %d catalogues have stale or duplicated entries; "
-                  "--lang <code> --check says which" % (bad, len(CATALOGS)))
+            print("%d of %d catalogues have stale, duplicated or mismatched "
+                  "entries; --lang <code> --check says which"
+                  % (bad, len(CATALOGS)))
             return 1
         return 0
 

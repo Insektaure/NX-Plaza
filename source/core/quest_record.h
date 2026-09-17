@@ -29,9 +29,21 @@ namespace nxp {
 // otherwise: the token is on the same SD card as the file.
 class QuestRecord {
 public:
-    // Room for three full parties over and a bit. A bag with no bottom is a
-    // bag nobody ever tidies, and it is also a file that grows forever.
-    static constexpr size_t kBagLimit = 120;
+    // Twelve full parties' worth - a party of five wears twenty pieces - and
+    // two kilobytes of file at eight bytes a piece.
+    //
+    // A cap at all because a bag with no bottom is a bag nobody ever tidies,
+    // and because the file would otherwise grow for ever. Where the cap sits
+    // is a different question, and 120 was answering the wrong one: nothing
+    // in the format pushes back until the item count stops fitting in the
+    // sixteen bits the header gives it, and the clear-out, the lock and the
+    // eviction all exist precisely so that a deep bag is manageable.
+    //
+    // Raising it is safe in both directions. A file written with more than a
+    // reader's limit is refused rather than truncated, so a bag of 250 opened
+    // by a build that still says 120 reads as no record at all - which is why
+    // this only ever goes up.
+    static constexpr size_t kBagLimit = 250;
 
     // Four item ids, in slot order. Zero is an empty slot.
     struct Loadout {
@@ -161,6 +173,20 @@ public:
     // The lowest-rated thing in the bag that nobody is wearing, or 0 when
     // everything is spoken for. What a full bag throws out to make room.
     uint16_t worstSpare() const;
+
+    // Whether a piece is free to go: nobody is wearing it and nobody has
+    // locked it. The one place those two exemptions are written down, so the
+    // panel that counts and the action that throws away cannot disagree
+    // about what "spare" means.
+    bool spare(const Item& item) const;
+
+    // How many of a rank are spare. Const, because a screen that only wants
+    // the number should not need a bag it could change.
+    size_t spareOfRank(uint8_t quality) const;
+
+    // And the same rank, thrown away. Returns how many went, which is always
+    // what spareOfRank() said a moment earlier.
+    size_t clearRank(uint8_t quality);
 
     // Everything unworn that is worse than the piece on the same peg of
     // `gear` - which is to say everything that could never be an upgrade for

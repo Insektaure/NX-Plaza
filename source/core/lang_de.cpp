@@ -1444,6 +1444,21 @@ namespace {
         { "Not met yet", "Noch nicht getroffen" },
         { "next", "nächster" },
         { "the shadows", "die Schatten" },
+        { "clear a rank", "einen Rang leeren" },
+        { "Throw away a whole rank", "Einen ganzen Rang wegwerfen" },
+        { "%zu spare", "%zu übrig" },
+        { "none spare", "keine übrig" },
+        { "throw them away", "wegwerfen" },
+        { "Throw away %zu %s pieces?", "%zu Stücke vom Rang %s wegwerfen?" },
+        { "Nothing worn and nothing locked goes with them. It does not "
+          "come back.",
+            "Nichts Getragenes und nichts Gesperrtes geht mit. Es kommt "
+            "nicht zurück." },
+        { "Nothing to throw away", "Nichts zum Wegwerfen" },
+        { "Nothing of that rank is spare: what you have is worn, "
+          "locked, or not there at all.",
+            "Von diesem Rang ist nichts übrig: was du hast, wird "
+            "getragen, ist gesperrt, oder es gibt keins." },
         { "resets in %u days", "Reset in %u Tagen" },
         { "resets in %u hours", "Reset in %u Stunden" },
         { "resets within the hour", "Reset noch in dieser Stunde" },

@@ -10790,3 +10790,206 @@ LANGS["zh_hant"].update({
     "resets in %u hours": "%u 小時後重置",
     "resets within the hour": "一小時內重置",
 })
+
+# ---- throwing away a whole rank from the bag.
+
+LANGS["de"].update({
+    "clear a rank":
+        "einen Rang leeren",
+    "Throw away a whole rank":
+        "Einen ganzen Rang wegwerfen",
+    "%zu spare":
+        "%zu übrig",
+    "none spare":
+        "keine übrig",
+    "throw them away":
+        "wegwerfen",
+    "Throw away %zu %s pieces?":
+        "%zu Stücke vom Rang %s wegwerfen?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Nichts Getragenes und nichts Gesperrtes geht mit. Es kommt nicht zurück.",
+    "Nothing to throw away":
+        "Nichts zum Wegwerfen",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "Von diesem Rang ist nichts übrig: was du hast, wird getragen, ist gesperrt, oder es gibt keins.",
+})
+LANGS["es"].update({
+    "clear a rank":
+        "vaciar un rango",
+    "Throw away a whole rank":
+        "Tirar un rango entero",
+    "%zu spare":
+        "%zu de sobra",
+    "none spare":
+        "ninguna de sobra",
+    "throw them away":
+        "tirarlas",
+    "Throw away %zu %s pieces?":
+        "¿Tirar %zu piezas de rango %s?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Nada equipado ni bloqueado se va con ellas. No vuelve.",
+    "Nothing to throw away":
+        "Nada que tirar",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "De ese rango no sobra nada: lo que tienes está puesto, bloqueado, o no lo tienes.",
+})
+LANGS["it"].update({
+    "clear a rank":
+        "svuotare un rango",
+    "Throw away a whole rank":
+        "Buttare un rango intero",
+    "%zu spare":
+        "%zu in più",
+    "none spare":
+        "nessuno in più",
+    "throw them away":
+        "buttarle",
+    "Throw away %zu %s pieces?":
+        "Buttare %zu pezzi di rango %s?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Niente di indossato e niente di bloccato se ne va con loro. Non torna.",
+    "Nothing to throw away":
+        "Niente da buttare",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "Di quel rango non c'è niente in più: quello che hai è indossato, bloccato, o non c'è.",
+})
+LANGS["nl"].update({
+    "clear a rank":
+        "een rang legen",
+    "Throw away a whole rank":
+        "Een hele rang weggooien",
+    "%zu spare":
+        "%zu over",
+    "none spare":
+        "niets over",
+    "throw them away":
+        "weggooien",
+    "Throw away %zu %s pieces?":
+        "%zu stukken van rang %s weggooien?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Niets wat gedragen of vergrendeld is gaat mee. Het komt niet terug.",
+    "Nothing to throw away":
+        "Niets om weg te gooien",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "Van die rang is niets over: wat je hebt wordt gedragen, is vergrendeld, of is er niet.",
+})
+LANGS["pt"].update({
+    "clear a rank":
+        "esvaziar um nível",
+    "Throw away a whole rank":
+        "Deitar fora um nível inteiro",
+    "%zu spare":
+        "%zu a mais",
+    "none spare":
+        "nenhuma a mais",
+    "throw them away":
+        "deitar fora",
+    "Throw away %zu %s pieces?":
+        "Deitar fora %zu peças de nível %s?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Nada equipado nem bloqueado vai com elas. Não volta.",
+    "Nothing to throw away":
+        "Nada para deitar fora",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "Desse nível não há nada a mais: o que tens está equipado, bloqueado, ou não existe.",
+})
+LANGS["ru"].update({
+    "clear a rank":
+        "очистить ранг",
+    "Throw away a whole rank":
+        "Выбросить целый ранг",
+    "%zu spare":
+        "лишних: %zu",
+    "none spare":
+        "лишних нет",
+    "throw them away":
+        "выбросить их",
+    "Throw away %zu %s pieces?":
+        "Выбросить %zu предметов ранга %s?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "Ничего надетого и ничего заблокированного не уйдёт. Это не вернуть.",
+    "Nothing to throw away":
+        "Нечего выбрасывать",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "Лишнего этого ранга нет: то, что есть, надето, заблокировано или отсутствует.",
+})
+LANGS["ja"].update({
+    "clear a rank":
+        "ランクをまとめてすてる",
+    "Throw away a whole rank":
+        "ランクをまとめてすてる",
+    "%zu spare":
+        "よぶん %zu",
+    "none spare":
+        "よぶんなし",
+    "throw them away":
+        "すてる",
+    "Throw away %zu %s pieces?":
+        "%zu てんの %s ランクをすてますか？",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "そうびちゅうのものとロックずみのものはのこります。もどせません。",
+    "Nothing to throw away":
+        "すてるものがありません",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "そのランクによぶんはありません。もっているものはそうびちゅうかロックずみ、またはありません。",
+})
+LANGS["ko"].update({
+    "clear a rank":
+        "등급 정리",
+    "Throw away a whole rank":
+        "한 등급을 통째로 버리기",
+    "%zu spare":
+        "여분 %zu",
+    "none spare":
+        "여분 없음",
+    "throw them away":
+        "버리기",
+    "Throw away %zu %s pieces?":
+        "%zu개의 %s 등급 장비를 버릴까요?",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "착용 중인 것과 잠긴 것은 함께 버려지지 않습니다. 되돌릴 수 없습니다.",
+    "Nothing to throw away":
+        "버릴 것이 없습니다",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "그 등급에는 여분이 없습니다. 가진 것은 착용 중이거나 잠겨 있거나, 아예 없습니다.",
+})
+LANGS["zh_hans"].update({
+    "clear a rank":
+        "清空一个等级",
+    "Throw away a whole rank":
+        "丢弃整整一个等级",
+    "%zu spare":
+        "多余 %zu",
+    "none spare":
+        "没有多余",
+    "throw them away":
+        "全部丢弃",
+    "Throw away %zu %s pieces?":
+        "丢弃 %zu 件 %s 装备？",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "装备中的和已锁定的都不会一起丢弃。丢了就回不来了。",
+    "Nothing to throw away":
+        "没有可丢的",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "这个等级没有多余：你拥有的都在装备中、已锁定，或者根本没有。",
+})
+LANGS["zh_hant"].update({
+    "clear a rank":
+        "清空一個等級",
+    "Throw away a whole rank":
+        "丟棄整整一個等級",
+    "%zu spare":
+        "多餘 %zu",
+    "none spare":
+        "沒有多餘",
+    "throw them away":
+        "全部丟棄",
+    "Throw away %zu %s pieces?":
+        "丟棄 %zu 件 %s 裝備？",
+    "Nothing worn and nothing locked goes with them. It does not come back.":
+        "裝備中的和已鎖定的都不會一起丟棄。丟了就回不來了。",
+    "Nothing to throw away":
+        "沒有可丟的",
+    "Nothing of that rank is spare: what you have is worn, locked, or not there at all.":
+        "這個等級沒有多餘：你擁有的都在裝備中、已鎖定，或者根本沒有。",
+})
