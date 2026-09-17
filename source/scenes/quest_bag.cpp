@@ -131,7 +131,7 @@ namespace {
                 step(-1);
             if (input.navDown)
                 step(1);
-            if (input.accept())
+            if (input.pressed(HidNpadButton_ZR))
                 openRanks();
             if (input.pressed(HidNpadButton_ZL))
                 flipLock();
@@ -162,7 +162,7 @@ namespace {
                 return;
             }
 
-            app.hint("A", "clear a rank");
+            app.hint("ZR", "clear a rank");
             if (!m_shown.empty()) {
                 app.hint("ZL", m_shown[size_t(m_pick)].locked ? "unlock" : "lock");
                 if (!m_shown[size_t(m_pick)].locked)
