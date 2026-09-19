@@ -174,6 +174,14 @@ public:
     // everything is spoken for. What a full bag throws out to make room.
     uint16_t worstSpare() const;
 
+    // Whether this piece would improve somebody: it sits on a peg that
+    // another person has left empty, or it beats the weakest thing anybody
+    // is wearing there.
+    //
+    // A piece already being worn is never an upgrade to anything: it is
+    // where it belongs.
+    bool wouldUpgrade(const Item& item) const;
+
     // Whether a piece is free to go: nobody is wearing it and nobody has
     // locked it. The one place those two exemptions are written down, so the
     // panel that counts and the action that throws away cannot disagree

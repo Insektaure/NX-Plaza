@@ -51,13 +51,16 @@ namespace {
             m_peg = 0;
             m_pick = 0;
             m_focus = Focus_Pegs;
+            // update() fills it at the end of its own frame, which is in
+            // time for the first draw - but a scene that is entered and
+            // drawn without an update in between would have nothing here.
+            refill();
         }
 
         void update(App& app, const Input& input, float dt) override
         {
             (void)dt;
             m_pulse = 0.5f + 0.5f * std::sin(app.time() * 3.0f);
-            refill();
 
             TouchTarget tap;
             if (app.takeTap(tap)) {
@@ -78,6 +81,7 @@ namespace {
                     m_focus = Focus_Bag;
                     wear();
                 }
+                refill();
                 return;
             }
 
@@ -131,6 +135,8 @@ namespace {
                 flipLock();
             if (input.pressed(HidNpadButton_ZR))
                 sweep(app);
+
+            refill();
         }
 
         void draw(App& app, Renderer& r) override
@@ -178,7 +184,7 @@ namespace {
 
         static constexpr float kColumn = 520.0f;
         static constexpr float kTop = 176.0f;
-        static constexpr float kPegH = 92.0f;
+        static constexpr float kPegH = 116.0f;
         static constexpr float kBagRow = 78.0f;
 
         const GearPerson& who() const { return m_party[size_t(m_who)]; }
@@ -316,6 +322,16 @@ namespace {
                     record.clearOut(gear, true);
                     record.flush();
                 });
+        }
+
+        // Whether this piece would improve the peg being looked at. `worn` is
+        // the id on it, zero for an empty one.
+        static bool beats(const Item& item, uint16_t worn)
+        {
+            if (item.id == worn)
+                return false;
+            const Item* against = QuestRecord::get().find(worn);
+            return !against || itemRating(item) > itemRating(*against);
         }
 
         bool pickIsLocked() const
@@ -521,6 +537,14 @@ namespace {
                                     150.0f, 30.0f },
                         item->quality);
 
+                // What it is actually giving them, in the words the bag uses
+                // for the same thing.
+                TextStyle gain;
+                gain.size = theme::textXs;
+                gain.color = theme::fg3;
+                r.text(inner.x, inner.y + 62.0f,
+                    item ? itemSummary(*item) : std::string(), gain);
+
                 // Beside the slot name rather than the piece name: the line
                 // below already ends in the quality badge.
                 if (item && item->locked)
@@ -596,6 +620,14 @@ namespace {
                     on.uppercase = true;
                     r.text(Rect { inner.x, inner.y + 30.0f, inner.w, 26.0f },
                         tr("worn"), on, Align::Right, VAlign::Top);
+                } else if (beats(item, worn)) {
+                    // The same arrow the bag uses, asking the sharper
+                    // question this screen can ask: better than what *this
+                    // person* has on *this peg*, rather than better than what
+                    // somebody somewhere has on.
+                    ui::icon(r, Rect { inner.right() - 26.0f, inner.y + 28.0f,
+                                 26.0f, 26.0f },
+                        ui::Icon::ArrowUp, theme::success, 2.5f);
                 }
                 y += kBagRow + theme::s2;
             }

@@ -683,6 +683,11 @@ namespace {
             peg.uppercase = true;
             r.text(inner.x + 220.0f, inner.y + 6.0f, tr(slotName(item.slot)), peg);
 
+            if (record.wouldUpgrade(item)) {
+                ui::icon(r, Rect { inner.x + 380.0f, inner.y, 28.0f, 28.0f },
+                    ui::Icon::ArrowUp, theme::success, 2.5f);
+            }
+
             TextStyle gain;
             gain.size = theme::textXs;
             gain.color = theme::fg3;

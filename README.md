@@ -134,6 +134,7 @@ is the score.
 | | |
 | --- | --- |
 | **Who climbs** | Their numbers come off their Mii and how often you have crossed them; their favourite colour decides whether they guard, strike, sap or mend. Three go up, four once you have met ten people, five at twenty-five. |
+| **Worth wearing** | A green arrow on anything that would improve somebody: in the bag, better than what anybody has on that peg; on the gear screen, better than what the person in front of you has on. |
 | **What falls** | Half the shadows leave a piece of gear - a weapon, armour, a ring or an accessory, common up to godlike. Deeper is better, and two pieces of the same rank are never the same piece. |
 | **Blessings** | Every fifth floor offers three out of eighteen, and the one you take is yours for the rest of the climb. |
 | **Coins** | A floor pays one the first time you reach it in a week. The week turns on Monday, so ground you have already covered is worth climbing again. |

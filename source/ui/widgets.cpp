@@ -520,6 +520,22 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         }
         break;
     }
+    case Icon::ArrowUp: {
+        // A triangle out of ten horizontal slices, and a shaft under it.
+        // Symmetric about the middle of the box: the head runs from -0.32 to
+        // -0.02 of it and the shaft from -0.02 to +0.32, so the whole mark is
+        // 0.52 wide and 0.64 tall and sits centred in whatever it is given.
+        int slices = 10;
+        for (int i = 0; i < slices; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(slices - 1);
+            float half = s * (0.05f + t * 0.21f);
+            r.rect(Rect { cx - half, cy - s * 0.32f + t * s * 0.30f, half * 2.0f,
+                       s * 0.038f },
+                color);
+        }
+        r.rect(Rect { cx - s * 0.10f, cy - s * 0.02f, s * 0.20f, s * 0.34f }, color);
+        break;
+    }
     case Icon::StepLeft:
     case Icon::StepRight: {
         // The same shape as the chevron and twice the size, mirrored the way

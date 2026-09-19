@@ -523,6 +523,28 @@ uint16_t QuestRecord::worstSpare() const
     return worst;
 }
 
+bool QuestRecord::wouldUpgrade(const Item& item) const
+{
+    if (item.slot >= Slot_Count)
+        return false;
+    std::string ignored;
+    if (wearer(item.id, ignored))
+        return false;
+
+    for (const Wearing& row : m_worn) {
+        const Item* against = find(row.gear.worn[item.slot]);
+        // An empty peg is the easiest upgrade there is.
+        if (!against)
+            return true;
+        if (itemRating(item) > itemRating(*against))
+            return true;
+    }
+    // Nobody has ever equipped anything, so there is nothing to be better
+    // than. Marking the whole bag would say as little as marking none of it,
+    // and the gear screen is where a party gets dressed the first time.
+    return false;
+}
+
 bool QuestRecord::spare(const Item& item) const
 {
     // The two exemptions, in the order somebody would say them out loud.

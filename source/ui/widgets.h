@@ -45,6 +45,7 @@ enum class Icon {
     Speaker,
     StepLeft,
     StepRight,
+    ArrowUp,
 };
 
 void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight = 2.5f);
