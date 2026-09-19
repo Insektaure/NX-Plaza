@@ -8232,7 +8232,7 @@ LANGS["de"].update({
     'what they carry': 'was sie tragen',
     'in the bag': 'im beutel',
     '%zu of %zu in the bag': '%zu von %zu im Beutel',
-    'Nobody to dress': 'Niemand zum Ausrüsten',
+    'Nobody to equip': 'Niemand zum Ausrüsten',
     'Nothing here that would fit.': 'Hier passt nichts.',
     'nothing on this peg': 'nichts an diesem Haken',
     'worn': 'getragen',
@@ -8278,7 +8278,7 @@ LANGS["es"].update({
     'what they carry': 'lo que llevan',
     'in the bag': 'en la bolsa',
     '%zu of %zu in the bag': '%zu de %zu en la bolsa',
-    'Nobody to dress': 'Nadie a quien equipar',
+    'Nobody to equip': 'Nadie a quien equipar',
     'Nothing here that would fit.': 'Aquí no hay nada que encaje.',
     'nothing on this peg': 'nada en esta ranura',
     'worn': 'puesto',
@@ -8324,7 +8324,7 @@ LANGS["it"].update({
     'what they carry': 'cosa portano',
     'in the bag': 'nella sacca',
     '%zu of %zu in the bag': '%zu su %zu nella sacca',
-    'Nobody to dress': 'Nessuno da equipaggiare',
+    'Nobody to equip': 'Nessuno da equipaggiare',
     'Nothing here that would fit.': "Qui non c'è niente che vada.",
     'nothing on this peg': 'niente in questo posto',
     'worn': 'indossato',
@@ -8370,7 +8370,7 @@ LANGS["nl"].update({
     'what they carry': 'wat ze dragen',
     'in the bag': 'in de tas',
     '%zu of %zu in the bag': '%zu van %zu in de tas',
-    'Nobody to dress': 'Niemand om aan te kleden',
+    'Nobody to equip': 'Niemand om aan te kleden',
     'Nothing here that would fit.': 'Hier past niets.',
     'nothing on this peg': 'niets op deze haak',
     'worn': 'gedragen',
@@ -8416,7 +8416,7 @@ LANGS["pt"].update({
     'what they carry': 'o que levam',
     'in the bag': 'no saco',
     '%zu of %zu in the bag': '%zu de %zu no saco',
-    'Nobody to dress': 'Ninguém para equipar',
+    'Nobody to equip': 'Ninguém para equipar',
     'Nothing here that would fit.': 'Aqui não há nada que sirva.',
     'nothing on this peg': 'nada neste lugar',
     'worn': 'posto',
@@ -8462,7 +8462,7 @@ LANGS["ru"].update({
     'what they carry': 'что они несут',
     'in the bag': 'в сумке',
     '%zu of %zu in the bag': '%zu из %zu в сумке',
-    'Nobody to dress': 'Некого снаряжать',
+    'Nobody to equip': 'Некого снаряжать',
     'Nothing here that would fit.': 'Здесь нет ничего подходящего.',
     'nothing on this peg': 'здесь пусто',
     'worn': 'надето',
@@ -8508,7 +8508,7 @@ LANGS["ja"].update({
     'what they carry': '持ちもの',
     'in the bag': 'ふくろの中',
     '%zu of %zu in the bag': 'ふくろ %zu / %zu',
-    'Nobody to dress': 'そうびさせる人がいません',
+    'Nobody to equip': 'そうびさせる人がいません',
     'Nothing here that would fit.': 'ここに合うものはありません。',
     'nothing on this peg': 'ここには何もない',
     'worn': 'そうび中',
@@ -8554,7 +8554,7 @@ LANGS["ko"].update({
     'what they carry': '지닌 것',
     'in the bag': '가방 안',
     '%zu of %zu in the bag': '가방 %zu / %zu',
-    'Nobody to dress': '장비시킬 사람이 없습니다',
+    'Nobody to equip': '장비시킬 사람이 없습니다',
     'Nothing here that would fit.': '여기에 맞는 것이 없습니다.',
     'nothing on this peg': '이 자리는 비어 있음',
     'worn': '착용 중',
@@ -8600,7 +8600,7 @@ LANGS["zh_hans"].update({
     'what they carry': '他们带着的',
     'in the bag': '背包里',
     '%zu of %zu in the bag': '背包 %zu / %zu',
-    'Nobody to dress': '没有人可以装备',
+    'Nobody to equip': '没有人可以装备',
     'Nothing here that would fit.': '这里没有合适的。',
     'nothing on this peg': '这个位置是空的',
     'worn': '已装备',
@@ -8646,7 +8646,7 @@ LANGS["zh_hant"].update({
     'what they carry': '他們帶著的',
     'in the bag': '背包裡',
     '%zu of %zu in the bag': '背包 %zu / %zu',
-    'Nobody to dress': '沒有人可以裝備',
+    'Nobody to equip': '沒有人可以裝備',
     'Nothing here that would fit.': '這裡沒有合適的。',
     'nothing on this peg': '這個位置是空的',
     'worn': '已裝備',
@@ -11123,9 +11123,9 @@ LANGS["zh_hant"].update({
 # ---- dressing one person out of what nobody else is wearing.
 
 LANGS["de"].update({
-    "dress them":
-        "ausrüsten",
-    "%s is dressed":
+    "auto equip":
+        "Auto-Ausrüsten",
+    "%s is equipped":
         "%s ist ausgerüstet",
     "One peg changed.":
         "Ein Platz hat sich geändert.",
@@ -11137,9 +11137,9 @@ LANGS["de"].update({
         "Sie haben schon das Beste von allem, was niemand sonst trägt.",
 })
 LANGS["es"].update({
-    "dress them":
-        "equiparlos",
-    "%s is dressed":
+    "auto equip":
+        "equipar automáticamente",
+    "%s is equipped":
         "%s va equipado",
     "One peg changed.":
         "Ha cambiado una ranura.",
@@ -11151,9 +11151,9 @@ LANGS["es"].update({
         "Ya tienen lo mejor de todo lo que nadie más lleva puesto.",
 })
 LANGS["it"].update({
-    "dress them":
-        "equipaggiarli",
-    "%s is dressed":
+    "auto equip":
+        "equipaggia in automatico",
+    "%s is equipped":
         "%s è equipaggiato",
     "One peg changed.":
         "È cambiato uno slot.",
@@ -11165,9 +11165,9 @@ LANGS["it"].update({
         "Hanno già il meglio di tutto quello che nessun altro indossa.",
 })
 LANGS["nl"].update({
-    "dress them":
-        "ze uitrusten",
-    "%s is dressed":
+    "auto equip":
+        "automatisch uitrusten",
+    "%s is equipped":
         "%s is uitgerust",
     "One peg changed.":
         "Eén plek is veranderd.",
@@ -11179,9 +11179,9 @@ LANGS["nl"].update({
         "Ze hebben al het beste van alles wat niemand anders draagt.",
 })
 LANGS["pt"].update({
-    "dress them":
-        "equipá-los",
-    "%s is dressed":
+    "auto equip":
+        "equipar automaticamente",
+    "%s is equipped":
         "%s está equipado",
     "One peg changed.":
         "Mudou um lugar.",
@@ -11193,10 +11193,10 @@ LANGS["pt"].update({
         "Já têm o melhor de tudo o que mais ninguém está a usar.",
 })
 LANGS["ru"].update({
-    "dress them":
-        "одеть их",
-    "%s is dressed":
-        "%s одет",
+    "auto equip":
+        "авто-экипировка",
+    "%s is equipped":
+        "%s экипирован",
     "One peg changed.":
         "Изменился один слот.",
     "%d pegs changed.":
@@ -11207,9 +11207,9 @@ LANGS["ru"].update({
         "У них уже лучшее из того, что никто другой не носит.",
 })
 LANGS["ja"].update({
-    "dress them":
-        "そうびさせる",
-    "%s is dressed":
+    "auto equip":
+        "じどうそうび",
+    "%s is equipped":
         "%s をそうびさせました",
     "One peg changed.":
         "スロットが1つかわりました。",
@@ -11221,9 +11221,9 @@ LANGS["ja"].update({
         "ほかのだれもつけていないもののなかで、すでにさいこうのそうびです。",
 })
 LANGS["ko"].update({
-    "dress them":
-        "장비 맞추기",
-    "%s is dressed":
+    "auto equip":
+        "자동 장착",
+    "%s is equipped":
         "%s 의 장비를 맞췄습니다",
     "One peg changed.":
         "칸 하나가 바뀌었습니다.",
@@ -11235,9 +11235,9 @@ LANGS["ko"].update({
         "다른 사람이 착용하지 않은 것 중에서는 이미 최고입니다.",
 })
 LANGS["zh_hans"].update({
-    "dress them":
+    "auto equip":
         "自动装备",
-    "%s is dressed":
+    "%s is equipped":
         "%s 已装备",
     "One peg changed.":
         "改变了一个栏位。",
@@ -11249,9 +11249,9 @@ LANGS["zh_hans"].update({
         "在别人没有装备的东西里，他们已经拿到最好的了。",
 })
 LANGS["zh_hant"].update({
-    "dress them":
+    "auto equip":
         "自動裝備",
-    "%s is dressed":
+    "%s is equipped":
         "%s 已裝備",
     "One peg changed.":
         "改變了一個欄位。",

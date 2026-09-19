@@ -136,7 +136,7 @@ namespace {
                 if (m_focus == Focus_Bag)
                     throwAway(app);
                 else
-                    dressThem(app);
+                    autoEquip(app);
             }
             if (input.pressed(HidNpadButton_ZL))
                 flipLock();
@@ -158,7 +158,7 @@ namespace {
             } else {
                 if (!m_fits.empty())
                     app.hint("A", "what would fit");
-                app.hint("X", "dress them");
+                app.hint("X", "auto equip");
             }
             if (const Item* under = underCursor())
                 app.hint("ZL", under->locked ? "unlock" : "lock");
@@ -291,7 +291,8 @@ namespace {
             record.flush();
         }
 
-        // Fills this person's four pegs with the best of what is free.
+        // Auto equip: fills this person's four pegs with the best of what is
+        // free.
         //
         // Free means unworn, or worn by them already - never taken off
         // somebody else. Five people share one bag and a button that undressed
@@ -301,7 +302,7 @@ namespace {
         // It also never makes anybody worse: a peg only changes when the best
         // free piece beats what is on it, so pressing it again does nothing,
         // and pressing it on a well-dressed person does nothing either.
-        void dressThem(App& app)
+        void autoEquip(App& app)
         {
             if (m_party.empty())
                 return;
@@ -341,7 +342,7 @@ namespace {
                 return;
             }
             record.flush();
-            app.toast(format(tr("%s is dressed"), who().name.c_str()),
+            app.toast(format(tr("%s is equipped"), who().name.c_str()),
                 changed == 1
                     ? std::string(tr("One peg changed."))
                     : format(tr("%d pegs changed."), changed));
@@ -485,7 +486,7 @@ namespace {
             title.color = theme::fg1;
             title.tracking = theme::trackingTight;
             r.text(theme::edge, 74.0f,
-                m_party.empty() ? std::string(tr("Nobody to dress")) : who().name,
+                m_party.empty() ? std::string(tr("Nobody to equip")) : who().name,
                 title);
 
             TextStyle count;
