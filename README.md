@@ -138,7 +138,7 @@ is the score.
 | **Blessings** | Every fifth floor offers three out of eighteen, and the one you take is yours for the rest of the climb. |
 | **Coins** | A floor pays one the first time you reach it in a week. The week turns on Monday, so ground you have already covered is worth climbing again. |
 | **Starting higher** | Once the week has paid as far as floor ten, the chevrons beside the Climb button start you at 10, 20, and so on. Nothing below pays twice and the blessings start again from there - the quick way into the deep floors for gear, not a shortcut to a record. |
-| **The shadows** | Every floor has the same face and the same name on every console. **ZL** on the climb screen is the wall of the ones you have beaten, and beating a floor unmasks it; [`SHADOWS.md`](SHADOWS.md) lists all 999. |
+| **The shadows** | Every floor has the same face and the same name on every console. **ZL** on the climb screen is the wall of the ones you have beaten, and beating a floor unmasks it. |
 
 **Y** opens the gear, **ZR** the bag, and **ZL** in either of those locks a
 piece so that nothing - not a clear-out, not a full bag - can throw it away.
