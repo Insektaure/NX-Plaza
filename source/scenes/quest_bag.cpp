@@ -131,6 +131,14 @@ namespace {
                 step(-1);
             if (input.navDown)
                 step(1);
+            // A is free here
+            // a sort is the least destructive thing a button can do.
+            if (input.accept()) {
+                m_newest = !m_newest;
+                m_pick = 0;
+                m_scroll.stop();
+                m_scroll.centerOn(0.0f);
+            }
             if (input.pressed(HidNpadButton_ZR))
                 openRanks();
             if (input.pressed(HidNpadButton_ZL))
@@ -162,6 +170,9 @@ namespace {
                 return;
             }
 
+            // Named for what pressing it gives you rather than for what is
+            // on screen, the way every other toggle in the app is.
+            app.hint("A", m_newest ? "best first" : "newest first");
             app.hint("ZR", "clear a rank");
             if (!m_shown.empty()) {
                 app.hint("ZL", m_shown[size_t(m_pick)].locked ? "unlock" : "lock");
@@ -195,12 +206,21 @@ namespace {
                     continue;
                 m_shown.push_back(item);
             }
-            std::stable_sort(m_shown.begin(), m_shown.end(),
-                [](const Item& a, const Item& b) {
-                    if (a.quality != b.quality)
-                        return a.quality > b.quality;
-                    return itemRating(a) > itemRating(b);
-                });
+            // Best first, or newest first. Newest is the id: they are handed
+            // out in order and never reused, so the highest id is the last
+            // thing the tower gave up - which is what you are looking for
+            // when you come in off a climb.
+            if (m_newest) {
+                std::stable_sort(m_shown.begin(), m_shown.end(),
+                    [](const Item& a, const Item& b) { return a.id > b.id; });
+            } else {
+                std::stable_sort(m_shown.begin(), m_shown.end(),
+                    [](const Item& a, const Item& b) {
+                        if (a.quality != b.quality)
+                            return a.quality > b.quality;
+                        return itemRating(a) > itemRating(b);
+                    });
+            }
             if (m_pick >= int(m_shown.size()))
                 m_pick = std::max(0, int(m_shown.size()) - 1);
         }
@@ -719,7 +739,8 @@ namespace {
         Item m_now {};        // what the newest roll made of it; id 0 until then
         bool m_forge = false; // whether the whetstone overlay is up
 
-        bool m_ranks = false; // the "throw away a whole rank" panel
+        bool m_newest = false; // the sort: best first, or newest first
+        bool m_ranks = false;  // the "throw away a whole rank" panel
         int m_rank = 0;
         std::vector<Item> m_shown;
         std::vector<std::pair<std::string, std::string>> m_names; // id -> handle

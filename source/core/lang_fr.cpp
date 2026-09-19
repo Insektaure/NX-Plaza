@@ -1483,6 +1483,8 @@ namespace {
         { "Not met yet", "Pas encore rencontrée" },
         { "next", "suivante" },
         { "the shadows", "les ombres" },
+        { "newest first", "les plus récents" },
+        { "best first", "les meilleurs d'abord" },
         { "everything in the bag",
             "tout le sac" },
         { "only what goes on the %s peg",

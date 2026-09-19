@@ -1444,6 +1444,8 @@ namespace {
         { "Not met yet", "Noch nicht getroffen" },
         { "next", "nächster" },
         { "the shadows", "die Schatten" },
+        { "newest first", "neueste zuerst" },
+        { "best first", "beste zuerst" },
         { "everything in the bag", "der ganze Beutel" },
         { "only what goes on the %s peg", "nur was auf den Platz %s gehört" },
         { "Throw away %zu %s pieces from the %s peg?",

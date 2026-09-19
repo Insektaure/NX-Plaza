@@ -466,6 +466,33 @@ namespace {
             uint16_t was[5] = { base.hp, base.mp, base.atk, base.def, base.spd };
             uint16_t now[5] = { full.hp, full.mp, full.atk, full.def, full.spd };
 
+            // What the piece under the cursor would do to each of them. The
+            // arrow beside a row says a piece is better; this says how, and
+            // at what cost - which is the actual decision, because a weapon
+            // that is worth more overall can still take defence away.
+            //
+            // This is where a red number belongs: on the one stat that goes
+            // down, rather than on the whole piece.
+            int change[5] = { 0, 0, 0, 0, 0 };
+            bool comparing = false;
+            if (m_focus == Focus_Bag && !m_fits.empty() && m_pick >= 0
+                && m_pick < int(m_fits.size())) {
+                const Item& candidate = m_fits[size_t(m_pick)];
+                uint16_t worn = wornHere();
+                if (candidate.id != worn) {
+                    Sheet add = itemBonus(candidate);
+                    Sheet off {};
+                    if (const Item* current = QuestRecord::get().find(worn))
+                        off = itemBonus(*current);
+                    change[0] = int(add.hp) - int(off.hp);
+                    change[1] = int(add.mp) - int(off.mp);
+                    change[2] = int(add.atk) - int(off.atk);
+                    change[3] = int(add.def) - int(off.def);
+                    change[4] = int(add.spd) - int(off.spd);
+                    comparing = true;
+                }
+            }
+
             float y = inner.y + 208.0f;
             for (int i = 0; i < 5; i++) {
                 TextStyle key;
@@ -473,6 +500,18 @@ namespace {
                 key.color = theme::fg3;
                 key.tracking = theme::trackingWide;
                 r.text(inner.x, y, names[i], key);
+
+                if (comparing && change[i] != 0) {
+                    TextStyle move;
+                    move.size = theme::textSm;
+                    move.weight = FontWeight::Bold;
+                    move.color = change[i] > 0 ? theme::success : theme::danger;
+                    // In the middle of the row, between the name and the
+                    // number it would become.
+                    r.text(Rect { inner.x, y, inner.w - 150.0f, 28.0f },
+                        format(change[i] > 0 ? "+%d" : "%d", change[i]), move,
+                        Align::Right, VAlign::Top);
+                }
 
                 TextStyle value;
                 value.size = theme::textBase;

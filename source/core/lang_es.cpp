@@ -1422,6 +1422,8 @@ namespace {
         { "Not met yet", "Aún sin conocer" },
         { "next", "siguiente" },
         { "the shadows", "las sombras" },
+        { "newest first", "lo más nuevo primero" },
+        { "best first", "lo mejor primero" },
         { "everything in the bag", "toda la bolsa" },
         { "only what goes on the %s peg", "solo lo que va en la ranura %s" },
         { "Throw away %zu %s pieces from the %s peg?",

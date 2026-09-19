@@ -11076,3 +11076,46 @@ LANGS["zh_hant"].update({
     "Throw away %zu %s pieces from the %s peg?":
         "丟棄 %zu 件 %s 裝備（%s 欄位）？",
 })
+
+# ---- which way the bag is sorted.
+
+LANGS["de"].update({
+    "newest first": "neueste zuerst",
+    "best first": "beste zuerst",
+})
+LANGS["es"].update({
+    "newest first": "lo más nuevo primero",
+    "best first": "lo mejor primero",
+})
+LANGS["it"].update({
+    "newest first": "i più recenti",
+    "best first": "i migliori prima",
+})
+LANGS["nl"].update({
+    "newest first": "nieuwste eerst",
+    "best first": "beste eerst",
+})
+LANGS["pt"].update({
+    "newest first": "mais recentes primeiro",
+    "best first": "melhores primeiro",
+})
+LANGS["ru"].update({
+    "newest first": "сначала новые",
+    "best first": "сначала лучшие",
+})
+LANGS["ja"].update({
+    "newest first": "あたらしいじゅん",
+    "best first": "つよいじゅん",
+})
+LANGS["ko"].update({
+    "newest first": "최신순",
+    "best first": "좋은 순",
+})
+LANGS["zh_hans"].update({
+    "newest first": "最新在前",
+    "best first": "最好在前",
+})
+LANGS["zh_hant"].update({
+    "newest first": "最新在前",
+    "best first": "最好在前",
+})

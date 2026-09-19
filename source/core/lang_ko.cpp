@@ -1269,6 +1269,8 @@ namespace {
         { "Not met yet", "아직 만나지 않음" },
         { "next", "다음" },
         { "the shadows", "그림자들" },
+        { "newest first", "최신순" },
+        { "best first", "좋은 순" },
         { "everything in the bag", "가방 전체" },
         { "only what goes on the %s peg", "%s 칸에 들어가는 것만" },
         { "Throw away %zu %s pieces from the %s peg?", "%zu개의 %s 등급 장비를 %s 칸에서 버릴까요?" },

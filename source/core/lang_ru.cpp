@@ -1415,6 +1415,8 @@ namespace {
         { "Not met yet", "Ещё не встречена" },
         { "next", "следующая" },
         { "the shadows", "тени" },
+        { "newest first", "сначала новые" },
+        { "best first", "сначала лучшие" },
         { "everything in the bag", "весь мешок" },
         { "only what goes on the %s peg", "только то, что идёт в слот %s" },
         { "Throw away %zu %s pieces from the %s peg?",

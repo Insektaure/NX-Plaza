@@ -1434,6 +1434,8 @@ namespace {
         { "Not met yet", "Non ancora incontrata" },
         { "next", "prossima" },
         { "the shadows", "le ombre" },
+        { "newest first", "i più recenti" },
+        { "best first", "i migliori prima" },
         { "everything in the bag", "tutta la sacca" },
         { "only what goes on the %s peg", "solo quello che va nello slot %s" },
         { "Throw away %zu %s pieces from the %s peg?",

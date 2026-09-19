@@ -1248,6 +1248,8 @@ namespace {
         { "Not met yet", "まだであっていない" },
         { "next", "つぎ" },
         { "the shadows", "かげたち" },
+        { "newest first", "あたらしいじゅん" },
+        { "best first", "つよいじゅん" },
         { "everything in the bag", "ふくろぜんぶ" },
         { "only what goes on the %s peg", "%s のスロットにつけるものだけ" },
         { "Throw away %zu %s pieces from the %s peg?",

@@ -1228,6 +1228,8 @@ namespace {
         { "Not met yet", "尚未遇见" },
         { "next", "下一个" },
         { "the shadows", "暗影们" },
+        { "newest first", "最新在前" },
+        { "best first", "最好在前" },
         { "everything in the bag", "整个背包" },
         { "only what goes on the %s peg", "只包括放在 %s 栏位的" },
         { "Throw away %zu %s pieces from the %s peg?", "丢弃 %zu 件 %s 装备（%s 栏位）？" },
