@@ -129,8 +129,15 @@ namespace {
             }
             if (input.pressed(HidNpadButton_Y))
                 bare();
-            if (input.pressed(HidNpadButton_X) && m_focus == Focus_Bag)
-                throwAway(app);
+            // X is "the piece" in the bag column and "the pegs" on the pegs,
+            // which is the same shape A and Y already have here: one verb per
+            // column, and the strip only ever shows the one that applies.
+            if (input.pressed(HidNpadButton_X)) {
+                if (m_focus == Focus_Bag)
+                    throwAway(app);
+                else
+                    dressThem(app);
+            }
             if (input.pressed(HidNpadButton_ZL))
                 flipLock();
             if (input.pressed(HidNpadButton_ZR))
@@ -148,8 +155,10 @@ namespace {
                 app.hint("A", "wear it");
                 if (!wornIsPicked() && !pickIsLocked())
                     app.hint("X", "throw away");
-            } else if (!m_fits.empty()) {
-                app.hint("A", "what would fit");
+            } else {
+                if (!m_fits.empty())
+                    app.hint("A", "what would fit");
+                app.hint("X", "dress them");
             }
             if (const Item* under = underCursor())
                 app.hint("ZL", under->locked ? "unlock" : "lock");
@@ -280,6 +289,62 @@ namespace {
             record.equip(who().id, uint8_t(m_peg),
                 already == chosen.id ? uint16_t(0) : chosen.id);
             record.flush();
+        }
+
+        // Fills this person's four pegs with the best of what is free.
+        //
+        // Free means unworn, or worn by them already - never taken off
+        // somebody else. Five people share one bag and a button that undressed
+        // the rest of the party to dress this one would be a button nobody
+        // could press twice.
+        //
+        // It also never makes anybody worse: a peg only changes when the best
+        // free piece beats what is on it, so pressing it again does nothing,
+        // and pressing it on a well-dressed person does nothing either.
+        void dressThem(App& app)
+        {
+            if (m_party.empty())
+                return;
+            QuestRecord& record = QuestRecord::get();
+            const std::string owner = who().id;
+
+            int changed = 0;
+            for (uint8_t slot = 0; slot < Slot_Count; slot++) {
+                const Item* best = nullptr;
+                for (const Item& item : record.items()) {
+                    if (item.slot != slot)
+                        continue;
+                    std::string wearer;
+                    if (record.wearer(item.id, wearer) && wearer != owner)
+                        continue;
+                    if (!best || itemRating(item) > itemRating(*best))
+                        best = &item;
+                }
+                if (!best)
+                    continue;
+
+                uint16_t worn = record.loadout(owner).worn[slot];
+                if (best->id == worn)
+                    continue;
+                if (const Item* current = record.find(worn)) {
+                    if (itemRating(*best) <= itemRating(*current))
+                        continue;
+                }
+                record.equip(owner, slot, best->id);
+                changed++;
+            }
+
+            if (changed == 0) {
+                app.toast(tr("Nothing to change"),
+                    tr("They already have the best of everything nobody else is "
+                       "wearing."));
+                return;
+            }
+            record.flush();
+            app.toast(format(tr("%s is dressed"), who().name.c_str()),
+                changed == 1
+                    ? std::string(tr("One peg changed."))
+                    : format(tr("%d pegs changed."), changed));
         }
 
         void bare()

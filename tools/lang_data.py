@@ -11119,3 +11119,146 @@ LANGS["zh_hant"].update({
     "newest first": "最新在前",
     "best first": "最好在前",
 })
+
+# ---- dressing one person out of what nobody else is wearing.
+
+LANGS["de"].update({
+    "dress them":
+        "ausrüsten",
+    "%s is dressed":
+        "%s ist ausgerüstet",
+    "One peg changed.":
+        "Ein Platz hat sich geändert.",
+    "%d pegs changed.":
+        "%d Plätze haben sich geändert.",
+    "Nothing to change":
+        "Nichts zu ändern",
+    "They already have the best of everything nobody else is wearing.":
+        "Sie haben schon das Beste von allem, was niemand sonst trägt.",
+})
+LANGS["es"].update({
+    "dress them":
+        "equiparlos",
+    "%s is dressed":
+        "%s va equipado",
+    "One peg changed.":
+        "Ha cambiado una ranura.",
+    "%d pegs changed.":
+        "Han cambiado %d ranuras.",
+    "Nothing to change":
+        "Nada que cambiar",
+    "They already have the best of everything nobody else is wearing.":
+        "Ya tienen lo mejor de todo lo que nadie más lleva puesto.",
+})
+LANGS["it"].update({
+    "dress them":
+        "equipaggiarli",
+    "%s is dressed":
+        "%s è equipaggiato",
+    "One peg changed.":
+        "È cambiato uno slot.",
+    "%d pegs changed.":
+        "Sono cambiati %d slot.",
+    "Nothing to change":
+        "Niente da cambiare",
+    "They already have the best of everything nobody else is wearing.":
+        "Hanno già il meglio di tutto quello che nessun altro indossa.",
+})
+LANGS["nl"].update({
+    "dress them":
+        "ze uitrusten",
+    "%s is dressed":
+        "%s is uitgerust",
+    "One peg changed.":
+        "Eén plek is veranderd.",
+    "%d pegs changed.":
+        "%d plekken zijn veranderd.",
+    "Nothing to change":
+        "Niets te veranderen",
+    "They already have the best of everything nobody else is wearing.":
+        "Ze hebben al het beste van alles wat niemand anders draagt.",
+})
+LANGS["pt"].update({
+    "dress them":
+        "equipá-los",
+    "%s is dressed":
+        "%s está equipado",
+    "One peg changed.":
+        "Mudou um lugar.",
+    "%d pegs changed.":
+        "Mudaram %d lugares.",
+    "Nothing to change":
+        "Nada para mudar",
+    "They already have the best of everything nobody else is wearing.":
+        "Já têm o melhor de tudo o que mais ninguém está a usar.",
+})
+LANGS["ru"].update({
+    "dress them":
+        "одеть их",
+    "%s is dressed":
+        "%s одет",
+    "One peg changed.":
+        "Изменился один слот.",
+    "%d pegs changed.":
+        "Изменилось слотов: %d.",
+    "Nothing to change":
+        "Менять нечего",
+    "They already have the best of everything nobody else is wearing.":
+        "У них уже лучшее из того, что никто другой не носит.",
+})
+LANGS["ja"].update({
+    "dress them":
+        "そうびさせる",
+    "%s is dressed":
+        "%s をそうびさせました",
+    "One peg changed.":
+        "スロットが1つかわりました。",
+    "%d pegs changed.":
+        "スロットが %d つかわりました。",
+    "Nothing to change":
+        "かえるものがありません",
+    "They already have the best of everything nobody else is wearing.":
+        "ほかのだれもつけていないもののなかで、すでにさいこうのそうびです。",
+})
+LANGS["ko"].update({
+    "dress them":
+        "장비 맞추기",
+    "%s is dressed":
+        "%s 의 장비를 맞췄습니다",
+    "One peg changed.":
+        "칸 하나가 바뀌었습니다.",
+    "%d pegs changed.":
+        "칸 %d개가 바뀌었습니다.",
+    "Nothing to change":
+        "바꿀 것이 없습니다",
+    "They already have the best of everything nobody else is wearing.":
+        "다른 사람이 착용하지 않은 것 중에서는 이미 최고입니다.",
+})
+LANGS["zh_hans"].update({
+    "dress them":
+        "自动装备",
+    "%s is dressed":
+        "%s 已装备",
+    "One peg changed.":
+        "改变了一个栏位。",
+    "%d pegs changed.":
+        "改变了 %d 个栏位。",
+    "Nothing to change":
+        "没有可改的",
+    "They already have the best of everything nobody else is wearing.":
+        "在别人没有装备的东西里，他们已经拿到最好的了。",
+})
+LANGS["zh_hant"].update({
+    "dress them":
+        "自動裝備",
+    "%s is dressed":
+        "%s 已裝備",
+    "One peg changed.":
+        "改變了一個欄位。",
+    "%d pegs changed.":
+        "改變了 %d 個欄位。",
+    "Nothing to change":
+        "沒有可改的",
+    "They already have the best of everything nobody else is wearing.":
+        "在別人沒有裝備的東西裡，他們已經拿到最好的了。",
+})
