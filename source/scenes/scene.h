@@ -106,6 +106,11 @@ std::unique_ptr<Scene> makeQuestGearScene(std::vector<GearPerson> party);
 // one peg for one person; this shows the lot, and needs to know nobody.
 std::unique_ptr<Scene> makeQuestBagScene();
 
+// Three pieces of a rank, melted into one of the next. The one way time on
+// its own buys a rank, for a collection too small to reach the floors where
+// the good ones fall - see QuestRecord::check() for why that matters.
+std::unique_ptr<Scene> makeQuestForgeScene();
+
 // Every shadow the tower has put in front of you, and the next one. Stores
 // nothing: a shadow's face and name both come off its floor number, and the
 // deepest floor reached is already on the record.

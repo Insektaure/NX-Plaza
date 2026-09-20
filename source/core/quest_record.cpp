@@ -594,6 +594,98 @@ size_t QuestRecord::clearRank(uint8_t quality, int slot)
     return doomed.size();
 }
 
+QuestRecord::Forge QuestRecord::check(const uint16_t ids[kForgeSlots]) const
+{
+    // Gathered first, because every answer below is about the set and not
+    // about any one of them. A socket holding something locked, something
+    // worn, or something that is not there at all is an empty socket: the
+    // screen only offers spares, and a bag can change underneath a screen
+    // that has been left open.
+    const Item* held[kForgeSlots] = {};
+    size_t many = 0;
+    for (size_t i = 0; i < kForgeSlots; i++) {
+        const Item* item = find(ids[i]);
+        if (!item || !spare(*item))
+            continue;
+        // The same piece twice is one piece. Without this, a screen with a
+        // bug in it could melt one uncommon into a rare and the arithmetic
+        // of the whole thing would be a lie.
+        bool already = false;
+        for (size_t j = 0; j < many; j++)
+            already = already || held[j]->id == item->id;
+        if (already)
+            continue;
+        held[many++] = item;
+    }
+
+    if (many == 0)
+        return Forge::Empty;
+    if (many < kForgeSlots)
+        return Forge::Short;
+    for (size_t i = 1; i < kForgeSlots; i++) {
+        if (held[i]->quality != held[0]->quality)
+            return Forge::Mixed;
+    }
+    if (held[0]->quality + 1 >= Quality_Count)
+        return Forge::Top;
+    return Forge::Ready;
+}
+
+bool QuestRecord::plan(const uint16_t ids[kForgeSlots], uint8_t& quality,
+    int& slot) const
+{
+    if (check(ids) != Forge::Ready)
+        return false;
+
+    const Item* first = find(ids[0]);
+    quality = uint8_t(first->quality + 1);
+
+    // All three on one peg makes a fourth of that peg; anything else is
+    // rolled. check() has already said they are three distinct spares of one
+    // rank, so this only has to look at the pegs.
+    slot = int(first->slot);
+    for (size_t i = 1; i < kForgeSlots; i++) {
+        if (int(find(ids[i])->slot) != slot) {
+            slot = -1;
+            break;
+        }
+    }
+    return true;
+}
+
+uint16_t QuestRecord::forge(const uint16_t ids[kForgeSlots], uint32_t atFloor)
+{
+    uint8_t quality = 0;
+    int slot = -1;
+    if (!plan(ids, quality, slot))
+        return 0;
+
+    // Read the three out before anything is discarded: discard() moves the
+    // vector about, and a pointer into it does not survive that.
+    const uint8_t was = uint8_t(quality - 1);
+    for (size_t i = 0; i < kForgeSlots; i++)
+        discard(ids[i]);
+
+    // Three in and one out, so the bag comes out strictly emptier than it
+    // went in and add() cannot refuse. Checked anyway, because silently
+    // losing the metal would be the worst possible way for that assumption
+    // to turn out wrong.
+    Item made;
+    made.id = m_nextId;
+    made.quality = quality;
+    made.slot = slot >= 0 && slot < Slot_Count ? uint8_t(slot)
+                                               : uint8_t(randomBelow(Slot_Count));
+    made.seed = uint16_t(randomBelow(65536));
+    made.floor = uint16_t(std::min<uint32_t>(999, std::max<uint32_t>(1, atFloor)));
+    if (!add(made))
+        return 0;
+
+    LOG("quest: forged a %s %s out of three %s, at floor %u",
+        qualityName(made.quality), slotName(made.slot), qualityName(was),
+        unsigned(made.floor));
+    return made.id;
+}
+
 size_t QuestRecord::clearOut(const Loadout& gear, bool apply)
 {
     std::vector<uint16_t> doomed;

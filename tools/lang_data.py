@@ -11262,3 +11262,593 @@ LANGS["zh_hant"].update({
     "They already have the best of everything nobody else is wearing.":
         "在別人沒有裝備的東西裡，他們已經拿到最好的了。",
 })
+
+
+# ---------------------------------------------------------------- the forge
+#
+# Three pieces of a rank melted into one of the next. One update block per
+# language, the way every other section of this file is written: a feature
+# that arrives later reads as one block rather than as thirty-five edits
+# scattered through ten dictionaries.
+#
+# The specifier order is the English order everywhere, which is what
+# i18n_scan.py --check enforces: "Melt three %s into one %s %s?" is always
+# rank-in, rank-out, peg, however awkward that is to say.
+
+LANGS["de"].update({
+    "The forge": "Die Schmiede",
+    "the forge": "die Schmiede",
+    "Three of a rank make one of the next":
+        "Drei eines Rangs ergeben eines des nächsten",
+    "three of a rank make one of the next":
+        "drei eines Rangs ergeben eines des nächsten",
+    "socket %d": "Fach %d",
+    "empty": "leer",
+    "what comes out": "was herauskommt",
+    "not yet": "noch nicht",
+    "one %s %s": "ein %s: %s",
+    "one %s, on a peg of its own choosing":
+        "ein %s, auf einem selbst gewählten Platz",
+    "All three sit on the same peg, so what comes out does too.":
+        "Alle drei gehören auf denselben Platz, also auch das, was herauskommt.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Drei Stücke von einem Platz ergäben stattdessen ein viertes für "
+        "diesen Platz.",
+    "Put three pieces of the same rank in.":
+        "Leg drei Stücke desselben Rangs hinein.",
+    "Three of a rank. Two is not a recipe.":
+        "Drei eines Rangs. Zwei sind kein Rezept.",
+    "They are not all the same rank.":
+        "Sie sind nicht alle vom selben Rang.",
+    "Nothing goes above godlike.": "Über göttlich geht nichts.",
+    "Melt them down": "Einschmelzen",
+    "melt them down": "einschmelzen",
+    "open the forge": "die Schmiede öffnen",
+    "into the forge": "in die Schmiede",
+    "take it back": "zurücknehmen",
+    "empty it": "leeren",
+    "which peg": "welcher Platz",
+    "Melt three %s into one %s?": "Drei %s zu einem %s einschmelzen?",
+    "Melt three %s into one %s %s?":
+        "Drei %s zu einem %s für den Platz %s einschmelzen?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "Die drei sind endgültig weg, und was herauskommt, wird neu "
+        "ausgewürfelt - es kann schlechter sein als jedes von ihnen. "
+        "Ausgewürfelt wird auf Stockwerk %u, dem tiefsten, das du erreicht "
+        "hast.",
+    "The forge is full": "Die Schmiede ist voll",
+    "Take one back out first, or melt what is in it.":
+        "Nimm erst eines heraus, oder schmilz ein, was drin ist.",
+    "Not enough in the forge": "Zu wenig in der Schmiede",
+    "It takes three pieces of the same rank to make one of the next.":
+        "Es braucht drei Stücke desselben Rangs für eines des nächsten.",
+    "Not the same rank": "Nicht derselbe Rang",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "Alle drei müssen denselben Rang haben. Heraus kommt der Rang darüber.",
+    "Nothing above godlike": "Nichts über göttlich",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "Es gibt keinen Rang, in den sie passen. So eines verbessert ein "
+        "Wetzstein.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "Nichts frei auf diesem Platz. Getragene und gesperrte Stücke bleiben "
+        "aus der Schmiede heraus.",
+})
+
+LANGS["es"].update({
+    "The forge": "La fragua",
+    "the forge": "la fragua",
+    "Three of a rank make one of the next":
+        "Tres de un rango dan una del siguiente",
+    "three of a rank make one of the next":
+        "tres de un rango dan una del siguiente",
+    "socket %d": "hueco %d",
+    "empty": "vacío",
+    "what comes out": "lo que sale",
+    "not yet": "todavía no",
+    "one %s %s": "una %s: %s",
+    "one %s, on a peg of its own choosing":
+        "una %s, en la ranura que ella elija",
+    "All three sit on the same peg, so what comes out does too.":
+        "Las tres van en la misma ranura, así que lo que sale también.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Tres piezas de una misma ranura darían una cuarta para esa ranura.",
+    "Put three pieces of the same rank in.":
+        "Mete tres piezas del mismo rango.",
+    "Three of a rank. Two is not a recipe.":
+        "Tres de un rango. Dos no es una receta.",
+    "They are not all the same rank.":
+        "No son todas del mismo rango.",
+    "Nothing goes above godlike.": "Nada supera lo divino.",
+    "Melt them down": "Fundirlas",
+    "melt them down": "fundirlas",
+    "open the forge": "abrir la fragua",
+    "into the forge": "a la fragua",
+    "take it back": "recuperarla",
+    "empty it": "vaciarla",
+    "which peg": "qué ranura",
+    "Melt three %s into one %s?": "¿Fundir tres piezas %s en una %s?",
+    "Melt three %s into one %s %s?":
+        "¿Fundir tres piezas %s en una %s de la ranura %s?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "Las tres desaparecen, y lo que sale se tira de nuevo: puede ser peor "
+        "que cualquiera de ellas. Se tira en el piso %u, el más hondo al que "
+        "has llegado.",
+    "The forge is full": "La fragua está llena",
+    "Take one back out first, or melt what is in it.":
+        "Saca una primero, o funde lo que hay dentro.",
+    "Not enough in the forge": "No hay bastante en la fragua",
+    "It takes three pieces of the same rank to make one of the next.":
+        "Hacen falta tres piezas del mismo rango para hacer una del siguiente.",
+    "Not the same rank": "No es el mismo rango",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "Las tres tienen que ser del mismo rango. Lo que sale es el de encima.",
+    "Nothing above godlike": "Nada por encima de lo divino",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "No hay rango al que fundirlas. Una piedra de afilar es lo que mejora "
+        "una de esas.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "Nada libre en esta ranura. Las piezas puestas y bloqueadas no entran "
+        "en la fragua.",
+})
+
+LANGS["it"].update({
+    "The forge": "La forgia",
+    "the forge": "la forgia",
+    "Three of a rank make one of the next":
+        "Tre di un rango ne danno uno del successivo",
+    "three of a rank make one of the next":
+        "tre di un rango ne danno uno del successivo",
+    "socket %d": "posto %d",
+    "empty": "vuoto",
+    "what comes out": "cosa ne esce",
+    "not yet": "non ancora",
+    "one %s %s": "un %s: %s",
+    "one %s, on a peg of its own choosing":
+        "un %s, nello slot che sceglie lui",
+    "All three sit on the same peg, so what comes out does too.":
+        "Tutti e tre vanno nello stesso slot, quindi anche quello che ne esce.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Tre pezzi di uno stesso slot ne darebbero un quarto per quello slot.",
+    "Put three pieces of the same rank in.":
+        "Mettici tre pezzi dello stesso rango.",
+    "Three of a rank. Two is not a recipe.":
+        "Tre di un rango. Due non è una ricetta.",
+    "They are not all the same rank.":
+        "Non sono tutti dello stesso rango.",
+    "Nothing goes above godlike.": "Niente va oltre il divino.",
+    "Melt them down": "Fonderli",
+    "melt them down": "fonderli",
+    "open the forge": "apri la forgia",
+    "into the forge": "nella forgia",
+    "take it back": "riprenderlo",
+    "empty it": "svuotarla",
+    "which peg": "quale slot",
+    "Melt three %s into one %s?": "Fondere tre pezzi %s in uno %s?",
+    "Melt three %s into one %s %s?":
+        "Fondere tre pezzi %s in uno %s per lo slot %s?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "I tre spariscono, e quello che ne esce viene tirato da capo: può "
+        "essere peggio di ognuno di loro. Il tiro è al piano %u, il più "
+        "profondo che hai raggiunto.",
+    "The forge is full": "La forgia è piena",
+    "Take one back out first, or melt what is in it.":
+        "Riprendine uno prima, o fondi quello che c'è dentro.",
+    "Not enough in the forge": "Non basta nella forgia",
+    "It takes three pieces of the same rank to make one of the next.":
+        "Servono tre pezzi dello stesso rango per farne uno del successivo.",
+    "Not the same rank": "Non lo stesso rango",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "Tutti e tre devono essere dello stesso rango. Ne esce quello sopra.",
+    "Nothing above godlike": "Niente sopra il divino",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "Non c'è un rango in cui fonderli. È una cote che migliora uno di "
+        "quelli.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "Niente di libero in questo slot. I pezzi indossati e bloccati restano "
+        "fuori dalla forgia.",
+})
+
+LANGS["nl"].update({
+    "The forge": "De smidse",
+    "the forge": "de smidse",
+    "Three of a rank make one of the next":
+        "Drie van een rang geven er een van de volgende",
+    "three of a rank make one of the next":
+        "drie van een rang geven er een van de volgende",
+    "socket %d": "plek %d",
+    "empty": "leeg",
+    "what comes out": "wat eruit komt",
+    "not yet": "nog niet",
+    "one %s %s": "een %s: %s",
+    "one %s, on a peg of its own choosing":
+        "een %s, op een zelfgekozen haak",
+    "All three sit on the same peg, so what comes out does too.":
+        "Alle drie horen op dezelfde haak, dus wat eruit komt ook.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Drie stukken van één haak zouden een vierde voor die haak geven.",
+    "Put three pieces of the same rank in.":
+        "Leg er drie stukken van dezelfde rang in.",
+    "Three of a rank. Two is not a recipe.":
+        "Drie van een rang. Twee is geen recept.",
+    "They are not all the same rank.":
+        "Ze zijn niet allemaal van dezelfde rang.",
+    "Nothing goes above godlike.": "Boven goddelijk gaat niets.",
+    "Melt them down": "Omsmelten",
+    "melt them down": "omsmelten",
+    "open the forge": "de smidse openen",
+    "into the forge": "naar de smidse",
+    "take it back": "terugnemen",
+    "empty it": "legen",
+    "which peg": "welke haak",
+    "Melt three %s into one %s?": "Drie %s stukken omsmelten tot één %s?",
+    "Melt three %s into one %s %s?":
+        "Drie %s stukken omsmelten tot één %s voor plek %s?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "De drie zijn voorgoed weg, en wat eruit komt wordt opnieuw gegooid - "
+        "het kan slechter zijn dan elk van hen. Het wordt gegooid op "
+        "verdieping %u, de diepste die je hebt gehaald.",
+    "The forge is full": "De smidse is vol",
+    "Take one back out first, or melt what is in it.":
+        "Neem er eerst een uit, of smelt om wat erin zit.",
+    "Not enough in the forge": "Te weinig in de smidse",
+    "It takes three pieces of the same rank to make one of the next.":
+        "Er zijn drie stukken van dezelfde rang nodig voor een van de volgende.",
+    "Not the same rank": "Niet dezelfde rang",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "Alle drie moeten dezelfde rang hebben. Eruit komt de rang erboven.",
+    "Nothing above godlike": "Niets boven goddelijk",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "Er is geen rang om ze in om te smelten. Zo een verbeter je met een "
+        "wetsteen.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "Niets vrij op deze haak. Gedragen en vergrendelde stukken blijven "
+        "buiten de smidse.",
+})
+
+LANGS["pt"].update({
+    "The forge": "A forja",
+    "the forge": "a forja",
+    "Three of a rank make one of the next":
+        "Três de um grau dão uma do seguinte",
+    "three of a rank make one of the next":
+        "três de um grau dão uma do seguinte",
+    "socket %d": "encaixe %d",
+    "empty": "vazio",
+    "what comes out": "o que sai",
+    "not yet": "ainda não",
+    "one %s %s": "uma %s: %s",
+    "one %s, on a peg of its own choosing":
+        "uma %s, no lugar que ela escolher",
+    "All three sit on the same peg, so what comes out does too.":
+        "As três vão no mesmo lugar, portanto o que sai também.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Três peças de um mesmo lugar dariam uma quarta para esse lugar.",
+    "Put three pieces of the same rank in.":
+        "Ponha três peças do mesmo grau.",
+    "Three of a rank. Two is not a recipe.":
+        "Três de um grau. Duas não é uma receita.",
+    "They are not all the same rank.":
+        "Não são todas do mesmo grau.",
+    "Nothing goes above godlike.": "Nada passa do divino.",
+    "Melt them down": "Fundi-las",
+    "melt them down": "fundi-las",
+    "open the forge": "abrir a forja",
+    "into the forge": "para a forja",
+    "take it back": "retomá-la",
+    "empty it": "esvaziá-la",
+    "which peg": "que lugar",
+    "Melt three %s into one %s?": "Fundir três peças %s numa %s?",
+    "Melt three %s into one %s %s?":
+        "Fundir três peças %s numa %s do lugar %s?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "As três desaparecem, e o que sai é sorteado de novo: pode ser pior do "
+        "que qualquer uma delas. O sorteio é no andar %u, o mais fundo a que "
+        "chegou.",
+    "The forge is full": "A forja está cheia",
+    "Take one back out first, or melt what is in it.":
+        "Tire uma primeiro, ou funda o que está lá dentro.",
+    "Not enough in the forge": "Não chega para a forja",
+    "It takes three pieces of the same rank to make one of the next.":
+        "São precisas três peças do mesmo grau para fazer uma do seguinte.",
+    "Not the same rank": "Não é o mesmo grau",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "As três têm de ser do mesmo grau. O que sai é o de cima.",
+    "Nothing above godlike": "Nada acima do divino",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "Não há grau em que as fundir. Uma pedra de amolar é o que melhora uma "
+        "dessas.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "Nada livre neste lugar. As peças usadas e trancadas ficam fora da "
+        "forja.",
+})
+
+LANGS["ru"].update({
+    "The forge": "Кузница",
+    "the forge": "кузница",
+    "Three of a rank make one of the next":
+        "Три одного ранга дают одну следующего",
+    "three of a rank make one of the next":
+        "три одного ранга дают одну следующего",
+    "socket %d": "гнездо %d",
+    "empty": "пусто",
+    "what comes out": "что получится",
+    "not yet": "пока нет",
+    "one %s %s": "одна %s: %s",
+    "one %s, on a peg of its own choosing":
+        "одна %s, в слот по её выбору",
+    "All three sit on the same peg, so what comes out does too.":
+        "Все три идут в один слот, значит и то, что получится, тоже.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "Три вещи из одного слота дали бы четвёртую для этого слота.",
+    "Put three pieces of the same rank in.":
+        "Положите три вещи одного ранга.",
+    "Three of a rank. Two is not a recipe.":
+        "Три одного ранга. Две — это не рецепт.",
+    "They are not all the same rank.":
+        "Они не все одного ранга.",
+    "Nothing goes above godlike.": "Выше божественного ничего нет.",
+    "Melt them down": "Переплавить",
+    "melt them down": "переплавить",
+    "open the forge": "открыть кузницу",
+    "into the forge": "в кузницу",
+    "take it back": "забрать обратно",
+    "empty it": "очистить",
+    "which peg": "какой слот",
+    "Melt three %s into one %s?": "Переплавить три %s вещи в одну %s?",
+    "Melt three %s into one %s %s?":
+        "Переплавить три %s вещи в одну %s для слота %s?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "Все три исчезнут навсегда, а то, что получится, разыгрывается заново — "
+        "оно может оказаться хуже любой из них. Розыгрыш идёт на этаже %u, "
+        "самом глубоком из достигнутых.",
+    "The forge is full": "Кузница полна",
+    "Take one back out first, or melt what is in it.":
+        "Сначала заберите одну, или переплавьте то, что внутри.",
+    "Not enough in the forge": "В кузнице мало",
+    "It takes three pieces of the same rank to make one of the next.":
+        "Нужны три вещи одного ранга, чтобы сделать одну следующего.",
+    "Not the same rank": "Ранги разные",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "Все три должны быть одного ранга. Получится ранг выше.",
+    "Nothing above godlike": "Выше божественного ничего нет",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "Нет ранга, в который их переплавить. Такую вещь улучшает точильный "
+        "камень.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "В этом слоте нет свободных. Надетые и запертые вещи в кузницу не идут.",
+})
+
+LANGS["ja"].update({
+    "The forge": "かじば",
+    "the forge": "かじば",
+    "Three of a rank make one of the next":
+        "同じランク3つで、1つ上のランクが1つ",
+    "three of a rank make one of the next":
+        "同じランク3つで、1つ上のランクが1つ",
+    "socket %d": "%d ばんめ",
+    "empty": "から",
+    "what comes out": "できるもの",
+    "not yet": "まだ",
+    "one %s %s": "%sの品 1つ（%s）",
+    "one %s, on a peg of its own choosing":
+        "%sの品 1つ、スロットはランダム",
+    "All three sit on the same peg, so what comes out does too.":
+        "3つとも同じスロットなので、できるものも同じスロットです。",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "同じスロットの3つなら、そのスロットの4つめができます。",
+    "Put three pieces of the same rank in.":
+        "同じランクの品を3つ入れてください。",
+    "Three of a rank. Two is not a recipe.":
+        "同じランクを3つ。2つではレシピになりません。",
+    "They are not all the same rank.":
+        "3つとも同じランクではありません。",
+    "Nothing goes above godlike.": "ゴッドの上はありません。",
+    "Melt them down": "とかす",
+    "melt them down": "とかす",
+    "open the forge": "かじばを ひらく",
+    "into the forge": "かじばへ",
+    "take it back": "もどす",
+    "empty it": "からにする",
+    "which peg": "スロット",
+    "Melt three %s into one %s?": "%sの品3つを %sの品1つに とかしますか？",
+    "Melt three %s into one %s %s?":
+        "%sの品3つを %sの品1つ（%s）に とかしますか？",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "3つは消えてなくなり、できるものは新しく引き直します。どれよりも "
+        "弱いこともあります。引くのは %u階、いままでの最高到達階です。",
+    "The forge is full": "かじばが いっぱいです",
+    "Take one back out first, or melt what is in it.":
+        "先に1つもどすか、中のものをとかしてください。",
+    "Not enough in the forge": "かじばの品が たりません",
+    "It takes three pieces of the same rank to make one of the next.":
+        "1つ上のランクを作るには、同じランクの品が3つ必要です。",
+    "Not the same rank": "ランクが ちがいます",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "3つとも同じランクにしてください。できるのは1つ上のランクです。",
+    "Nothing above godlike": "ゴッドの上は ありません",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "とかす先のランクがありません。それをよくするのは といし です。",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "このスロットに空きの品はありません。そうび中とロック中の品は "
+        "かじばに入りません。",
+})
+
+LANGS["ko"].update({
+    "The forge": "제련소",
+    "the forge": "제련소",
+    "Three of a rank make one of the next":
+        "같은 등급 셋이면 한 단계 위 하나",
+    "three of a rank make one of the next":
+        "같은 등급 셋이면 한 단계 위 하나",
+    "socket %d": "%d번 자리",
+    "empty": "비어 있음",
+    "what comes out": "나오는 것",
+    "not yet": "아직",
+    "one %s %s": "%s 등급 하나 (%s)",
+    "one %s, on a peg of its own choosing":
+        "%s 등급 하나, 칸은 무작위",
+    "All three sit on the same peg, so what comes out does too.":
+        "셋 다 같은 칸이라, 나오는 것도 같은 칸입니다.",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "같은 칸의 셋이면 그 칸의 네 번째가 나옵니다.",
+    "Put three pieces of the same rank in.":
+        "같은 등급 물건을 셋 넣으세요.",
+    "Three of a rank. Two is not a recipe.":
+        "같은 등급 셋. 둘은 조합이 아닙니다.",
+    "They are not all the same rank.":
+        "셋이 같은 등급이 아닙니다.",
+    "Nothing goes above godlike.": "신화 위는 없습니다.",
+    "Melt them down": "녹이기",
+    "melt them down": "녹이기",
+    "open the forge": "제련소 열기",
+    "into the forge": "제련소로",
+    "take it back": "도로 꺼내기",
+    "empty it": "비우기",
+    "which peg": "어느 칸",
+    "Melt three %s into one %s?": "%s 등급 셋을 %s 등급 하나로 녹일까요?",
+    "Melt three %s into one %s %s?":
+        "%s 등급 셋을 %s 등급 하나(%s)로 녹일까요?",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "셋은 완전히 사라지고, 나오는 것은 새로 뽑습니다. 셋 중 무엇보다도 "
+        "못할 수 있습니다. 뽑기는 %u층, 지금까지 도달한 가장 깊은 층에서 "
+        "이루어집니다.",
+    "The forge is full": "제련소가 가득 찼습니다",
+    "Take one back out first, or melt what is in it.":
+        "먼저 하나를 꺼내거나, 안에 있는 것을 녹이세요.",
+    "Not enough in the forge": "제련소에 모자랍니다",
+    "It takes three pieces of the same rank to make one of the next.":
+        "한 단계 위를 만들려면 같은 등급 물건이 셋 필요합니다.",
+    "Not the same rank": "등급이 다릅니다",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "셋 다 같은 등급이어야 합니다. 나오는 것은 그 위 등급입니다.",
+    "Nothing above godlike": "신화 위는 없습니다",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "녹여 넣을 등급이 없습니다. 그런 것은 숫돌이 좋게 만듭니다.",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "이 칸에 여유 물건이 없습니다. 착용 중이거나 잠긴 물건은 제련소에 "
+        "들어가지 않습니다.",
+})
+
+LANGS["zh_hans"].update({
+    "The forge": "熔炉",
+    "the forge": "熔炉",
+    "Three of a rank make one of the next": "同品质三件，换上一档一件",
+    "three of a rank make one of the next": "同品质三件，换上一档一件",
+    "socket %d": "第%d格",
+    "empty": "空",
+    "what comes out": "会得到什么",
+    "not yet": "还不行",
+    "one %s %s": "%s品质一件（%s）",
+    "one %s, on a peg of its own choosing": "%s品质一件，栏位随机",
+    "All three sit on the same peg, so what comes out does too.":
+        "三件都在同一栏位，所以熔出来的也在这个栏位。",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "同一栏位的三件，会熔出那个栏位的第四件。",
+    "Put three pieces of the same rank in.": "放三件同品质的进去。",
+    "Three of a rank. Two is not a recipe.": "要同品质三件。两件不成配方。",
+    "They are not all the same rank.": "三件品质不一样。",
+    "Nothing goes above godlike.": "神话之上没有了。",
+    "Melt them down": "熔掉",
+    "melt them down": "熔掉",
+    "open the forge": "打开熔炉",
+    "into the forge": "放进熔炉",
+    "take it back": "拿回来",
+    "empty it": "清空",
+    "which peg": "哪个栏位",
+    "Melt three %s into one %s?": "把三件%s品质熔成一件%s品质吗？",
+    "Melt three %s into one %s %s?": "把三件%s品质熔成一件%s品质的%s吗？",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "三件就此消失，熔出来的重新随机——可能比其中任何一件都差。随机是按第%u层"
+        "来的，也就是你到过的最深一层。",
+    "The forge is full": "熔炉满了",
+    "Take one back out first, or melt what is in it.":
+        "先拿回一件，或者把里面的熔掉。",
+    "Not enough in the forge": "熔炉里不够",
+    "It takes three pieces of the same rank to make one of the next.":
+        "要同品质三件，才能熔出上一档的一件。",
+    "Not the same rank": "品质不一样",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "三件必须同品质。熔出来的是上一档。",
+    "Nothing above godlike": "神话之上没有了",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "没有可以熔进去的档次。那种东西靠磨刀石来提升。",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "这个栏位没有空闲的。穿着的和锁住的不会进熔炉。",
+})
+
+LANGS["zh_hant"].update({
+    "The forge": "熔爐",
+    "the forge": "熔爐",
+    "Three of a rank make one of the next": "同品質三件，換上一檔一件",
+    "three of a rank make one of the next": "同品質三件，換上一檔一件",
+    "socket %d": "第%d格",
+    "empty": "空",
+    "what comes out": "會得到什麼",
+    "not yet": "還不行",
+    "one %s %s": "%s品質一件（%s）",
+    "one %s, on a peg of its own choosing": "%s品質一件，欄位隨機",
+    "All three sit on the same peg, so what comes out does too.":
+        "三件都在同一欄位，所以熔出來的也在這個欄位。",
+    "Three pieces on one peg would make a fourth on that peg instead.":
+        "同一欄位的三件，會熔出那個欄位的第四件。",
+    "Put three pieces of the same rank in.": "放三件同品質的進去。",
+    "Three of a rank. Two is not a recipe.": "要同品質三件。兩件不成配方。",
+    "They are not all the same rank.": "三件品質不一樣。",
+    "Nothing goes above godlike.": "神話之上沒有了。",
+    "Melt them down": "熔掉",
+    "melt them down": "熔掉",
+    "open the forge": "打開熔爐",
+    "into the forge": "放進熔爐",
+    "take it back": "拿回來",
+    "empty it": "清空",
+    "which peg": "哪個欄位",
+    "Melt three %s into one %s?": "把三件%s品質熔成一件%s品質嗎？",
+    "Melt three %s into one %s %s?": "把三件%s品質熔成一件%s品質的%s嗎？",
+    "The three go for good, and what comes out is rolled fresh - it could be "
+    "worse than any of them. It is rolled at floor %u, the deepest you have "
+    "reached.":
+        "三件就此消失，熔出來的重新隨機——可能比其中任何一件都差。隨機是按第%u層"
+        "來的，也就是你到過的最深一層。",
+    "The forge is full": "熔爐滿了",
+    "Take one back out first, or melt what is in it.":
+        "先拿回一件，或者把裡面的熔掉。",
+    "Not enough in the forge": "熔爐裡不夠",
+    "It takes three pieces of the same rank to make one of the next.":
+        "要同品質三件，才能熔出上一檔的一件。",
+    "Not the same rank": "品質不一樣",
+    "All three have to be the same rank. What comes out is the one above it.":
+        "三件必須同品質。熔出來的是上一檔。",
+    "Nothing above godlike": "神話之上沒有了",
+    "There is no rank to melt them into. A whetstone is what improves one of "
+    "those.":
+        "沒有可以熔進去的檔次。那種東西靠磨刀石來提升。",
+    "Nothing spare on this peg. Worn and locked pieces stay out of the forge.":
+        "這個欄位沒有空閒的。穿著的和鎖住的不會進熔爐。",
+})

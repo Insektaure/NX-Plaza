@@ -536,6 +536,39 @@ void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight)
         r.rect(Rect { cx - s * 0.10f, cy - s * 0.02f, s * 0.20f, s * 0.34f }, color);
         break;
     }
+    case Icon::Anvil: {
+        // Filled rather than stroked, because an anvil is a silhouette: an
+        // outline of one at this size is four thin lines and a guess.
+        //
+        // Four parts - the face, the horn tapering off the left of it, the
+        // waist and the foot - in fractions of the box, so it scales with
+        // whatever it is handed. The horn is the whole reason the shape reads
+        // as an anvil rather than as a letter I, so it gets over a third of
+        // the width; it is flat along the top, continuing the face, and rises
+        // from underneath to a point, which is the way round a real one is.
+        float faceL = cx - s * 0.08f;
+        float faceR = cx + s * 0.34f;
+        float faceT = cy - s * 0.29f;
+        float faceH = s * 0.15f;
+        r.roundRect(Rect { faceL, faceT, faceR - faceL, faceH }, s * 0.03f, color);
+
+        // Twenty slices rather than ten: each is 0.032 of the box wide and
+        // they are 0.019 apart, so they overlap. At ten they did not, and the
+        // horn came out as a comb.
+        int slices = 20;
+        for (int i = 0; i < slices; i++) {
+            float t = static_cast<float>(i) / static_cast<float>(slices - 1);
+            r.rect(Rect { faceL - t * s * 0.36f - s * 0.020f, faceT, s * 0.032f,
+                       faceH * (1.0f - t * 0.80f) },
+                color);
+        }
+
+        r.rect(Rect { cx - s * 0.10f, faceT + faceH, s * 0.24f, s * 0.26f }, color);
+        r.roundRect(Rect { cx - s * 0.30f, faceT + faceH + s * 0.26f, s * 0.64f,
+                       s * 0.15f },
+            s * 0.03f, color);
+        break;
+    }
     case Icon::StepLeft:
     case Icon::StepRight: {
         // The same shape as the chevron and twice the size, mirrored the way

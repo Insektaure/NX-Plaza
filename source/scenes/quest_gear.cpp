@@ -35,6 +35,7 @@ namespace {
             Zone_Peg = Touch_SceneBase,
             Zone_Bag,
             Zone_Who,
+            Zone_Forge,
             Zone_Back,
         };
 
@@ -66,7 +67,14 @@ namespace {
             if (app.takeTap(tap)) {
                 if (tap.is(Zone_Back))
                     app.popOverlay();
-                else if (tap.is(Zone_Who) && tap.index >= 0
+                else if (tap.is(Zone_Forge)) {
+                    // The cursor goes with it, so coming back out of the
+                    // forge leaves the stick where the finger was.
+                    m_peg = Slot_Count;
+                    m_focus = Focus_Pegs;
+                    app.pushOverlay(makeQuestForgeScene());
+                    return;
+                } else if (tap.is(Zone_Who) && tap.index >= 0
                     && tap.index < int(m_party.size())) {
                     m_who = tap.index;
                     m_pick = 0;
@@ -121,6 +129,10 @@ namespace {
                 // second way to take something off - that is what Y is for,
                 // and it reads the same whichever column you are in.
                 if (m_focus == Focus_Pegs) {
+                    if (onForge()) {
+                        app.pushOverlay(makeQuestForgeScene());
+                        return;
+                    }
                     if (!m_fits.empty())
                         m_focus = Focus_Bag;
                 } else {
@@ -142,6 +154,13 @@ namespace {
                 flipLock();
             if (input.pressed(HidNpadButton_ZR))
                 sweep(app);
+            // Minus as a shortcut.
+            // It is not in the hint strip because that strip holds
+            // six and this screen already asks for more than that.
+            if (input.pressed(HidNpadButton_Minus)) {
+                app.pushOverlay(makeQuestForgeScene());
+                return;
+            }
 
             refill();
         }
@@ -156,7 +175,9 @@ namespace {
                 if (!wornIsPicked() && !pickIsLocked())
                     app.hint("X", "throw away");
             } else {
-                if (!m_fits.empty())
+                if (onForge())
+                    app.hint("A", "open the forge");
+                else if (!m_fits.empty())
                     app.hint("A", "what would fit");
                 app.hint("X", "auto equip");
             }
@@ -195,6 +216,12 @@ namespace {
         static constexpr float kTop = 176.0f;
         static constexpr float kPegH = 116.0f;
         static constexpr float kBagRow = 78.0f;
+        static constexpr float kForgeH = 116.0f;
+
+        // The peg column is the four pegs and then the way into the forge,
+        // which is a row like any other so that the stick reaches it.
+        static constexpr int kPegRows = Slot_Count + 1;
+        bool onForge() const { return m_peg >= Slot_Count; }
 
         const GearPerson& who() const { return m_party[size_t(m_who)]; }
 
@@ -214,6 +241,10 @@ namespace {
             const QuestRecord& record = QuestRecord::get();
             if (m_party.empty())
                 return;
+            if (onForge()) {
+                m_focus = Focus_Pegs;
+                return;
+            }
             const std::string& owner = who().id;
             for (const Item& item : record.items()) {
                 if (item.slot != m_peg)
@@ -245,7 +276,7 @@ namespace {
 
         void stepPeg(int by)
         {
-            m_peg = (m_peg + by % Slot_Count + Slot_Count) % Slot_Count;
+            m_peg = (m_peg + by % kPegRows + kPegRows) % kPegRows;
             m_pick = 0;
         }
 
@@ -271,15 +302,19 @@ namespace {
         {
             // Guarded because the hints ask this before anything else has
             // checked, and who() indexes a vector that a caller could in
-            // principle hand over empty.
-            if (m_party.empty())
+            // principle hand over empty. The forge row is guarded here too,
+            // and only here: worn[] has four entries and m_peg can be four,
+            // so this is the single line where that would read off the end -
+            // and underCursor(), flipLock(), bare() and three hints all come
+            // through it.
+            if (m_party.empty() || onForge())
                 return 0;
             return QuestRecord::get().loadout(who().id).worn[m_peg];
         }
 
         void wear()
         {
-            if (m_fits.empty() || m_party.empty())
+            if (m_fits.empty() || m_party.empty() || onForge())
                 return;
             const Item& chosen = m_fits[size_t(m_pick)];
             QuestRecord& record = QuestRecord::get();
@@ -657,6 +692,45 @@ namespace {
                                  22.0f, 22.0f },
                         ui::Icon::Lock, theme::accent, 2.0f);
             }
+
+            drawForgeButton(app, r, x);
+        }
+
+        // The way into the forge, under the pegs, because this is the screen
+        // somebody is on when they find out that nothing in the bag is any
+        // better than what they have got on - which is the moment three spare
+        // uncommons become interesting.
+        void drawForgeButton(App& app, Renderer& r, float x)
+        {
+            Rect box { x, kTop + float(Slot_Count) * (kPegH + theme::s3) + theme::s5,
+                kColumn - theme::s6, kForgeH };
+            app.touchZone(box, Zone_Forge);
+            bool here = onForge();
+            ui::card(r, box, here ? focusRing(Focus_Pegs) : 0.0f,
+                here ? theme::bg2 : theme::bg1, theme::r3);
+            Rect inner = box.inset(theme::s5, theme::s4);
+
+            float mark = 56.0f;
+            ui::icon(r, Rect { inner.x, inner.centerY() - mark * 0.5f, mark, mark },
+                ui::Icon::Anvil, here ? theme::accent : theme::fg2);
+            float textX = inner.x + mark + theme::s5;
+
+            TextStyle label;
+            label.size = theme::textLg;
+            label.weight = FontWeight::Bold;
+            label.color = here ? theme::fg1 : theme::fg2;
+            label.tracking = theme::trackingTight;
+            r.text(textX, inner.y + 6.0f, tr("The forge"), label);
+
+            TextStyle what;
+            what.size = theme::textXs;
+            what.color = theme::fg3;
+            r.text(textX, inner.y + 50.0f,
+                tr("three of a rank make one of the next"), what);
+
+            ui::icon(r, Rect { inner.right() - 30.0f, inner.centerY() - 15.0f,
+                         30.0f, 30.0f },
+                ui::Icon::ArrowRight, here ? theme::accent : theme::fg3, 2.5f);
         }
 
         // The bag, filtered to the peg.

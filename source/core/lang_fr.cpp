@@ -1586,6 +1586,71 @@ namespace {
         { "Unlock it first, then throw it away.",
             "Déverrouillez-le d'abord, puis jetez-le." },
         { "%zu of %zu in the bag", "%zu sur %zu dans le sac" },
+
+        // ------------------------------------------------------- the forge
+        { "The forge", "La forge" },
+        { "the forge", "la forge" },
+        { "Three of a rank make one of the next",
+            "Trois d'un rang en donnent un du rang au-dessus" },
+        { "three of a rank make one of the next",
+            "trois d'un rang en donnent un du rang au-dessus" },
+        { "socket %d", "emplacement %d" },
+        { "empty", "vide" },
+        { "what comes out", "ce qui en sort" },
+        { "not yet", "pas encore" },
+        { "one %s %s", "un %s : %s" },
+        { "one %s, on a peg of its own choosing",
+            "un %s, à l'emplacement de son choix" },
+        { "All three sit on the same peg, so what comes out does too.",
+            "Les trois vont au même emplacement, donc ce qui en sort aussi." },
+        { "Three pieces on one peg would make a fourth on that peg instead.",
+            "Trois pièces d'un même emplacement en donneraient une quatrième "
+            "au même endroit." },
+        { "Put three pieces of the same rank in.",
+            "Mettez-y trois pièces du même rang." },
+        { "Three of a rank. Two is not a recipe.",
+            "Trois d'un rang. Deux, ce n'est pas une recette." },
+        { "They are not all the same rank.",
+            "Elles ne sont pas toutes du même rang." },
+        { "Nothing goes above godlike.", "Rien ne dépasse le rang divin." },
+        { "Melt them down", "Les fondre" },
+        { "melt them down", "les fondre" },
+        { "open the forge", "ouvrir la forge" },
+        { "into the forge", "vers la forge" },
+        { "take it back", "la reprendre" },
+        { "empty it", "la vider" },
+        { "which peg", "quel emplacement" },
+        { "Melt three %s into one %s?",
+            "Fondre trois pièces %s en une pièce %s ?" },
+        { "Melt three %s into one %s %s?",
+            "Fondre trois pièces %s en une pièce %s : %s ?" },
+        { "The three go for good, and what comes out is rolled fresh - it "
+          "could be worse than any of them. It is rolled at floor %u, the "
+          "deepest you have reached.",
+            "Les trois disparaissent, et ce qui en sort est tiré au sort - "
+            "cela peut être pire que chacune d'elles. Le tirage se fait à "
+            "l'étage %u, le plus profond que vous ayez atteint." },
+        { "The forge is full", "La forge est pleine" },
+        { "Take one back out first, or melt what is in it.",
+            "Reprenez-en une d'abord, ou fondez ce qui s'y trouve." },
+        { "Not enough in the forge", "Pas assez dans la forge" },
+        { "It takes three pieces of the same rank to make one of the next.",
+            "Il faut trois pièces du même rang pour en faire une du rang "
+            "au-dessus." },
+        { "Not the same rank", "Pas le même rang" },
+        { "All three have to be the same rank. What comes out is the one "
+          "above it.",
+            "Les trois doivent être du même rang. Ce qui en sort est du rang "
+            "au-dessus." },
+        { "Nothing above godlike", "Rien au-dessus du rang divin" },
+        { "There is no rank to melt them into. A whetstone is what improves "
+          "one of those.",
+            "Il n'y a pas de rang où les fondre. C'est une pierre à aiguiser "
+            "qui améliore celles-là." },
+        { "Nothing spare on this peg. Worn and locked pieces stay out of the "
+          "forge.",
+            "Rien de disponible à cet emplacement. Les pièces portées ou "
+            "verrouillées ne vont pas à la forge." },
         { "Nobody to equip", "Personne à équiper" },
         { "Nothing here that would fit.", "Rien ici qui irait." },
         { "nothing on this peg", "rien à cet emplacement" },

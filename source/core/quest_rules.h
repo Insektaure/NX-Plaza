@@ -132,7 +132,11 @@ struct Item {
     uint8_t quality = Quality_Common;
     uint8_t slot = Slot_Weapon;
     uint16_t seed = 0;
-    uint16_t floor = 0; // where it fell, for the line under its name
+    // Where it fell, and no longer only for the line under its name: the
+    // floor is half of what a piece is worth. See depthFactor() in
+    // quest_rules.cpp - deeper gear is better gear, by the square root of the
+    // floor, for ever.
+    uint16_t floor = 0;
     // Kept on purpose. A locked piece cannot be thrown away, swept out by
     // the clear-out, or evicted to make room when the bag is full - which
     // is the one that matters, because that one happens without asking.
@@ -145,10 +149,15 @@ const char* qualityName(uint8_t quality);
 const char* slotName(uint8_t slot);
 const char* itemNoun(const Item& item);
 
-// What it adds. The quality is the budget and the seed decides how it is
-// split: seven tenths into the stat the slot is for, the rest into one of
-// three the seed chooses, so two rares of the same kind are not the same
-// item.
+// What it adds. Three things decide it and all three are stored: the quality
+// is the budget, the floor it fell on multiplies that budget, and the seed
+// decides how what is left is split - seven tenths into the stat the slot is
+// for, the rest into one of three the seed chooses, so two rares of the same
+// kind out of the same floor are still not the same item.
+//
+// Worked out rather than stored, which is what lets the floor matter at all:
+// a balance change reaches gear people already own, and eight bytes is the
+// whole of what a piece costs the file.
 Sheet itemBonus(const Item& item);
 
 // What it adds, written out - "+12 ATK   +4 SPD" - in the order the stat

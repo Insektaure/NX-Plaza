@@ -198,6 +198,61 @@ public:
     // two arguments.
     size_t clearRank(uint8_t quality, int slot);
 
+    // ---------------------------------------------------------- the forge
+    //
+    // Three pieces in, one of the rank above out.
+    //
+    // The tower hands out tiers by depth and depth is set by the collection,
+    // so without this a console that has crossed four people farms the same
+    // epic for ever: legendary does not fall below floor ten, and a party of
+    // three in full epic reaches floor eight. Nothing it could do with its
+    // time would ever show it a legendary.
+    //
+    //     four met         deepest  best tier  the party's gear, in points
+    //     as it was              6      epic          189
+    //     with the forge        14      godlike       531
+    //
+    // Fourteen is where a four-person party in full godlike stops anyway, so
+    // the forge carries a thin collection to its own gear ceiling and not one
+    // floor past it - the roster still decides where that ceiling is.
+    //
+    // Not to be confused with reforge(), which is the whetstone: that keeps
+    // the rank and changes the roll, and this changes the rank.
+    static constexpr size_t kForgeSlots = 3;
+
+    // Why the three in front of somebody are or are not a recipe. The screen
+    // prints one sentence per answer, so every way of being wrong has to be
+    // its own answer rather than a bare false.
+    enum class Forge : uint8_t {
+        Ready, // three spare pieces of a rank, and a rank above to go to
+        Empty, // nothing in it yet
+        Short, // one or two
+        Mixed, // not all of the same rank
+        Top,   // godlike, which has nothing above it
+    };
+
+    // What they add up to. An id of 0, or one that is not a spare piece in
+    // the bag, counts as an empty socket - so a screen may pass whatever it
+    // happens to be holding without checking first.
+    Forge check(const uint16_t ids[kForgeSlots]) const;
+
+    // What would come out: the rank above, and the peg all three share, or
+    // -1 for a peg that will be rolled. Only meaningful when check() says
+    // Ready, and false otherwise.
+    //
+    // Three of a peg making a fourth of that peg is the whole of the second
+    // recipe: it is what turns a bag full of scrap into the accessory
+    // somebody actually needs, and it costs nothing to offer because the
+    // three that went in were the same three either way.
+    bool plan(const uint16_t ids[kForgeSlots], uint8_t& quality, int& slot) const;
+
+    // Melts them down and returns the new piece's id, or 0 if they were not
+    // a recipe. `atFloor` is where it is rolled - the deepest floor ever
+    // reached, and not where the scrap fell. A console stuck on floor six
+    // forging gear fit for floor six would have been sold a fix that fixes
+    // nothing.
+    uint16_t forge(const uint16_t ids[kForgeSlots], uint32_t atFloor);
+
     // Everything unworn that is worse than the piece on the same peg of
     // `gear` - which is to say everything that could never be an upgrade for
     // whoever is wearing that. A peg with nothing on it sets no threshold,

@@ -35,6 +35,55 @@ namespace {
         return n == 0 ? 0 : bits % n;
     }
 
+    // Integer, by Newton. <cmath>'s takes a double, and a stat block worked
+    // out through floating point is a stat block that two builds of the same
+    // numbers can disagree about - which for gear that is recomputed from
+    // eight stored bytes on every draw is not a risk worth running.
+    uint32_t isqrt(uint32_t n)
+    {
+        if (n < 2)
+            return n;
+        uint32_t x = n;
+        uint32_t y = (x + 1) / 2;
+        while (y < x) {
+            x = y;
+            y = (x + n / x) / 2;
+        }
+        return x;
+    }
+
+    // How much the floor a piece fell on is worth to it, as a fraction over
+    // kDepthSpan. Deeper is better, for ever, and by the square root of the
+    // floor rather than by the floor:
+    //
+    //     floor      1     10     25     50    100    200    400    999
+    //     worth   1.08x  1.25x  1.42x  1.60x  1.83x  2.17x  2.67x  3.63x
+    //
+    // A straight line would have been the obvious shape and it is the wrong
+    // one. The shadow's health grows with the floor; if gear grew with the
+    // floor too, the two would race at the same rate and where a climb ended
+    // would come down to whichever constant happened to be larger - a knife
+    // edge, and on the wrong side of it a tower with no top. A square root
+    // loses that race by more and more the higher it goes, so every floor is
+    // worth climbing and the climb still ends somewhere.
+    //
+    // Measured by tools/quest_sim.py over four hundred climbs, with the
+    // forge, the deepest floor a collection settles at:
+    //
+    //     party         flat gear   scaled by depth
+    //     four met            14           20
+    //     fifteen met         26           38
+    //     twenty-five         39           52
+    //
+    constexpr uint32_t kDepthSpan = 48;
+
+    uint32_t depthFactor(uint16_t floor)
+    {
+        // Clamped at both ends.
+        uint32_t f = floor < 1 ? 1u : (floor > 999 ? 999u : uint32_t(floor));
+        return kDepthSpan + isqrt(f * 16u);
+    }
+
     // The stat budget of each quality, in points. HP is the odd one out
     // because its base range is four times everybody else's, so a point of
     // it is worth four - see kHpPerPoint.
@@ -284,6 +333,16 @@ Sheet itemBonus(const Item& item)
     // hiding inside an integer divide.
     uint32_t others = kAffixes[quality] - 1u;
     uint32_t budget = (uint32_t(kBudget[quality]) * scale + 50) / 100;
+
+    // And then the floor it fell on, which is the other half of what a piece
+    // is worth - see depthFactor(). A rare out of floor sixty beats a rare
+    // out of floor six by half again, which is the whole reason to keep
+    // climbing once the roster has stopped growing. The tiers still overlap,
+    // and now so do the floors: a well-rolled rare from deep down beats a
+    // poor epic from the doorstep, and both facts are readable off the two
+    // lines the bag already prints.
+    budget = (budget * depthFactor(item.floor) + kDepthSpan / 2) / kDepthSpan;
+
     if (budget < others + 1)
         budget = others + 1; // a point each, at the very least
 

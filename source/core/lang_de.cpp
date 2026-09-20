@@ -1526,6 +1526,68 @@ namespace {
         { "Unlock it first, then throw it away.",
             "Hebe erst die Sperre auf, dann wirf es weg." },
         { "%zu of %zu in the bag", "%zu von %zu im Beutel" },
+
+        // ------------------------------------------------------- the forge
+        { "The forge", "Die Schmiede" },
+        { "the forge", "die Schmiede" },
+        { "Three of a rank make one of the next",
+            "Drei eines Rangs ergeben eines des nächsten" },
+        { "three of a rank make one of the next",
+            "drei eines Rangs ergeben eines des nächsten" },
+        { "socket %d", "Fach %d" },
+        { "empty", "leer" },
+        { "what comes out", "was herauskommt" },
+        { "not yet", "noch nicht" },
+        { "one %s %s", "ein %s: %s" },
+        { "one %s, on a peg of its own choosing",
+            "ein %s, auf einem selbst gewählten Platz" },
+        { "All three sit on the same peg, so what comes out does too.",
+            "Alle drei gehören auf denselben Platz, also auch das, was herauskommt." },
+        { "Three pieces on one peg would make a fourth on that peg "
+          "instead.",
+            "Drei Stücke von einem Platz ergäben stattdessen ein viertes "
+            "für diesen Platz." },
+        { "Put three pieces of the same rank in.",
+            "Leg drei Stücke desselben Rangs hinein." },
+        { "Three of a rank. Two is not a recipe.",
+            "Drei eines Rangs. Zwei sind kein Rezept." },
+        { "They are not all the same rank.", "Sie sind nicht alle vom selben Rang." },
+        { "Nothing goes above godlike.", "Über göttlich geht nichts." },
+        { "Melt them down", "Einschmelzen" },
+        { "melt them down", "einschmelzen" },
+        { "open the forge", "die Schmiede öffnen" },
+        { "into the forge", "in die Schmiede" },
+        { "take it back", "zurücknehmen" },
+        { "empty it", "leeren" },
+        { "which peg", "welcher Platz" },
+        { "Melt three %s into one %s?", "Drei %s zu einem %s einschmelzen?" },
+        { "Melt three %s into one %s %s?",
+            "Drei %s zu einem %s für den Platz %s einschmelzen?" },
+        { "The three go for good, and what comes out is rolled fresh - "
+          "it could be worse than any of them. It is rolled at floor "
+          "%u, the deepest you have reached.",
+            "Die drei sind endgültig weg, und was herauskommt, wird neu "
+            "ausgewürfelt - es kann schlechter sein als jedes von ihnen. "
+            "Ausgewürfelt wird auf Stockwerk %u, dem tiefsten, das du "
+            "erreicht hast." },
+        { "The forge is full", "Die Schmiede ist voll" },
+        { "Take one back out first, or melt what is in it.",
+            "Nimm erst eines heraus, oder schmilz ein, was drin ist." },
+        { "Not enough in the forge", "Zu wenig in der Schmiede" },
+        { "It takes three pieces of the same rank to make one of the next.",
+            "Es braucht drei Stücke desselben Rangs für eines des nächsten." },
+        { "Not the same rank", "Nicht derselbe Rang" },
+        { "All three have to be the same rank. What comes out is the one above it.",
+            "Alle drei müssen denselben Rang haben. Heraus kommt der Rang darüber." },
+        { "Nothing above godlike", "Nichts über göttlich" },
+        { "There is no rank to melt them into. A whetstone is what "
+          "improves one of those.",
+            "Es gibt keinen Rang, in den sie passen. So eines verbessert "
+            "ein Wetzstein." },
+        { "Nothing spare on this peg. Worn and locked pieces stay out "
+          "of the forge.",
+            "Nichts frei auf diesem Platz. Getragene und gesperrte Stücke "
+            "bleiben aus der Schmiede heraus." },
         { "Nobody to equip", "Niemand zum Ausrüsten" },
         { "Nothing here that would fit.", "Hier passt nichts." },
         { "nothing on this peg", "nichts an diesem Haken" },

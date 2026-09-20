@@ -46,6 +46,7 @@ enum class Icon {
     StepLeft,
     StepRight,
     ArrowUp,
+    Anvil,
 };
 
 void icon(Renderer& r, const Rect& box, Icon which, Color color, float weight = 2.5f);
