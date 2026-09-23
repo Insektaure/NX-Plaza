@@ -137,7 +137,8 @@ is the score.
 | **Auto equip** | **X** on somebody's pegs fills them with the best gear nobody else is wearing. It never takes a piece off another person and never swaps a peg for something worse. |
 | **Worth wearing** | A green arrow on anything that would improve somebody: in the bag, better than what anybody has on that peg; on the gear screen, better than what the person in front of you has on. |
 | **What falls** | Half the shadows leave a piece of gear - a weapon, armour, a ring or an accessory, common up to godlike. Deeper is better, and two pieces of the same rank are never the same piece. |
-| **Blessings** | Every fifth floor offers three out of eighteen, and the one you take is yours for the rest of the climb. |
+| **The forge** | Under the pegs on the gear screen: three pieces of a rank make one of the next, rolled at the deepest floor you have reached. Three from the same peg make one for that peg. Nothing worn or locked goes in. |
+| **Blessings** | Every fifth floor offers three out of eighteen, and the one you take is yours for the rest of the climb. Six of them - the ones that only move a number - can come round again, and each copy compounds. |
 | **Coins** | A floor pays one the first time you reach it in a week. The week turns on Monday, so ground you have already covered is worth climbing again. |
 | **Starting higher** | Once the week has paid as far as floor ten, the chevrons beside the Climb button start you at 10, 20, and so on. Nothing below pays twice and the blessings start again from there - the quick way into the deep floors for gear, not a shortcut to a record. |
 | **The shadows** | Every floor has the same face and the same name on every console. **ZL** on the climb screen is the wall of the ones you have beaten, and beating a floor unmasks it. |
