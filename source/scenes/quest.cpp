@@ -1361,7 +1361,7 @@ namespace {
             who.weight = FontWeight::Bold;
             who.color = beaten ? theme::fg3 : theme::fg1;
             who.tracking = theme::trackingTight;
-            r.text(Rect { kBossX - 400.0f, 186.0f, 800.0f, 34.0f },
+            r.text(Rect { kBossX - 400.0f, 150.0f, 800.0f, 34.0f },
                 shadowName(m_floor), who, Align::Center, VAlign::Top);
 
             constexpr float kBarW = 620.0f;
@@ -1603,17 +1603,28 @@ namespace {
             name.color = theme::accent;
 
             float y = kHeldY + 30.0f;
-            for (uint8_t id : m_held) {
-                // Eight is more than any real climb takes - the pool is
-                // eighteen and they come one floor in five - but a run that
-                // went deep enough would otherwise reach the shadow.
-                if (y + 28.0f > kHeldY + 8.0f * 30.0f)
+            for (size_t i = 0; i < m_held.size(); i++) {
+                uint8_t id = m_held[i];
+                // One row a blessing, however many times it was taken, in
+                // the order it was first taken: a repeat folds into the row
+                // it already has rather than spending another.
+                if (std::find(m_held.begin(), m_held.begin() + long(i), id)
+                    != m_held.begin() + long(i))
+                    continue;
+
+                if (y + 28.0f > kHeldY + 13.0f * 30.0f)
                     break;
+                long copies = std::count(m_held.begin(), m_held.end(), id);
+                std::string times = copies > 1
+                    ? " \u00d7" + std::to_string(copies)
+                    : std::string();
                 // Held to 300, which is where the shadow's glow begins: a
                 // long name in a long language is the one thing that could
-                // reach across into it.
+                // reach across into it. The count is measured out of that
+                // first, so it is the name that gives way and never the ×2.
+                float room = 300.0f - (times.empty() ? 0.0f : r.measure(times, name));
                 r.text(theme::edge, y,
-                    r.ellipsize(tr(boonInfo(id).name), name, 300.0f), name);
+                    r.ellipsize(tr(boonInfo(id).name), name, room) + times, name);
                 y += 30.0f;
             }
         }
@@ -1767,8 +1778,13 @@ namespace {
             // so a clip tight to the strip sliced the top and bottom off
             // whichever cell the cursor was on.
             r.pushClipVertical(strip.inset(0.0f, -theme::focusRoom));
+            // Only the cells that fit whole. The clip is vertical, so a
+            // loop that ran on while a cell merely started inside the strip
+            // drew the last one straight across the party panel once there
+            // were enough people to reach it.
             float x = strip.x;
-            for (int i = first; i < int(m_roster.size()) && x < strip.right(); i++) {
+            int last = std::min(int(m_roster.size()), first + fits);
+            for (int i = first; i < last; i++) {
                 const Member& m = m_roster[size_t(i)];
                 Rect cell { x, strip.y, kRosterCell - theme::s2, strip.h };
                 bool chosen = inParty(i);
@@ -1996,6 +2012,22 @@ namespace {
                         tr(className(uint8_t(boon.needs - 1))), tag, Align::Right,
                         VAlign::Top);
                 }
+
+                // Another copy of one already held, and what it makes: the
+                // same ×N the held list will show once it is taken, so the
+                // card and the list never disagree about the count. Bottom
+                // left, where the class tag never is - no class blessing
+                // stacks, so the two could not share a card anyway.
+                long held = std::count(m_held.begin(), m_held.end(), boon.id);
+                if (held > 0) {
+                    TextStyle again;
+                    again.size = theme::textSm;
+                    again.weight = FontWeight::Bold;
+                    again.color = theme::accent;
+                    r.text(Rect { at.x, at.bottom() - 24.0f, at.w, 24.0f },
+                        "\u00d7" + std::to_string(held + 1), again, Align::Left,
+                        VAlign::Top);
+                }
             }
         }
 
@@ -2155,7 +2187,7 @@ namespace {
         bool m_stopped = false;
 
         Boons m_boons;                // what this climb has been blessed with
-        std::vector<uint8_t> m_held;  // and which ones, so none comes twice
+        std::vector<uint8_t> m_held;  // and which ones, a repeat once per copy
         std::vector<uint8_t> m_offer; // the three on the table
         int m_boonPick = 0;
 

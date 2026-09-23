@@ -54,16 +54,19 @@ struct BoonInfo {
     const char* what;
     // The class it needs to be worth anything, plus one. Zero is anybody.
     uint8_t needs;
+    // Whether it can be offered again once held, each copy compounding.
+    bool stacks;
 };
 
 const BoonInfo& boonInfo(uint8_t id);
 
-// Applies it to the run. Idempotent only in the sense that the caller must
-// not apply the same blessing twice - the pool never offers one twice.
+// Applies it to the run. Once per copy taken: the ones that stack compound,
+// and the pool never offers one that does not stack a second time.
 void applyBoon(Boons& boons, uint8_t id);
 
-// Three to choose between: never one already held, never one whose class is
-// not in the party, and never the same one twice in an offer. Fewer than
+// Three to choose between: never one already held unless it stacks, never
+// one whose class is not in the party, and never the same one twice in an
+// offer. Fewer than
 // three when the pool has run that low, none when it is empty.
 std::vector<uint8_t> offerBoons(const std::vector<uint8_t>& held, uint32_t classes);
 

@@ -19,6 +19,9 @@ namespace {
     // Eighteen, which is enough that a run of six sees a third of them and
     // two runs rarely rhyme. `needs` is a class plus one; those three are
     // dead weight without it and are held back until the party has one.
+    // `stacks` marks the six that only move a number, so a second copy is
+    // a second dose; the rest set a value or a switch, and taking one
+    // again would be an empty card (or, for Momentum, a reset).
     //
     // Measured over six hundred climbs a party, one offered after every
     // fifth floor:
@@ -35,30 +38,33 @@ namespace {
     // the tower. Which is why it is drawn rather than bought, and gone
     // when the run is.
     const BoonInfo kPool[] = {
-        { 1, "Whetstone", "The party hits a fifth harder.", 0 },
-        { 2, "Ironclad", "The party takes a fifth less.", 0 },
-        { 3, "Hale", "A fifth more health, and it fills now.", 0 },
-        { 4, "Fleet", "Everybody is three quicker.", 0 },
-        { 5, "Reckless", "A third harder, and a quarter softer.", 0 },
-        { 6, "Bulwark", "A third tougher, and a fifth weaker.", 0 },
-        { 7, "Keen edge", "Telling blows land three times as often.", 0 },
-        { 8, "Second wind", "The first to fall gets up once, at half.", 0 },
-        { 9, "Rally", "Each one who falls makes the rest hit a fifth harder.", 0 },
+        { 1, "Whetstone", "The party hits a fifth harder.", 0, true },
+        { 2, "Ironclad", "The party takes a fifth less.", 0, true },
+        { 3, "Hale", "A fifth more health, and it fills now.", 0, true },
+        { 4, "Fleet", "Everybody is three quicker.", 0, true },
+        { 5, "Reckless", "A third harder, and a quarter softer.", 0, true },
+        { 6, "Bulwark", "A third tougher, and a fifth weaker.", 0, true },
+        { 7, "Keen edge", "Telling blows land three times as often.", 0, false },
+        { 8, "Second wind", "The first to fall gets up once, at half.", 0, false },
+        { 9, "Rally", "Each one who falls makes the rest hit a fifth harder.",
+            0, false },
         { 10, "Momentum", "The party hits a twentieth harder for every floor from "
                           "here.",
-            0 },
-        { 11, "Last stand", "Alone, the last one standing hits twice as hard.", 0 },
-        { 12, "Deep breath", "Twice as much wind back between floors.", 0 },
+            0, false },
+        { 11, "Last stand", "Alone, the last one standing hits twice as hard.",
+            0, false },
+        { 12, "Deep breath", "Twice as much wind back between floors.", 0, false },
         { 13, "Battle rhythm", "Everybody starts each floor with their wind full.",
-            0 },
-        { 14, "Cheap tricks", "Specials cost four instead of six.", 0 },
+            0, false },
+        { 14, "Cheap tricks", "Specials cost four instead of six.", 0, false },
         { 15, "Long watch", "Standing in front covers the sweep as well.",
-            Class_Guard + 1 },
+            Class_Guard + 1, false },
         { 16, "Mending hands", "The Mender heals half again, and steps in sooner.",
-            Class_Mender + 1 },
+            Class_Mender + 1, false },
         { 17, "Bright spark", "The Spark takes twice as much off the shadow's arm.",
-            Class_Spark + 1 },
-        { 18, "Scavenger", "The shadow leaves something four times in five.", 0 },
+            Class_Spark + 1, false },
+        { 18, "Scavenger", "The shadow leaves something four times in five.",
+            0, false },
     };
     constexpr size_t kPoolSize = sizeof(kPool) / sizeof(kPool[0]);
 
@@ -143,7 +149,7 @@ std::vector<uint8_t> offerBoons(const std::vector<uint8_t>& held, uint32_t class
 {
     std::vector<uint8_t> pool;
     for (const BoonInfo& b : kPool) {
-        if (std::find(held.begin(), held.end(), b.id) != held.end())
+        if (!b.stacks && std::find(held.begin(), held.end(), b.id) != held.end())
             continue;
         // A blessing about a class nobody is is not a choice, it is a
         // wasted third of the offer.
