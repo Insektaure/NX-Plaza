@@ -82,25 +82,27 @@ const BoonInfo& boonInfo(uint8_t id)
 void applyBoon(Boons& boons, uint8_t id)
 {
     switch (id) {
+    // The six that stack, as sums - see Boons. A first copy is worth what it
+    // always was; the tenth is worth the same as the first.
     case 1:
-        boons.atk *= 1.20f;
+        boons.atk += 0.20f;
         break;
     case 2:
-        boons.taken *= 0.80f;
+        boons.taken -= 0.20f;
         break;
     case 3:
-        boons.hp *= 1.20f;
+        boons.hp += 0.20f;
         break;
     case 4:
         boons.spd += 3;
         break;
     case 5:
-        boons.atk *= 1.35f;
-        boons.taken *= 1.25f;
+        boons.atk += 0.35f;
+        boons.taken += 0.25f;
         break;
     case 6:
-        boons.taken *= 0.65f;
-        boons.atk *= 0.80f;
+        boons.taken -= 0.35f;
+        boons.atk -= 0.20f;
         break;
     case 7:
         boons.crit = 36;

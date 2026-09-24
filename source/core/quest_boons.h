@@ -26,10 +26,28 @@ namespace nxp {
 // nothing at all unless the right class is in the party, so they are only
 // ever offered when it is.
 
+// The three numbers the stacking blessings move are sums, not products:
+// every copy adds its share of the party's own number rather than a share of
+// whatever the copies before it had already made. Multiplied, they grew
+// exponentially with the floor - a blessing every fifth floor, and past the
+// first dozen every offer is three of the six that stack - while the tower
+// grows in a straight line, so a long climb ended up hitting for hundreds of
+// times its weight and being hit for 1 at floor 475.
+//
+// Summed, a sum can go below anything sensible, so what the fight reads is
+// attack() and suffered(), held to kLeast. Kept apart from the sums rather
+// than applied as each copy lands, so the order the blessings were taken in
+// makes no difference to where they end up.
 struct Boons {
+    static constexpr float kLeast = 0.25f; // a quarter, at the very least
+
     float atk = 1.0f;       // what the party's blows are multiplied by
     float taken = 1.0f;     // and what it suffers
     float hp = 1.0f;        // applied to everybody's maximum, once
+
+    float attack() const { return atk > kLeast ? atk : kLeast; }
+    float suffered() const { return taken > kLeast ? taken : kLeast; }
+
     int spd = 0;
     int crit = 12;          // per cent
     int mpPerFloor = 4;
@@ -54,13 +72,14 @@ struct BoonInfo {
     const char* what;
     // The class it needs to be worth anything, plus one. Zero is anybody.
     uint8_t needs;
-    // Whether it can be offered again once held, each copy compounding.
+    // Whether it can be offered again once held, each copy adding the same
+    // again - see Boons.
     bool stacks;
 };
 
 const BoonInfo& boonInfo(uint8_t id);
 
-// Applies it to the run. Once per copy taken: the ones that stack compound,
+// Applies it to the run. Once per copy taken: the ones that stack add up,
 // and the pool never offers one that does not stack a second time.
 void applyBoon(Boons& boons, uint8_t id);
 

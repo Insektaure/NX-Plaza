@@ -844,7 +844,7 @@ namespace {
                 * (1.0f + m_boons.perFloor * float(m_boons.since));
             if (m_boons.lastStand && standing() == 1)
                 gain *= 2.0f;
-            return std::max(1, int(float(u.sheet.atk) * m_boons.atk * gain));
+            return std::max(1, int(float(u.sheet.atk) * m_boons.attack() * gain));
         }
 
         int spdOf(const Member& u) const { return int(u.sheet.spd) + m_boons.spd; }
@@ -1088,7 +1088,7 @@ namespace {
                     if (u.hp <= 0)
                         continue;
                     bool crit = false;
-                    float bite = 0.55f * m_boons.taken
+                    float bite = 0.55f * m_boons.suffered()
                         * (m_boons.guardSweep && guarding() ? 0.5f : 1.0f);
                     int dealt = hitFor(atk, u.sheet.def, bite, &crit);
                     u.hp = std::max(0, u.hp - dealt);
@@ -1117,7 +1117,7 @@ namespace {
             // job: a Guard turns the shadow's best round into its dullest.
             bool guarded = m_guard >= 0 && target == &m_units[size_t(m_guard)];
             bool crit = false;
-            float bite = (guarded ? 0.5f : 1.0f) * m_boons.taken;
+            float bite = (guarded ? 0.5f : 1.0f) * m_boons.suffered();
             int dealt = hitFor(atk, target->sheet.def, bite, &crit);
             target->hp = std::max(0, target->hp - dealt);
             playSfx(crit ? Sfx::Crit : Sfx::Hit);
@@ -1618,7 +1618,9 @@ namespace {
                     != m_held.begin() + long(i))
                     continue;
 
-                if (y + 28.0f > kHeldY + 13.0f * 30.0f)
+                // Sixteen rows, which is what fits above the fight log: the
+                // last one ends at 676, and the log starts at 700.
+                if (y + 28.0f > kHeldY + 17.0f * 30.0f)
                     break;
                 long copies = std::count(m_held.begin(), m_held.end(), id);
                 std::string times = copies > 1

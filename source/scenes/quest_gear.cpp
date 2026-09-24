@@ -599,6 +599,23 @@ namespace {
                 }
             }
 
+            // The numbers they come to, worked out first so the widest can
+            // be measured: the change column stands just to the left of it.
+            // At a fixed distance from the edge it ran into "1234  (+567)"
+            // once the numbers reached four figures.
+            TextStyle value;
+            value.size = theme::textBase;
+            value.weight = FontWeight::Bold;
+            std::string texts[5];
+            float widest = 0.0f;
+            for (int i = 0; i < 5; i++) {
+                texts[i] = now[i] > was[i]
+                    ? format("%u  (+%u)", unsigned(now[i]), unsigned(now[i] - was[i]))
+                    : format("%u", unsigned(now[i]));
+                widest = std::max(widest, r.measure(texts[i], value));
+            }
+            float changeRight = inner.w - widest - theme::s5;
+
             float y = inner.y + 208.0f;
             for (int i = 0; i < 5; i++) {
                 TextStyle key;
@@ -612,21 +629,15 @@ namespace {
                     move.size = theme::textSm;
                     move.weight = FontWeight::Bold;
                     move.color = change[i] > 0 ? theme::success : theme::danger;
-                    // In the middle of the row, between the name and the
-                    // number it would become.
-                    r.text(Rect { inner.x, y, inner.w - 150.0f, 28.0f },
+                    // Between the name and the number it would become, and
+                    // never over the number.
+                    r.text(Rect { inner.x, y, changeRight, 28.0f },
                         format(change[i] > 0 ? "+%d" : "%d", change[i]), move,
                         Align::Right, VAlign::Top);
                 }
 
-                TextStyle value;
-                value.size = theme::textBase;
-                value.weight = FontWeight::Bold;
                 value.color = now[i] > was[i] ? theme::success : theme::fg1;
-                std::string text = now[i] > was[i]
-                    ? format("%u  (+%u)", unsigned(now[i]), unsigned(now[i] - was[i]))
-                    : format("%u", unsigned(now[i]));
-                r.text(Rect { inner.x, y - 2.0f, inner.w, 30.0f }, text, value,
+                r.text(Rect { inner.x, y - 2.0f, inner.w, 30.0f }, texts[i], value,
                     Align::Right, VAlign::Top);
                 y += 44.0f;
             }
