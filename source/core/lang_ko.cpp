@@ -1313,6 +1313,8 @@ namespace {
         { "Floor %d is yours", "%d층 돌파" },
 
         { "You came back down", "다시 내려왔습니다" },
+        { "The tower is yours", "탑을 정복했습니다" },
+        { "There is nothing above floor %d.", "%d층 위에는 아무것도 없습니다." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d층, 아직 오르지 못했던 층의 몫으로 %u코인." },
         { "Not one floor. Cross a few more people and bring them along.",

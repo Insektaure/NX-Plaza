@@ -1272,6 +1272,8 @@ namespace {
         { "Floor %d is yours", "第%d層拿下了" },
 
         { "You came back down", "你下來了" },
+        { "The tower is yours", "塔已被你征服" },
+        { "There is nothing above floor %d.", "第%d層之上什麼也沒有了。" },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d層，還有沒到過的那些層給的%u枚硬幣。" },
         { "Not one floor. Cross a few more people and bring them along.",

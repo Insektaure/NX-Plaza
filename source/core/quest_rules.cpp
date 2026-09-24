@@ -240,9 +240,8 @@ bool fullPartyAt(uint32_t peopleMet) { return partySlots(peopleMet) >= 5; }
 Boss bossFor(int floor)
 {
     // Clamped only to keep the arithmetic honest. Boss health passes what a
-    // uint16_t holds at floor 1056, which is some hundreds of floors below
-    // where any party dies, and below the record file's own ceiling.
-    int f = std::min(999, std::max(1, floor));
+    // uint16_t holds at floor 1056, above the top of the tower.
+    int f = std::min(kTopFloor, std::max(1, floor));
     Boss b;
     b.hp = uint16_t(90 + 62 * f);
     b.atk = uint16_t(12 + 5 * f);

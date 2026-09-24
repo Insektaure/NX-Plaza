@@ -1493,6 +1493,9 @@ namespace {
         { "Floor %d is yours", "Stockwerk %d gehört dir" },
 
         { "You came back down", "Du bist wieder heruntergekommen" },
+        { "The tower is yours", "Der Turm gehört dir" },
+        { "There is nothing above floor %d.",
+            "Über Stockwerk %d gibt es nichts mehr." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d Stockwerke, und %u Münzen für die, die du noch nicht "
             "erreicht hattest." },

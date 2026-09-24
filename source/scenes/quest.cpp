@@ -271,7 +271,7 @@ namespace {
             Phase_Fight,     // a floor resolving itself
             Phase_Won,       // the floor's spoils, waiting on you
             Phase_Boon,      // three blessings, waiting on you
-            Phase_Over,      // wiped or stopped; there is no top
+            Phase_Over,      // wiped, stopped, or at the top
         };
 
         // A number rising off whoever it happened to, which is how a fight
@@ -676,6 +676,12 @@ namespace {
         // ten times, not about skipping the one decision in the climb.
         void onward()
         {
+            // Nothing above the last floor, so the climb ends here rather
+            // than on a thousandth that is the same shadow again.
+            if (m_floor >= kTopFloor) {
+                stop();
+                return;
+            }
             // Not on the floor the climb began on: that one is this run's
             // floor one, and floor one has never paid a blessing.
             if (m_floor % 5 == 0 && m_floor != m_start && offer())
@@ -2036,7 +2042,7 @@ namespace {
         // that may as well not have fallen.
         void drawWon(App& app, Renderer& r)
         {
-            app.hint("A", "next floor");
+            app.hint("A", m_floor >= kTopFloor ? "done" : "next floor");
             app.hint("X",
                 QuestRecord::get().autoAdvance() ? "stop on each floor"
                                                  : "keep going on its own");
@@ -2113,9 +2119,17 @@ namespace {
             app.hint("A", "pick again");
             app.hint("B", "back");
 
+            // Stopping on the last floor and carrying on from it end the
+            // same way, so the top is asked of the floor rather than of how
+            // the climb was left. It has a sentence more to say, and a line
+            // more to say it in.
+            bool top = m_deepest >= kTopFloor;
+            int lines = top ? 3 : 2;
+
             constexpr float kW = 1000.0f;
             r.rect(r.viewport(), theme::scrim);
-            Rect box { Renderer::DesignWidth * 0.5f - kW * 0.5f, 120.0f, kW, 260.0f };
+            Rect box { Renderer::DesignWidth * 0.5f - kW * 0.5f, 120.0f, kW,
+                260.0f + float(lines - 2) * 35.0f };
             r.roundRect(box, theme::r5, theme::bg1);
             r.strokeRect(box, theme::r5, theme::stroke, theme::stroke2);
             Rect inner = box.inset(theme::s7, theme::s6);
@@ -2128,7 +2142,10 @@ namespace {
             title.tracking = theme::trackingTight;
             title.leading = theme::leadingTight;
             r.text(inner.x, y,
-                m_stopped ? tr("You came back down") : tr("The party falls"), title);
+                top             ? tr("The tower is yours")
+                    : m_stopped ? tr("You came back down")
+                                : tr("The party falls"),
+                title);
             y += title.size * theme::leadingTight + theme::s3;
 
             TextStyle body;
@@ -2139,6 +2156,9 @@ namespace {
                                  "them along."))
                 : format(tr("%d floors, and %u coins for the ones you had not reached."),
                     m_deepest - m_start + 1, unsigned(m_earned));
+            if (top)
+                line = format(tr("There is nothing above floor %d."), kTopFloor) + " "
+                    + line;
             if (m_found == 1) {
                 line += " ";
                 line += format(tr("One %s piece came back with you."),
@@ -2148,7 +2168,8 @@ namespace {
                 line += format(tr("%d pieces came back with you, the best of them %s."),
                     m_found, tr(qualityName(m_bestFound)));
             }
-            y += r.textWrapped(Rect { inner.x, y, inner.w, 70.0f }, line, body, 2);
+            y += r.textWrapped(Rect { inner.x, y, inner.w, 35.0f * float(lines) }, line,
+                body, lines);
 
             Rect back { box.right() - 60.0f, box.y + 18.0f, 42.0f, 42.0f };
             app.touchZone(back.inset(-theme::s3, -theme::s3), Zone_Back);

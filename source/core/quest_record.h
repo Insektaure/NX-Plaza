@@ -29,21 +29,16 @@ namespace nxp {
 // otherwise: the token is on the same SD card as the file.
 class QuestRecord {
 public:
-    // Twelve full parties' worth - a party of five wears twenty pieces - and
-    // two kilobytes of file at eight bytes a piece.
-    //
-    // A cap at all because a bag with no bottom is a bag nobody ever tidies,
-    // and because the file would otherwise grow for ever. Where the cap sits
-    // is a different question, and 120 was answering the wrong one: nothing
-    // in the format pushes back until the item count stops fitting in the
-    // sixteen bits the header gives it, and the clear-out, the lock and the
-    // eviction all exist precisely so that a deep bag is manageable.
+    // A whole climb's worth. A run from the bottom to
+    // the top turns up five to eight hundred pieces, and at 250 the bag was
+    // full long before the top and throwing gear out on the way up. Eight
+    // kilobytes of file at eight bytes a piece.
     //
     // Raising it is safe in both directions. A file written with more than a
-    // reader's limit is refused rather than truncated, so a bag of 250 opened
-    // by a build that still says 120 reads as no record at all - which is why
-    // this only ever goes up.
-    static constexpr size_t kBagLimit = 250;
+    // reader's limit is refused rather than truncated, so a bag of 1000
+    // opened by a build that still says 250 reads as no record at all - which
+    // is why this only ever goes up.
+    static constexpr size_t kBagLimit = 1000;
 
     // Four item ids, in slot order. Zero is an empty slot.
     struct Loadout {
@@ -118,14 +113,31 @@ public:
     const std::vector<Item>& items() const { return m_items; }
     bool bagFull() const { return m_items.size() >= kBagLimit; }
 
-    // The id to stamp on the next thing that falls. Ids are never reused, so
-    // a loadout cannot come back pointing at whatever took a dead item's
-    // place in the list.
-    uint16_t nextId() const { return m_nextId; }
+    // The id to stamp on the next thing that falls.
+    //
+    // Handed out in order, one past the last, for as long as sixteen bits
+    // last - which a bag of a thousand, filled from the bottom of the tower
+    // to the top, can spend in eighty climbs. After that it is the lowest id
+    // that nothing holds: not a piece in the bag, and not a peg anybody
+    // still has it on. Reusing one is safe because discard() takes a piece
+    // off whoever was wearing it, so a freed id is one no loadout can come
+    // back pointing at.
+    //
+    // Which means an id says nothing about age once the counter has run
+    // out. The bag's own order does: add() appends, and nothing reorders it.
+    uint16_t nextId() const;
 
     // Takes the item as it is, id and all. False when the bag is full, which
-    // is the caller's cue to say so rather than to silently drop it.
+    // is the caller's cue to say so rather than to silently drop it, and
+    // when the id is already in use, which nextId() never hands out.
     bool add(const Item& item);
+
+    // How many pieces add() has taken since the app started, and the id of
+    // the last. Not saved. For a screen that wants to notice something new
+    // arriving without asking the ids, which stopped being in order the
+    // moment the counter ran out.
+    uint32_t added() const { return m_added; }
+    uint16_t lastAdded() const { return m_lastAdded; }
 
     // Kept, or let go. A locked piece is refused by discard(), skipped by
     // clearOut(), and never chosen as the worst spare when a drop needs
@@ -279,11 +291,39 @@ private:
     Wearing* rowFor(const std::string& owner);
     const Wearing* rowFor(const std::string& owner) const;
 
+    // Drops every row with nothing on any peg. A row is only ever made to
+    // hold something, and one left empty is indistinguishable from none -
+    // loadout() answers the same for both - except that it still counts
+    // towards kMaxEquips, so a collection that dressed and undressed enough
+    // people would find equip() quietly refusing somebody new. Called
+    // wherever a peg can be emptied. Returns how many went.
+    size_t dropEmptyRows();
+
     uint32_t m_deepest = 0;
     uint32_t m_climbs = 0;
     uint32_t m_week = 0;         // Mondays since the epoch, from the plaza
     uint16_t m_paidThisWeek = 0; // how far up this week has already paid
+    // One past the last id handed out in order; 0 once sixteen bits have
+    // run out, after which nextId() looks for a free one instead.
     uint16_t m_nextId = 1;
+    uint32_t m_added = 0;
+    uint16_t m_lastAdded = 0;
+
+    // Moves the counter past `id`, and spends it for good when that was the
+    // last one sixteen bits hold.
+    void countPast(uint16_t id);
+
+    // Whether any piece in the bag or any peg holds it.
+    bool idInUse(uint16_t id) const;
+
+    // Gives every piece that shares an id with an earlier one a fresh id of
+    // its own. A record from before the counter could run out carried on
+    // stamping the last id there is on everything that fell, so a bag can
+    // arrive holding several pieces of the same id. The first keeps it,
+    // along with whoever is wearing it; the rest were never on a peg,
+    // because a peg holds an id and the id found the first. Returns how many
+    // were renumbered.
+    size_t renumberTwins();
     uint16_t m_stones = 0;
     // The two bytes behind the counts, which the file has always written
     // as zero. One bit of it is in use; the rest is the next small thing.

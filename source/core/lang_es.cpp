@@ -1469,6 +1469,8 @@ namespace {
         { "Floor %d is yours", "El piso %d es tuyo" },
 
         { "You came back down", "Has vuelto a bajar" },
+        { "The tower is yours", "La torre es tuya" },
+        { "There is nothing above floor %d.", "No hay nada por encima del piso %d." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d pisos, y %u monedas por los que no habías alcanzado." },
         { "Not one floor. Cross a few more people and bring them along.",

@@ -1461,6 +1461,8 @@ namespace {
         { "Floor %d is yours", "Verdieping %d is van jou" },
 
         { "You came back down", "Je bent weer naar beneden gekomen" },
+        { "The tower is yours", "De toren is van jou" },
+        { "There is nothing above floor %d.", "Er is niets boven verdieping %d." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d verdiepingen, en %u munten voor de verdiepingen die je "
             "nog niet had gehaald." },

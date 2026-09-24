@@ -86,9 +86,13 @@ int partySlots(uint32_t peopleMet);
 // threshold spelled out twice is a threshold that moves once.
 bool fullPartyAt(uint32_t peopleMet);
 
-// The tower has no top. A party's damage is fixed by who is in it and by what
-// they carry; the shadow's health is not, so a climb ends where the roster
-// and the gear run out rather than at a number picked here.
+// The top of the tower. A party's damage is fixed by who is in it and by what
+// they carry; the shadow's health is not, so almost every climb ends where
+// the roster and the gear run out, long before this. The one that does not
+// ends here, on a screen of its own, rather than on a thousandth floor that
+// is the nine hundred and ninety-ninth again with no coin and no record.
+constexpr int kTopFloor = 999;
+
 Boss bossFor(int floor);
 
 // The same shadow on the same floor every time, so floor seven is a place
@@ -128,7 +132,7 @@ enum Slot : uint8_t {
 // can produce would mean a balance change could not reach the gear people
 // already own.
 struct Item {
-    uint16_t id = 0; // 0 is "no item"; ids are never reused
+    uint16_t id = 0; // 0 is "no item"; see QuestRecord::nextId()
     uint8_t quality = Quality_Common;
     uint8_t slot = Slot_Weapon;
     uint16_t seed = 0;

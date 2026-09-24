@@ -264,7 +264,21 @@ void QuestRecord::load()
     // An id counter behind the gear it is supposed to be ahead of would hand
     // out an id already in use, and a loadout would then point at two things.
     for (const Item& item : m_items)
-        m_nextId = std::max<uint16_t>(m_nextId, uint16_t(item.id + 1));
+        countPast(item.id);
+
+    // Rows emptied before they were dropped as they emptied. After the
+    // hash has been checked, because the hash is over the rows as written.
+    size_t bare = dropEmptyRows();
+    if (bare > 0)
+        LOG("quest: %zu people in %s were wearing nothing; their rows are gone", bare,
+            kFile);
+
+    size_t twins = renumberTwins();
+    if (twins > 0) {
+        LOG("quest: %zu pieces in %s shared an id; they have their own now", twins,
+            kFile);
+        m_dirty = true;
+    }
 }
 
 bool QuestRecord::flush()
@@ -301,12 +315,86 @@ void QuestRecord::noteClimb()
 
 // ---------------------------------------------------------------- the bag
 
+void QuestRecord::countPast(uint16_t id)
+{
+    if (m_nextId == 0 || id < m_nextId)
+        return; // spent already, or not ahead of it
+    m_nextId = id == 0xFFFF ? uint16_t(0) : uint16_t(id + 1);
+}
+
+bool QuestRecord::idInUse(uint16_t id) const
+{
+    if (find(id))
+        return true;
+    for (const Wearing& row : m_worn) {
+        for (int slot = 0; slot < Slot_Count; slot++) {
+            if (row.gear.worn[slot] == id)
+                return true;
+        }
+    }
+    return false;
+}
+
+uint16_t QuestRecord::nextId() const
+{
+    if (m_nextId != 0 && !idInUse(m_nextId))
+        return m_nextId;
+
+    // Sixteen bits spent. One pass to mark what is held, one to find the
+    // lowest hole: eight kilobytes of bits, and only ever on this path.
+    std::vector<bool> held(0x10000, false);
+    for (const Item& item : m_items)
+        held[item.id] = true;
+    for (const Wearing& row : m_worn) {
+        for (int slot = 0; slot < Slot_Count; slot++)
+            held[row.gear.worn[slot]] = true;
+    }
+    for (uint32_t id = 1; id <= 0xFFFF; id++) {
+        if (!held[id])
+            return uint16_t(id);
+    }
+    // A thousand pieces and a few hundred pegs cannot hold sixty-five
+    // thousand ids, so this is unreachable; 0 is "no item", which add()
+    // refuses rather than stamping.
+    return 0;
+}
+
+size_t QuestRecord::renumberTwins()
+{
+    std::vector<bool> held(0x10000, false);
+    std::vector<size_t> twins;
+    for (size_t i = 0; i < m_items.size(); i++) {
+        if (held[m_items[i].id])
+            twins.push_back(i);
+        else
+            held[m_items[i].id] = true;
+    }
+    if (twins.empty())
+        return 0;
+    for (const Wearing& row : m_worn) {
+        for (int slot = 0; slot < Slot_Count; slot++)
+            held[row.gear.worn[slot]] = true;
+    }
+    uint32_t hole = 1;
+    for (size_t i : twins) {
+        while (hole <= 0xFFFF && held[hole])
+            hole++;
+        if (hole > 0xFFFF)
+            break; // unreachable, for the same reason as in nextId()
+        m_items[i].id = uint16_t(hole);
+        held[hole] = true;
+    }
+    return twins.size();
+}
+
 bool QuestRecord::add(const Item& item)
 {
-    if (!item.valid() || bagFull())
+    if (!item.valid() || bagFull() || find(item.id))
         return false;
     m_items.push_back(item);
-    m_nextId = std::max<uint16_t>(m_nextId, uint16_t(item.id + 1));
+    countPast(item.id);
+    m_added++;
+    m_lastAdded = item.id;
     m_dirty = true;
     return true;
 }
@@ -343,6 +431,7 @@ void QuestRecord::discard(uint16_t itemId)
                 row.gear.worn[slot] = 0;
         }
     }
+    dropEmptyRows();
     m_dirty = true;
 }
 
@@ -411,7 +500,29 @@ void QuestRecord::equip(const std::string& owner, uint8_t slot, uint16_t itemId)
         row = &m_worn.back();
     }
     row->gear.worn[slot] = itemId;
+    // Last, because it moves rows about and `row` points into them. Covers
+    // both ways a peg empties here: this one cleared, and the piece taken
+    // off whoever had it before.
+    dropEmptyRows();
     m_dirty = true;
+}
+
+size_t QuestRecord::dropEmptyRows()
+{
+    size_t before = m_worn.size();
+    m_worn.erase(std::remove_if(m_worn.begin(), m_worn.end(),
+                     [](const Wearing& row) {
+                         for (int slot = 0; slot < Slot_Count; slot++) {
+                             if (row.gear.worn[slot] != 0)
+                                 return false;
+                         }
+                         return true;
+                     }),
+        m_worn.end());
+    size_t gone = before - m_worn.size();
+    if (gone > 0)
+        m_dirty = true;
+    return gone;
 }
 
 bool QuestRecord::wearer(uint16_t itemId, std::string& owner) const
@@ -539,8 +650,9 @@ bool QuestRecord::wouldUpgrade(const Item& item) const
         if (itemRating(item) > itemRating(*against))
             return true;
     }
-    // Nobody has ever equipped anything, so there is nothing to be better
-    // than. Marking the whole bag would say as little as marking none of it,
+    // Nobody is wearing anything - a row with every peg empty is dropped, so
+    // a party stripped bare reads the same as one never dressed - and there
+    // is nothing to be better than. Marking the whole bag would say as little as marking none of it,
     // and the gear screen is where a party gets dressed the first time.
     return false;
 }
@@ -671,7 +783,7 @@ uint16_t QuestRecord::forge(const uint16_t ids[kForgeSlots], uint32_t atFloor)
     // losing the metal would be the worst possible way for that assumption
     // to turn out wrong.
     Item made;
-    made.id = m_nextId;
+    made.id = nextId();
     made.quality = quality;
     made.slot = slot >= 0 && slot < Slot_Count ? uint8_t(slot)
                                                : uint8_t(randomBelow(Slot_Count));

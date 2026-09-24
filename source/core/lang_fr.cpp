@@ -1549,6 +1549,8 @@ namespace {
 
         // How a climb ends: the top, a wipe, or walking back down.
         { "You came back down", "Vous êtes redescendu" },
+        { "The tower is yours", "La tour est à vous" },
+        { "There is nothing above floor %d.", "Il n'y a rien au-dessus de l'étage %d." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d étages, et %u pièces pour ceux que vous n'aviez pas atteints." },
         { "Not one floor. Cross a few more people and bring them along.",

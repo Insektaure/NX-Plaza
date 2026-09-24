@@ -108,7 +108,7 @@ played for nothing; where there is a bet it is optional, and the odds are
 honest and against you, so the games are a way to spend coins rather than a way
 to make them.
 
-- **The quest** - a tower with no top, climbed by a party drawn from your
+- **The quest** - a tower of 999 floors, climbed by a party drawn from your
   collection. The fight runs itself; what it is for is the gear the shadows
   drop. [More below.](#the-quest)
 - **The Mii tower** - drop the people you have met on top of each other, one
@@ -128,8 +128,8 @@ to make them.
 ### The quest
 
 The one game with something to keep. A party of the people you have crossed
-climbs a tower that has no top, the fight runs itself, and how far up you got
-is the score.
+climbs a tower of 999 floors, the fight runs itself, and how far up you got
+is the score. Clearing the last one ends the climb on a screen of its own.
 
 | | |
 | --- | --- |

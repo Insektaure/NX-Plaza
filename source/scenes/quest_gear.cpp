@@ -238,6 +238,7 @@ namespace {
         void refill()
         {
             m_fits.clear();
+            m_ranked.clear();
             const QuestRecord& record = QuestRecord::get();
             if (m_party.empty())
                 return;
@@ -252,14 +253,18 @@ namespace {
                 std::string wearer;
                 if (record.wearer(item.id, wearer) && wearer != owner)
                     continue;
-                m_fits.push_back(item);
+                m_ranked.push_back(Ranked { item, itemRating(item) });
             }
-            std::stable_sort(m_fits.begin(), m_fits.end(),
-                [](const Item& a, const Item& b) {
-                    if (a.quality != b.quality)
-                        return a.quality > b.quality;
-                    return itemRating(a) > itemRating(b);
+            // Rated once a piece rather than twice a comparison: a peg's
+            // share of a full bag is a quarter of a thousand.
+            std::stable_sort(m_ranked.begin(), m_ranked.end(),
+                [](const Ranked& a, const Ranked& b) {
+                    if (a.item.quality != b.item.quality)
+                        return a.item.quality > b.item.quality;
+                    return a.rating > b.rating;
                 });
+            for (const Ranked& row : m_ranked)
+                m_fits.push_back(row.item);
             if (m_pick >= int(m_fits.size()))
                 m_pick = std::max(0, int(m_fits.size()) - 1);
             if (m_fits.empty())
@@ -826,6 +831,11 @@ namespace {
 
         std::vector<GearPerson> m_party;
         std::vector<Item> m_fits;
+        struct Ranked {
+            Item item;
+            uint32_t rating = 0;
+        };
+        std::vector<Ranked> m_ranked; // what m_fits is sorted from
         int m_who = 0;
         int m_peg = 0;
         int m_pick = 0;

@@ -238,17 +238,19 @@ namespace {
             }
 
             // Which piece the forge has just made, without the confirmation
-            // having to reach back into this screen to say so: ids are handed
-            // out in order and never reused, so anything above the highest id
-            // this screen has already seen is new.
-            uint16_t top = 0;
-            for (const Item& item : record.items())
-                top = std::max(top, item.id);
-            if (m_topId == 0)
-                m_topId = top; // the first frame: nothing here is new
-            else if (top > m_topId) {
-                m_made = top;
-                m_topId = top;
+            // having to reach back into this screen to say so: the record
+            // counts what it takes in, so a count that has moved since the
+            // last frame is a new piece, and the record says which. Not the
+            // highest id, which is only the newest until the ids run out and
+            // start being reused.
+            uint32_t added = record.added();
+            if (!m_seenAny) {
+                m_seenAny = true; // the first frame: nothing here is new
+                m_added = added;
+            } else if (added != m_added) {
+                m_added = added;
+                if (record.find(record.lastAdded()))
+                    m_made = record.lastAdded();
             }
         }
 
@@ -373,8 +375,8 @@ namespace {
                 // there is nothing here it needs. The sockets empty
                 // themselves, because gather() drops any socket whose piece
                 // is no longer spare and all three have just left the bag;
-                // and the new piece is found by its id, which is the highest
-                // there is.
+                // and the new piece is found by the record's count of what it
+                // has taken in, which has just moved.
                 tr("Melt them down"), [sockets, at]() {
                     QuestRecord& record = QuestRecord::get();
                     if (record.forge(sockets, at) == 0)
@@ -679,7 +681,8 @@ namespace {
         uint16_t m_socket[QuestRecord::kForgeSlots] = {};
         int m_socketPick = 0;
         uint16_t m_made = 0;  // the last thing forged, marked in the list
-        uint16_t m_topId = 0; // the highest id seen, which is how it is spotted
+        uint32_t m_added = 0;   // the record's count of arrivals, last frame
+        bool m_seenAny = false; // and whether there has been a last frame
 
         uint8_t m_focus = Focus_Bag;
         std::vector<Item> m_shown;

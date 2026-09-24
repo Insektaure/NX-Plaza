@@ -1293,6 +1293,8 @@ namespace {
         { "Floor %d is yours", "%d階を突破" },
 
         { "You came back down", "降りてきました" },
+        { "The tower is yours", "塔を制覇した" },
+        { "There is nothing above floor %d.", "%d階より上には何もありません。" },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d階、まだ届いていなかった階のぶんで%uコイン。" },
         { "Not one floor. Cross a few more people and bring them along.",

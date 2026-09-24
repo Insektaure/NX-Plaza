@@ -197,30 +197,37 @@ namespace {
 
         // Everything that passes the filter, the best of it first. Rebuilt
         // every frame because throwing something away changes it, and a full
-        // bag is 250 rows of eight bytes.
+        // bag is a thousand rows of eight bytes.
+        //
+        // The rating is worked out once a piece rather than inside the sort,
+        // which would ask for it twice a comparison - some twenty thousand
+        // stat rolls a frame on a full bag.
         void gather()
         {
-            m_shown.clear();
+            m_ranked.clear();
             for (const Item& item : QuestRecord::get().items()) {
                 if (m_filter != 0 && item.slot != m_filter - 1)
                     continue;
-                m_shown.push_back(item);
+                m_ranked.push_back(Ranked { item, m_newest ? 0u : itemRating(item) });
             }
-            // Best first, or newest first. Newest is the id: they are handed
-            // out in order and never reused, so the highest id is the last
-            // thing the tower gave up - which is what you are looking for
-            // when you come in off a climb.
+            // Best first, or newest first. Newest is the bag's own order
+            // backwards: add() appends and nothing reorders it, so the last
+            // row is the last thing the tower gave up - which is what you are
+            // looking for when you come in off a climb. Not the id, which
+            // stops being in order once sixteen bits of them have run out.
             if (m_newest) {
-                std::stable_sort(m_shown.begin(), m_shown.end(),
-                    [](const Item& a, const Item& b) { return a.id > b.id; });
+                std::reverse(m_ranked.begin(), m_ranked.end());
             } else {
-                std::stable_sort(m_shown.begin(), m_shown.end(),
-                    [](const Item& a, const Item& b) {
-                        if (a.quality != b.quality)
-                            return a.quality > b.quality;
-                        return itemRating(a) > itemRating(b);
+                std::stable_sort(m_ranked.begin(), m_ranked.end(),
+                    [](const Ranked& a, const Ranked& b) {
+                        if (a.item.quality != b.item.quality)
+                            return a.item.quality > b.item.quality;
+                        return a.rating > b.rating;
                     });
             }
+            m_shown.clear();
+            for (const Ranked& row : m_ranked)
+                m_shown.push_back(row.item);
             if (m_pick >= int(m_shown.size()))
                 m_pick = std::max(0, int(m_shown.size()) - 1);
         }
@@ -743,6 +750,14 @@ namespace {
         bool m_ranks = false;  // the "throw away a whole rank" panel
         int m_rank = 0;
         std::vector<Item> m_shown;
+        // What gather() sorts: a piece and its rating, worked out once.
+        // Kept between frames so the vector is not grown from nothing sixty
+        // times a second.
+        struct Ranked {
+            Item item;
+            uint32_t rating = 0;
+        };
+        std::vector<Ranked> m_ranked;
         std::vector<std::pair<std::string, std::string>> m_names; // id -> handle
         int m_filter = 0; // 0 is everything, otherwise the slot plus one
         int m_pick = 0;

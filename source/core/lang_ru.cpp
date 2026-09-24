@@ -1462,6 +1462,8 @@ namespace {
         { "Floor %d is yours", "Этаж %d ваш" },
 
         { "You came back down", "Вы спустились обратно" },
+        { "The tower is yours", "Башня покорена" },
+        { "There is nothing above floor %d.", "Выше этажа %d ничего нет." },
         { "%d floors, and %u coins for the ones you had not reached.",
             "%d этажей и %u монет за те, до которых вы ещё не доходили." },
         { "Not one floor. Cross a few more people and bring them along.",
