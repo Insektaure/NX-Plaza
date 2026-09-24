@@ -1688,6 +1688,8 @@ namespace {
         { "The stair offers you something", "De trap biedt je iets aan" },
         { "It lasts as long as the climb does.", "Het houdt zo lang als de klim." },
         { "take it", "nemen" },
+        { "take none", "geen nemen" },
+        { "Take none of them", "Geen van drieën nemen" },
         { "blessings", "zegeningen" },
         { "keep going on its own", "vanzelf doorgaan" },
         { "stop on each floor", "bij elke verdieping stoppen" },

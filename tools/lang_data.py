@@ -9146,6 +9146,8 @@ LANGS["de"].update({
     'The stair offers you something': 'Die Treppe bietet dir etwas an',
     'It lasts as long as the climb does.': 'Es hält so lange wie der Aufstieg.',
     'take it': 'nehmen',
+    'take none': 'keine nehmen',
+    'Take none of them': 'Keine davon nehmen',
     '%s gets back up': '%s steht wieder auf',
 })
 LANGS["es"].update({
@@ -9188,6 +9190,8 @@ LANGS["es"].update({
     'The stair offers you something': 'La escalera te ofrece algo',
     'It lasts as long as the climb does.': 'Dura lo que dure la subida.',
     'take it': 'tomarla',
+    'take none': 'no tomar ninguna',
+    'Take none of them': 'No tomar ninguna',
     '%s gets back up': '%s se levanta',
 })
 LANGS["it"].update({
@@ -9230,6 +9234,8 @@ LANGS["it"].update({
     'The stair offers you something': 'La scala ti offre qualcosa',
     'It lasts as long as the climb does.': 'Dura quanto la scalata.',
     'take it': 'prenderla',
+    'take none': 'non prenderne nessuna',
+    'Take none of them': 'Non prenderne nessuna',
     '%s gets back up': '%s si rialza',
 })
 LANGS["nl"].update({
@@ -9272,6 +9278,8 @@ LANGS["nl"].update({
     'The stair offers you something': 'De trap biedt je iets aan',
     'It lasts as long as the climb does.': 'Het houdt zo lang als de klim.',
     'take it': 'nemen',
+    'take none': 'geen nemen',
+    'Take none of them': 'Geen van drieën nemen',
     '%s gets back up': '%s staat weer op',
 })
 LANGS["pt"].update({
@@ -9314,6 +9322,8 @@ LANGS["pt"].update({
     'The stair offers you something': 'A escada oferece-lhe algo',
     'It lasts as long as the climb does.': 'Dura o que durar a subida.',
     'take it': 'aceitar',
+    'take none': 'não levar nenhuma',
+    'Take none of them': 'Não levar nenhuma',
     '%s gets back up': '%s levanta-se',
 })
 LANGS["ru"].update({
@@ -9356,6 +9366,8 @@ LANGS["ru"].update({
     'The stair offers you something': 'Лестница что-то вам предлагает',
     'It lasts as long as the climb does.': 'Это держится, пока длится восхождение.',
     'take it': 'взять',
+    'take none': 'ничего не брать',
+    'Take none of them': 'Не брать ничего',
     '%s gets back up': '%s снова встаёт',
 })
 LANGS["ja"].update({
@@ -9398,6 +9410,8 @@ LANGS["ja"].update({
     'The stair offers you something': '階段が何かを差し出している',
     'It lasts as long as the climb does.': 'この登りのあいだだけ続きます。',
     'take it': 'もらう',
+    'take none': 'どれも取らない',
+    'Take none of them': 'どれも取らない',
     '%s gets back up': '%sが起き上がった',
 })
 LANGS["ko"].update({
@@ -9440,6 +9454,8 @@ LANGS["ko"].update({
     'The stair offers you something': '계단이 무언가를 내밉니다',
     'It lasts as long as the climb does.': '이번 등반 동안만 이어집니다.',
     'take it': '받기',
+    'take none': '받지 않기',
+    'Take none of them': '아무것도 받지 않기',
     '%s gets back up': '%s이(가) 다시 일어났습니다',
 })
 LANGS["zh_hans"].update({
@@ -9482,6 +9498,8 @@ LANGS["zh_hans"].update({
     'The stair offers you something': '楼梯递给你一样东西',
     'It lasts as long as the climb does.': '它只持续这一次攀登。',
     'take it': '拿下',
+    'take none': '都不要',
+    'Take none of them': '一个都不要',
     '%s gets back up': '%s 又站了起来',
 })
 LANGS["zh_hant"].update({
@@ -9524,6 +9542,8 @@ LANGS["zh_hant"].update({
     'The stair offers you something': '樓梯遞給你一樣東西',
     'It lasts as long as the climb does.': '它只持續這一次攀登。',
     'take it': '拿下',
+    'take none': '都不要',
+    'Take none of them': '一個都不要',
     '%s gets back up': '%s 又站了起來',
 })
 

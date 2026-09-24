@@ -1728,6 +1728,8 @@ namespace {
         { "The stair offers you something", "Die Treppe bietet dir etwas an" },
         { "It lasts as long as the climb does.", "Es hält so lange wie der Aufstieg." },
         { "take it", "nehmen" },
+        { "take none", "keine nehmen" },
+        { "Take none of them", "Keine davon nehmen" },
         { "blessings", "segen" },
         { "keep going on its own", "von allein weiterlaufen" },
         { "stop on each floor", "bei jedem Stockwerk anhalten" },

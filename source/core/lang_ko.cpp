@@ -1514,6 +1514,8 @@ namespace {
         { "The stair offers you something", "계단이 무언가를 내밉니다" },
         { "It lasts as long as the climb does.", "이번 등반 동안만 이어집니다." },
         { "take it", "받기" },
+        { "take none", "받지 않기" },
+        { "Take none of them", "아무것도 받지 않기" },
         { "blessings", "축복" },
         { "keep going on its own", "자동으로 진행" },
         { "stop on each floor", "층마다 멈추기" },

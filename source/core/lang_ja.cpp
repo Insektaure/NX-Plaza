@@ -1489,6 +1489,8 @@ namespace {
         { "The stair offers you something", "階段が何かを差し出している" },
         { "It lasts as long as the climb does.", "この登りのあいだだけ続きます。" },
         { "take it", "もらう" },
+        { "take none", "どれも取らない" },
+        { "Take none of them", "どれも取らない" },
         { "blessings", "さずかりもの" },
         { "keep going on its own", "自動でつづける" },
         { "stop on each floor", "階ごとに止まる" },

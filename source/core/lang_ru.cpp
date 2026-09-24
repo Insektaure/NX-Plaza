@@ -1686,6 +1686,8 @@ namespace {
         { "It lasts as long as the climb does.",
             "Это держится, пока длится восхождение." },
         { "take it", "взять" },
+        { "take none", "ничего не брать" },
+        { "Take none of them", "Не брать ничего" },
         { "blessings", "благословения" },
         { "keep going on its own", "идти дальше само" },
         { "stop on each floor", "останавливаться на каждом этаже" },

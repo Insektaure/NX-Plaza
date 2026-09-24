@@ -1463,6 +1463,8 @@ namespace {
         { "The stair offers you something", "樓梯遞給你一樣東西" },
         { "It lasts as long as the climb does.", "它只持續這一次攀登。" },
         { "take it", "拿下" },
+        { "take none", "都不要" },
+        { "Take none of them", "一個都不要" },
         { "blessings", "祝福" },
         { "keep going on its own", "自動繼續" },
         { "stop on each floor", "每層都停" },

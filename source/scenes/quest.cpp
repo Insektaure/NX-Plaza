@@ -50,6 +50,7 @@ namespace {
             Zone_StartDown,
             Zone_StartUp,
             Zone_Boon,
+            Zone_BoonSkip,
             Zone_Back,
         };
 
@@ -119,13 +120,30 @@ namespace {
                     takeBoon(m_boonPick);
                     return;
                 }
-                if (input.navLeft)
+                // None of them, which is sometimes the right answer: Reckless
+                // to a party that is already falling over, Deep breath to one
+                // that has Battle rhythm. Walking past costs nothing - the
+                // next offer is drawn fresh and the limits count only what
+                // was taken. The button under the cards, or B from anywhere.
+                if ((tapped && tap.is(Zone_BoonSkip)) || input.back()) {
+                    takeBoon(-1);
+                    return;
+                }
+                if (input.navDown)
+                    m_boonSkip = true;
+                if (input.navUp)
+                    m_boonSkip = false;
+                if (input.navLeft) {
+                    m_boonSkip = false;
                     m_boonPick = (m_boonPick + int(m_offer.size()) - 1)
                         % int(m_offer.size());
-                if (input.navRight)
+                }
+                if (input.navRight) {
+                    m_boonSkip = false;
                     m_boonPick = (m_boonPick + 1) % int(m_offer.size());
+                }
                 if (input.accept())
-                    takeBoon(m_boonPick);
+                    takeBoon(m_boonSkip ? -1 : m_boonPick);
                 return;
             default:
                 break;
@@ -700,6 +718,7 @@ namespace {
             if (m_offer.empty())
                 return false;
             m_boonPick = 0;
+            m_boonSkip = false;
             m_phase = Phase_Boon;
             m_clock = 0.0f;
             return true;
@@ -1941,7 +1960,8 @@ namespace {
         // different, not so that the screen is long.
         void drawBoons(App& app, Renderer& r)
         {
-            app.hint("A", "take it");
+            app.hint("A", m_boonSkip ? "take none" : "take it");
+            app.hint("B", "take none");
 
             // Over the fight, not instead of it, and behind a veil so the
             // field stops competing for the eye.
@@ -1951,12 +1971,13 @@ namespace {
             constexpr float kH = 300.0f;
             constexpr float kHead = 44.0f;
             constexpr float kSub = 30.0f;
+            constexpr float kSkipH = 72.0f;
 
             int count = std::max(1, int(m_offer.size()));
             float row = float(count) * kW + float(count - 1) * theme::s5;
             float boxW = row + theme::s7 * 2.0f;
-            float boxH = kHead + theme::s3 + kSub + theme::s6 + kH
-                + theme::s7 * 2.0f;
+            float boxH = kHead + theme::s3 + kSub + theme::s6 + kH + theme::s6
+                + kSkipH + theme::s7 * 2.0f;
             Rect box { Renderer::DesignWidth * 0.5f - boxW * 0.5f,
                 Renderer::DesignHeight * 0.5f - boxH * 0.5f, boxW, boxH };
             r.roundRect(box, theme::r5, theme::bg1);
@@ -1983,7 +2004,7 @@ namespace {
             for (int i = 0; i < int(m_offer.size()); i++) {
                 const BoonInfo& boon = boonInfo(m_offer[size_t(i)]);
                 Rect card { inner.x + float(i) * (kW + theme::s5), y, kW, kH };
-                bool here = i == m_boonPick;
+                bool here = !m_boonSkip && i == m_boonPick;
                 app.touchZone(card, Zone_Boon, i);
                 // bg2 on bg1, so a card reads as a card inside the box
                 // rather than as a hole in it.
@@ -2037,6 +2058,19 @@ namespace {
                         VAlign::Top);
                 }
             }
+
+            // Walking past all three. An outline rather than a fill, so it
+            // reads as the way out and never as a fourth card; down reaches
+            // it, up goes back to the cards.
+            std::string none = tr("Take none of them");
+            float noneW = ui::actionButtonWidth(r, none);
+            Rect skip { inner.centerX() - noneW * 0.5f, y + kH + theme::s6, noneW,
+                kSkipH };
+            app.touchZone(skip, Zone_BoonSkip);
+            ui::actionButton(r, skip, none, false,
+                app.touchHeld(Zone_BoonSkip) ? 1.0f
+                                             : (m_boonSkip ? 0.7f + 0.3f * m_pulse
+                                                           : 0.0f));
         }
 
         // What the floor gave up, and whether to go on. A screen rather
@@ -2213,6 +2247,7 @@ namespace {
         std::vector<uint8_t> m_held;  // and which ones, a repeat once per copy
         std::vector<uint8_t> m_offer; // the three on the table
         int m_boonPick = 0;
+        bool m_boonSkip = false; // the button under the cards has the focus
 
         // Five gestures, so a round can be read without reading the
         // numbers: what a Blade does, what a Spark takes, who is standing

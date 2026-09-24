@@ -1796,6 +1796,8 @@ namespace {
         { "It lasts as long as the climb does.",
             "Cela dure le temps de l'ascension." },
         { "take it", "prendre" },
+        { "take none", "n'en prendre aucune" },
+        { "Take none of them", "N'en prendre aucune" },
         { "blessings", "bénédictions" },
         { "keep going on its own", "enchaîner tout seul" },
         { "stop on each floor", "s'arrêter à chaque étage" },

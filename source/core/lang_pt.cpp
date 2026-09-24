@@ -1684,6 +1684,8 @@ namespace {
         { "The stair offers you something", "A escada oferece-lhe algo" },
         { "It lasts as long as the climb does.", "Dura o que durar a subida." },
         { "take it", "aceitar" },
+        { "take none", "não levar nenhuma" },
+        { "Take none of them", "Não levar nenhuma" },
         { "blessings", "bênçãos" },
         { "keep going on its own", "seguir sozinho" },
         { "stop on each floor", "parar em cada andar" },
