@@ -23,6 +23,24 @@ namespace {
     // a second dose; the rest set a value or a switch, and taking one
     // again would be an empty card (or, for Momentum, a reset).
     //
+    // The last number is how many copies the pool hands out. Five for the
+    // stacking ones and ten for Hale: with no limit a long climb kept adding
+    // a copy every fifth floor for ever, and even summed rather than
+    // multiplied that outgrew the tower - most parties reached the top.
+    // Limited, the stacks run out around floor two hundred and the climb
+    // ends where the gear and the collection put it. Hale is the one that
+    // sets that floor, because once the arm stops growing the shadow's does
+    // not, and it is health that decides how long a party lasts. Measured by
+    // simulating a whole season from no gear at all, forging as it went:
+    //
+    //     Hale        four people      five people
+    //     8           never, ~800      never, ~900
+    //     10          1 in 4, ~34      2 in 3, ~27 climbs
+    //     12          all, ~29         all, ~14 climbs
+    //
+    // Ten is the one where the top is there to be reached and most
+    // collections do not reach it.
+    //
     // Measured over six hundred climbs a party, one offered after every
     // fifth floor:
     //
@@ -38,33 +56,33 @@ namespace {
     // the tower. Which is why it is drawn rather than bought, and gone
     // when the run is.
     const BoonInfo kPool[] = {
-        { 1, "Whetstone", "The party hits a fifth harder.", 0, true },
-        { 2, "Ironclad", "The party takes a fifth less.", 0, true },
-        { 3, "Hale", "A fifth more health, and it fills now.", 0, true },
-        { 4, "Fleet", "Everybody is three quicker.", 0, true },
-        { 5, "Reckless", "A third harder, and a quarter softer.", 0, true },
-        { 6, "Bulwark", "A third tougher, and a fifth weaker.", 0, true },
-        { 7, "Keen edge", "Telling blows land three times as often.", 0, false },
-        { 8, "Second wind", "The first to fall gets up once, at half.", 0, false },
+        { 1, "Whetstone", "The party hits a fifth harder.", 0, true, 5 },
+        { 2, "Ironclad", "The party takes a fifth less.", 0, true, 5 },
+        { 3, "Hale", "A fifth more health, and it fills now.", 0, true, 10 },
+        { 4, "Fleet", "Everybody is three quicker.", 0, true, 5 },
+        { 5, "Reckless", "A third harder, and a quarter softer.", 0, true, 5 },
+        { 6, "Bulwark", "A third tougher, and a fifth weaker.", 0, true, 5 },
+        { 7, "Keen edge", "Telling blows land three times as often.", 0, false, 1 },
+        { 8, "Second wind", "The first to fall gets up once, at half.", 0, false, 1 },
         { 9, "Rally", "Each one who falls makes the rest hit a fifth harder.",
-            0, false },
+            0, false, 1 },
         { 10, "Momentum", "The party hits a twentieth harder for every floor from "
                           "here.",
-            0, false },
+            0, false, 1 },
         { 11, "Last stand", "Alone, the last one standing hits twice as hard.",
-            0, false },
-        { 12, "Deep breath", "Twice as much wind back between floors.", 0, false },
+            0, false, 1 },
+        { 12, "Deep breath", "Twice as much wind back between floors.", 0, false, 1 },
         { 13, "Battle rhythm", "Everybody starts each floor with their wind full.",
-            0, false },
-        { 14, "Cheap tricks", "Specials cost four instead of six.", 0, false },
+            0, false, 1 },
+        { 14, "Cheap tricks", "Specials cost four instead of six.", 0, false, 1 },
         { 15, "Long watch", "Standing in front covers the sweep as well.",
-            Class_Guard + 1, false },
+            Class_Guard + 1, false, 1 },
         { 16, "Mending hands", "The Mender heals half again, and steps in sooner.",
-            Class_Mender + 1, false },
+            Class_Mender + 1, false, 1 },
         { 17, "Bright spark", "The Spark takes twice as much off the shadow's arm.",
-            Class_Spark + 1, false },
+            Class_Spark + 1, false, 1 },
         { 18, "Scavenger", "The shadow leaves something four times in five.",
-            0, false },
+            0, false, 1 },
     };
     constexpr size_t kPoolSize = sizeof(kPool) / sizeof(kPool[0]);
 
@@ -152,6 +170,9 @@ std::vector<uint8_t> offerBoons(const std::vector<uint8_t>& held, uint32_t class
     std::vector<uint8_t> pool;
     for (const BoonInfo& b : kPool) {
         if (!b.stacks && std::find(held.begin(), held.end(), b.id) != held.end())
+            continue;
+        // A stacking one, as many times as it is allowed and no more.
+        if (b.stacks && std::count(held.begin(), held.end(), b.id) >= long(b.most))
             continue;
         // A blessing about a class nobody is is not a choice, it is a
         // wasted third of the offer.

@@ -12,6 +12,10 @@ app cannot be asked without playing it for a month.
     tools/quest_sim.py farm               progression over a season of play
     tools/quest_sim.py farm --forge 3      the same, with the forge
     tools/quest_sim.py forge              what an exchange rate is worth
+    tools/quest_sim.py blessed            a geared party with blessings, floor
+                                          by floor: what each side deals
+    tools/quest_sim.py season             from no gear to the top: how many
+                                          climbs and hours it takes
 
 `depth` is the one that says whether the port is honest: it reproduces the
 table written above kBudget in quest_rules.cpp, which was measured by the app
@@ -26,6 +30,12 @@ stops paying exactly where a large collection starts climbing.
 
 So `depth --flat` is the command that reproduces the table in the kBudget
 comment, since that table was measured before any of this existed.
+
+`depth`, `farm` and `forge` climb with no blessings at all. `blessed` and
+`season` are offered three after every fifth floor, out of quest_boons.cpp,
+and pick by a fixed priority (`--picks`) since there is nobody to choose.
+`season` is what the copy limits in kPool were set against; `--cap` and
+`--hale` change them, to measure a different limit before writing it.
 
 Stdlib only.
 """
@@ -234,6 +244,113 @@ class Boons:
         self.spark_bite = 0.08
         self.drop_chance = 50
 
+    # The three stacking numbers are sums, held to a quarter where the fight
+    # reads them - Boons::attack() and Boons::suffered().
+    def attack(self):
+        return max(LEAST, self.atk)
+
+    def suffered(self):
+        return max(LEAST, self.taken)
+
+
+LEAST = 0.25
+TOP = 999  # kTopFloor: a climb ends here
+
+# kPool, as (id, name, stacks, most, needs). `most` is the copies the pool
+# hands out; `needs` is the class it is useless without, or None.
+POOL = [
+    (1, "Whetstone", True, 5, None), (2, "Ironclad", True, 5, None),
+    (3, "Hale", True, 10, None), (4, "Fleet", True, 5, None),
+    (5, "Reckless", True, 5, None), (6, "Bulwark", True, 5, None),
+    (7, "Keen edge", False, 1, None), (8, "Second wind", False, 1, None),
+    (9, "Rally", False, 1, None), (10, "Momentum", False, 1, None),
+    (11, "Last stand", False, 1, None), (12, "Deep breath", False, 1, None),
+    (13, "Battle rhythm", False, 1, None), (14, "Cheap tricks", False, 1, None),
+    (15, "Long watch", False, 1, 0), (16, "Mending hands", False, 1, 3),
+    (17, "Bright spark", False, 1, 2), (18, "Scavenger", False, 1, None),
+]
+
+
+def apply_boon(b, bid):
+    """applyBoon()."""
+    if bid == 1:
+        b.atk += 0.20
+    elif bid == 2:
+        b.taken -= 0.20
+    elif bid == 3:
+        b.hp += 0.20
+    elif bid == 4:
+        b.spd += 3
+    elif bid == 5:
+        b.atk += 0.35
+        b.taken += 0.25
+    elif bid == 6:
+        b.taken -= 0.35
+        b.atk -= 0.20
+    elif bid == 7:
+        b.crit = 36
+    elif bid == 8:
+        b.second_wind = True
+    elif bid == 9:
+        b.rally = 0.20
+    elif bid == 10:
+        b.per_floor = 0.05
+        b.since = 0
+    elif bid == 11:
+        b.last_stand = True
+    elif bid == 12:
+        b.mp_per_floor = 8
+    elif bid == 13:
+        b.full_mp = True
+    elif bid == 14:
+        b.skill_cost = 4
+    elif bid == 15:
+        b.guard_sweep = True
+    elif bid == 16:
+        b.mend_power = 4.5
+        b.mend_at = 0.75
+    elif bid == 17:
+        b.spark_bite = 0.16
+    elif bid == 18:
+        b.drop_chance = 80
+
+
+def offer_boons(rng, held, classes, most=None):
+    """offerBoons(). `most` overrides a blessing's copy limit, by id."""
+    pool = []
+    for bid, _, stacks, cap, needs in POOL:
+        cap = (most or {}).get(bid, cap)
+        if not stacks and bid in held:
+            continue
+        if stacks and held.count(bid) >= cap:
+            continue
+        if needs is not None and needs not in classes:
+            continue
+        pool.append(bid)
+    out = []
+    for _ in range(3):
+        if not pool:
+            break
+        out.append(pool.pop(rng.randrange(len(pool))))
+    return out
+
+
+# What a player who knows the pool takes, first to last. `balanced` puts
+# Momentum first, then the one-offs that matter, then attack and survival in
+# turn; `damage` leans on Whetstone and Reckless. `random` is somebody who
+# has not read the cards.
+PICKS = {
+    "damage": [10, 13, 14, 7, 16, 15, 8, 17, 9, 12, 1, 5, 3, 2, 6, 4, 11, 18],
+    "balanced": [10, 13, 14, 16, 15, 8, 7, 17, 12, 9, 3, 1, 2, 5, 6, 4, 11, 18],
+}
+
+
+def choose_boon(picks, rng, offer):
+    if picks == "random":
+        return rng.choice(offer)
+    order = PICKS[picks]
+    return min(offer, key=order.index)
+
 
 class Member:
     __slots__ = ("base", "cls", "sheet", "max_hp", "hp", "mp")
@@ -270,12 +387,18 @@ def hit_for(rng, atk, dfn, mult, crit_pct):
 
 
 def climb(rng, party, boons, start=1, ceiling=400, drops=None,
-          scale_cap=0, scale_span=48, root=False):
+          scale_cap=0, scale_span=48, root=False, picks=None, most=None,
+          trace=None):
     """One run, bottom to wherever it ends. Returns the deepest floor cleared.
 
     `drops`, if given, is a list the shadows' leavings are appended to, which
-    is what the farm command reads. Everything else is quest.cpp.
+    is what the farm command reads. `picks` turns the blessings on - three
+    offered after every fifth floor, chosen by choose_boon() - and `most`
+    overrides their copy limits. `trace`, if given, is a Trace that is told
+    about every floor. Everything else is quest.cpp.
     """
+    held = []
+    classes = {u.cls for u in party}
     units = party
     for u in units:
         u.max_hp = max(1, int(float(u.sheet[0]) * boons.hp))
@@ -303,7 +426,7 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                 1.0 + boons.per_floor * float(boons.since))
             if boons.last_stand and standing() == 1:
                 gain *= 2.0
-            return max(1, int(float(u.sheet[2]) * boons.atk * gain))
+            return max(1, int(float(u.sheet[2]) * boons.attack() * gain))
 
         def spd_of(u):
             return u.sheet[4] + boons.spd
@@ -336,6 +459,8 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
 
             actor = order[turn]
             turn += 1
+            if trace:
+                trace.actions += 1
 
             if actor < 0:
                 # bossActs()
@@ -344,9 +469,11 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                     for u in units:
                         if u.hp <= 0:
                             continue
-                        bite = 0.55 * boons.taken * (
+                        bite = 0.55 * boons.suffered() * (
                             0.5 if boons.guard_sweep and guarding() else 1.0)
                         dealt, _ = hit_for(rng, atk, u.sheet[3], bite, boons.crit)
+                        if trace:
+                            trace.sweep.append(dealt)
                         u.hp = max(0, u.hp - dealt)
                         if u.hp == 0:
                             fell(u)
@@ -359,8 +486,10 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                             break
                         target = rng.choice(alive)
                     guarded = guard >= 0 and target is units[guard]
-                    bite = (0.5 if guarded else 1.0) * boons.taken
+                    bite = (0.5 if guarded else 1.0) * boons.suffered()
                     dealt, _ = hit_for(rng, atk, target.sheet[3], bite, boons.crit)
+                    if trace:
+                        trace.single.append(dealt)
                     target.hp = max(0, target.hp - dealt)
                     if target.hp == 0:
                         fell(target)
@@ -369,6 +498,7 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                 u = units[actor]
                 if u.hp <= 0:
                     continue
+                dealt_before = boss_hp
                 has_mp = u.mp >= boons.skill_cost
                 done = False
                 if u.cls == CLS_BLADE and has_mp:
@@ -404,6 +534,8 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                 if not done:
                     dealt, _ = hit_for(rng, atk_of(u), boss["def"], 1.0, boons.crit)
                     boss_hp -= dealt
+                if trace and dealt_before != boss_hp:
+                    trace.dealt += dealt_before - boss_hp
 
             if boss_hp <= 0:
                 break
@@ -416,6 +548,8 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
                 wiped = True
                 break
 
+        if trace:
+            trace.floor(floor, rnd, boons, wiped or boss_hp > 0)
         if wiped or boss_hp > 0:
             break
 
@@ -424,6 +558,25 @@ def climb(rng, party, boons, start=1, ceiling=400, drops=None,
             got = roll_drop(rng, floor, boons.drop_chance)
             if got:
                 drops.append(got)
+        if floor >= TOP:
+            break
+
+        # onward(): a blessing after every fifth floor, not counting the one
+        # the climb began on. Hale fills the room it opens straight away.
+        if picks and floor % 5 == 0 and floor != start:
+            offer = offer_boons(rng, held, classes, most)
+            if offer:
+                bid = choose_boon(picks, rng, offer)
+                held.append(bid)
+                apply_boon(boons, bid)
+                if trace:
+                    trace.held.append(bid)
+                if bid == 3:
+                    for u in units:
+                        was = u.max_hp
+                        u.max_hp = max(1, int(float(u.sheet[0]) * boons.hp))
+                        if u.hp > 0 and u.max_hp > was:
+                            u.hp += u.max_hp - was
 
         # nextFloor(): a breather, not a heal.
         for u in units:
@@ -492,6 +645,96 @@ def worth(u):
 def party_of(you, roster, people):
     picked = sorted(roster, key=worth, reverse=True)[:party_slots(people) - 1]
     return [you] + picked
+
+
+def all_four(rng, people):
+    """A console whose default party has a Guard, a Blade, a Spark and a
+    Mender in it, re-rolled until it does - so the three class blessings are
+    on offer and a table is not an average over parties with no healer."""
+    while True:
+        you, roster = make_console(rng, people)
+        party = party_of(you, roster, people)
+        if {u.cls for u in party} == {CLS_GUARD, CLS_BLADE, CLS_SPARK,
+                                       CLS_MENDER}:
+            return party
+
+
+class Trace:
+    """What climb() is told about each floor, gathered across climbs.
+
+    `stats[floor]` holds lists over every climb that fought that floor: the
+    shadow's single blows and sweeps, what the party dealt per round, the
+    rounds, and the three multipliers as they stood.
+    """
+
+    def __init__(self):
+        self.stats = {}
+        self.actions = 0
+        self.held = []
+        self.single, self.sweep, self.dealt = [], [], 0
+
+    def floor(self, floor, rounds, boons, lost):
+        s = self.stats.setdefault(floor, {
+            "fought": 0, "lost": 0, "rounds": [], "per_round": [],
+            "single": [], "sweep": [], "atk": [], "taken": [], "hp": []})
+        s["fought"] += 1
+        s["lost"] += 1 if lost else 0
+        s["rounds"].append(rounds)
+        s["per_round"].append(self.dealt / max(1, rounds))
+        s["single"].extend(self.single)
+        s["sweep"].extend(self.sweep)
+        s["atk"].append(boons.attack() * (1.0 + boons.per_floor * boons.since))
+        s["taken"].append(boons.suffered())
+        s["hp"].append(boons.hp)
+        self.single, self.sweep, self.dealt = [], [], 0
+
+
+CLASS_NAMES = {"guard": CLS_GUARD, "blade": CLS_BLADE, "spark": CLS_SPARK,
+               "mender": CLS_MENDER}
+
+
+def party_from(text):
+    """--party: a real party, off the gear screen. One member per comma,
+    class:HP/MP/ATK/DEF/SPD as the panel under the Mii prints them - with the
+    gear on, which is the only sheet the fight reads.
+
+        guard:610/110/138/39/117,blade:394/90/81/31/112
+    """
+    party = []
+    for part in text.split(","):
+        cls, _, numbers = part.strip().partition(":")
+        stats = [int(n) for n in numbers.split("/")]
+        if cls.lower() not in CLASS_NAMES or len(stats) != 5:
+            raise SystemExit("--party wants class:HP/MP/ATK/DEF/SPD, not %r" % part)
+        u = Member(stats, CLASS_NAMES[cls.lower()])
+        u.sheet = list(stats)
+        party.append(u)
+    return party
+
+
+def copy_limits(args):
+    """--cap and --hale, as the `most` overrides climb() takes."""
+    most = {}
+    if args.cap is not None:
+        for bid, _, stacks, _, _ in POOL:
+            if stacks:
+                most[bid] = args.cap
+    if args.hale is not None:
+        most[3] = args.hale
+    return most
+
+
+def seconds_of(trace, floors):
+    """What a climb costs in the app with auto-advance on: 0.55 s an action
+    (kBeat), 2.5 s on every cleared floor (kWonBeat), and five to choose a
+    blessing, which is a guess at somebody reading three cards."""
+    return trace.actions * 0.55 + floors * 2.5 + len(trace.held) * 5.0
+
+
+def spread(values):
+    """Median, and the tenth and ninetieth percentiles."""
+    v = sorted(values)
+    return v[len(v) // 2], v[len(v) // 10], v[len(v) * 9 // 10]
 
 
 # ------------------------------------------------------------------ commands
@@ -665,6 +908,166 @@ def cmd_forge(args):
     _ = rng
 
 
+def cmd_blessed(args):
+    """A party in fixed gear, climbing with blessings: floor by floor, what
+    the shadow's blows do and what the party deals back.
+
+    Fixed gear rolled at random is average gear. A console that has farmed is
+    wearing the best rolls of hundreds of pieces, which is worth a great deal
+    more - `season` is the command for how far that goes.
+    """
+    rng = random.Random(args.seed)
+    most = copy_limits(args)
+    trace = Trace()
+    reached = []
+    for _ in range(args.runs):
+        if args.party:
+            party = party_from(args.party)
+        else:
+            party = all_four(rng, args.people)
+            for u in party:
+                u.wear([(args.tier, s, rng.randrange(65536), args.gear_floor)
+                        for s in range(SLOT_COUNT)], args.scale, args.span,
+                       args.root)
+        trace.held = []
+        reached.append(climb(rng, party, Boons(), ceiling=TOP, root=args.root,
+                             scale_cap=args.scale, scale_span=args.span,
+                             picks=args.picks, most=most, trace=trace))
+
+    med, lo, hi = spread(reached)
+    if args.party:
+        print("%d climbs, the party given (%s), picks %s" % (
+            args.runs, ", ".join("%s %s" % (
+                [k for k, v in CLASS_NAMES.items() if v == u.cls][0],
+                "/".join(str(n) for n in u.sheet)) for u in party), args.picks))
+    else:
+        print("%d climbs, a party of %d (all four classes) out of %d met, %s "
+              "gear from floor %d, picks %s" % (
+                  args.runs, party_slots(args.people), args.people,
+                  QUALITY_NAMES[args.tier], args.gear_floor, args.picks))
+    print("deepest floor: median %d (10%% %d, 90%% %d), %.0f%% reach the top"
+          % (med, lo, hi, 100.0 * sum(1 for d in reached if d >= TOP) / args.runs))
+    print()
+    print("%6s %6s %8s %7s %6s %6s | %9s %6s %7s | %6s %6s %6s" % (
+        "floor", "alive", "boss HP", "bossATK", "hit", "sweep", "party/rd",
+        "rounds", "HP/rd", "ATK x", "taken", "HP x"))
+    for f in (1, 10, 25, 50, 75, 100, 150, 200, 300, 400, 500, 600, 700, 800,
+              900, 999):
+        st = trace.stats.get(f)
+        if not st:
+            continue
+        boss = boss_for(f)
+        per = statistics.mean(st["per_round"])
+        print("%6d %5.0f%% %8d %7d %6s %6s | %9d %6.1f %6.0f%% | %6.2f %6.2f %6.2f" % (
+            f, 100.0 * st["fought"] / args.runs, boss["hp"], boss["atk"],
+            "%d" % statistics.mean(st["single"]) if st["single"] else "-",
+            "%d" % statistics.mean(st["sweep"]) if st["sweep"] else "-",
+            per, statistics.mean(st["rounds"]), 100.0 * per / boss["hp"],
+            statistics.mean(st["atk"]), statistics.mean(st["taken"]),
+            statistics.mean(st["hp"])))
+
+
+def cmd_season(args):
+    """From no gear to the top of the tower.
+
+    Every climb starts on floor one, because that is where the blessings
+    are. After each: the bag takes what fell (a thousand at most, a full one
+    throwing out its worst spare for anything better, as takeDrop() does),
+    every peg takes the best spare that beats it (auto-equip), and the forge
+    melts spares three of a rank into one of the next at the deepest floor
+    reached, bottom up, until there is nothing left to melt - an attentive
+    player, which makes this a little quicker than most will be.
+    """
+    most = copy_limits(args)
+    rating_of = {}
+
+    def rating(p):
+        r = rating_of.get(p)
+        if r is None:
+            r = item_rating(item_bonus(p[0], p[1], p[2], p[3], args.scale,
+                                       args.span, args.root))
+            rating_of[p] = r
+        return r
+
+    def dress(worn, bag):
+        bag.sort(key=rating, reverse=True)
+        for w in worn:
+            for slot in range(SLOT_COUNT):
+                for i, p in enumerate(bag):
+                    if p[1] != slot:
+                        continue
+                    cur = w.get(slot)
+                    if cur is None or rating(p) > rating(cur):
+                        w[slot] = bag.pop(i)
+                        if cur is not None:
+                            bag.append(cur)
+                    break
+
+    print("%d collections of %d met (a party of %d, all four classes), up to "
+          "%d climbs each, picks %s" % (args.collections, args.people,
+                                         party_slots(args.people), args.climbs,
+                                         args.picks))
+    rng = random.Random(args.seed)
+    marks = [m for m in (1, 5, 10, 15, 20, 30, 40, 60, 80, 100, 150, 200)
+             if m <= args.climbs]
+    got_there, hours_there, curves = [], [], []
+    for _ in range(args.collections):
+        party = all_four(rng, args.people)
+        worn = [{} for _ in party]
+        bag = []
+        deepest = 0
+        hours = 0.0
+        curve = []
+        for n in range(1, args.climbs + 1):
+            for u, w in zip(party, worn):
+                u.wear(list(w.values()), args.scale, args.span, args.root)
+            trace = Trace()
+            drops = []
+            d = climb(rng, party, Boons(), ceiling=TOP, drops=drops,
+                      root=args.root, scale_cap=args.scale, scale_span=args.span,
+                      picks=args.picks, most=most, trace=trace)
+            hours += seconds_of(trace, d) / 3600.0
+            deepest = max(deepest, d)
+            curve.append((deepest, hours))
+            if d >= TOP:
+                got_there.append(n)
+                hours_there.append(hours)
+                break
+
+            for p in drops:
+                if len(bag) + sum(len(w) for w in worn) >= 1000:
+                    worst = min(bag, key=rating) if bag else None
+                    if worst is None or rating(worst) >= rating(p):
+                        continue
+                    bag.remove(worst)
+                bag.append(p)
+            dress(worn, bag)
+            for q in range(Q_COUNT - 1):
+                spare = [p for p in bag if p[0] == q]
+                while len(spare) >= 3:
+                    for p in spare[:3]:
+                        bag.remove(p)
+                    spare = spare[3:]
+                    bag.append((q + 1, rng.randrange(SLOT_COUNT),
+                                rng.randrange(65536), max(1, deepest)))
+            dress(worn, bag)
+        curves.append(curve)
+
+    print("reached the top: %d of %d" % (len(got_there), args.collections))
+    if got_there:
+        med, lo, hi = spread(got_there)
+        print("climbs to get there: median %d (10%% %d, 90%% %d)" % (med, lo, hi))
+        med, lo, hi = spread(hours_there)
+        print("hours of climbing:   median %.0f (10%% %.0f, 90%% %.0f)" % (med, lo, hi))
+    print()
+    print("%8s %14s %10s" % ("climbs", "best floor", "hours"))
+    for m in marks:
+        # A collection that got to the top stopped climbing; it stays there.
+        at = [c[min(m, len(c)) - 1] for c in curves]
+        print("%8d %14d %10.0f" % (m, spread([a[0] for a in at])[0],
+                                   spread([a[1] for a in at])[0]))
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__,
                                  formatter_class=argparse.RawDescriptionHelpFormatter)
@@ -698,6 +1101,37 @@ def main():
     g.add_argument("--floor25", type=int, default=20)
     g.add_argument("--rates", type=int, nargs="+", default=[3, 4])
     g.set_defaults(fn=cmd_forge)
+
+    def blessing_options(parser):
+        parser.add_argument("--people", type=int, default=15,
+                            help="collection size; 10+ is a party of four, "
+                                 "25+ of five")
+        parser.add_argument("--picks", choices=("balanced", "damage", "random"),
+                            default="balanced", help="how blessings are chosen")
+        parser.add_argument("--cap", type=int, default=None, metavar="N",
+                            help="copies of each stacking blessing (as shipped: 5)")
+        parser.add_argument("--hale", type=int, default=None, metavar="N",
+                            help="copies of Hale (as shipped: 10)")
+
+    b = sub.add_parser("blessed", help="a geared party with blessings, floor "
+                                       "by floor")
+    blessing_options(b)
+    b.add_argument("--runs", type=int, default=200)
+    b.add_argument("--tier", type=int, default=Q_GODLIKE, metavar="Q",
+                   help="gear quality, 0 common to 5 godlike")
+    b.add_argument("--gear-floor", type=int, default=999, metavar="FLOOR",
+                   help="the floor the worn gear fell on")
+    b.add_argument("--party", metavar="SHEETS",
+                   help="a real party instead of a made-up one: "
+                        "class:HP/MP/ATK/DEF/SPD,... as the gear screen shows "
+                        "them (overrides --people, --tier, --gear-floor)")
+    b.set_defaults(fn=cmd_blessed)
+
+    s = sub.add_parser("season", help="from no gear to the top")
+    blessing_options(s)
+    s.add_argument("--collections", type=int, default=20)
+    s.add_argument("--climbs", type=int, default=100)
+    s.set_defaults(fn=cmd_season)
 
     args = ap.parse_args()
     # Depth scaling is what the app does, so it is what the sim does unless

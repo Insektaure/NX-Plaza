@@ -75,6 +75,9 @@ struct BoonInfo {
     // Whether it can be offered again once held, each copy adding the same
     // again - see Boons.
     bool stacks;
+    // And how many copies it can be offered up to: 1 for the ones that do
+    // not stack. See kPool in quest_boons.cpp for why the rest stop.
+    uint8_t most;
 };
 
 const BoonInfo& boonInfo(uint8_t id);
@@ -84,8 +87,8 @@ const BoonInfo& boonInfo(uint8_t id);
 void applyBoon(Boons& boons, uint8_t id);
 
 // Three to choose between: never one already held unless it stacks, never
-// one whose class is not in the party, and never the same one twice in an
-// offer. Fewer than
+// a stacking one already held as many times as it may be, never one whose
+// class is not in the party, and never the same one twice in an offer. Fewer than
 // three when the pool has run that low, none when it is empty.
 std::vector<uint8_t> offerBoons(const std::vector<uint8_t>& held, uint32_t classes);
 
