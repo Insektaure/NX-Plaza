@@ -184,10 +184,11 @@ namespace {
                 return;
             }
 
-            // The party screen writes who goes into the store, and popping an
+            // The party screen sets who goes in the store, and popping an
             // overlay does not re-enter the scene underneath, so it is read
-            // back here - only when it has changed, which is a comparison of
-            // four short strings on every other frame.
+            // back here: the store's copy in memory, not profile.json, and
+            // rebuilt only when it has changed - a comparison of at most four
+            // short strings on every other frame.
             followParty(app);
 
             // The gear screen is drawn over this one and can change what

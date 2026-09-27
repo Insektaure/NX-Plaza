@@ -22,9 +22,11 @@ namespace {
 
     // Who goes up the tower, chosen from the whole collection.
     //
-    // It keeps nothing of its own. The party is a list of crossing ids in
-    // Store - profile.json - written on every change, and the climb screen
-    // under this one re-reads it every frame, the same way it re-reads gear.
+    // It keeps nothing of its own. The party is a list of crossing ids held
+    // by Store, set on every change; Store writes it to profile.json with its
+    // next save, a couple of seconds later. The climb screen under this one
+    // asks Store for the list every frame - the copy in memory, never the
+    // file - and rebuilds its party only when the list has changed.
     class PartyScene final : public Scene {
     public:
         enum Zone : int {
