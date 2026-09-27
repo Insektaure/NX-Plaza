@@ -242,6 +242,19 @@ public:
     // was new, which is what the toast waits for.
     bool noteTrophyDate(const std::string& id, uint64_t when);
 
+    // --------------------------------------------------------- quest party
+
+    // Who the quest's party screen last had chosen, by crossing id and in the
+    // order they were picked - your own Mii is always in and never listed.
+    // A preference with nothing hanging off it, so it is in profile.json with
+    // the scores rather than in quest.dat, and a build that has never heard
+    // of it simply ignores the key.
+    std::vector<std::string> questParty() const;
+    void setQuestParty(const std::vector<std::string>& ids);
+    // Whether a party has ever been saved, which an empty list cannot say:
+    // empty is also a party chosen to be you alone.
+    bool hasQuestParty() const;
+
     // -------------------------------------------------------------- scores
 
     // Best score for a game, by name. Nothing hangs off these - no coins, no
@@ -296,6 +309,8 @@ private:
     // shrink or be reordered without a date landing on the wrong trophy.
     std::map<std::string, uint64_t> m_trophyDates;
     std::map<std::string, uint32_t> m_bestScores;
+    std::vector<std::string> m_questParty;
+    bool m_hasQuestParty = false;
     bool m_loaded = false;
 };
 

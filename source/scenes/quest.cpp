@@ -45,7 +45,7 @@ namespace {
     class QuestScene final : public Scene {
     public:
         enum Zone : int {
-            Zone_Roster = Touch_SceneBase,
+            Zone_Party = Touch_SceneBase, // the button that opens the party screen
             Zone_Climb,
             Zone_StartDown,
             Zone_StartUp,
@@ -70,7 +70,7 @@ namespace {
             syncUnits();
             previewFloor();
             m_phase = Phase_Party;
-            m_focus = Focus_Roster;
+            m_focus = Focus_Party;
             m_clock = 0.0f;
             m_best = QuestRecord::get().deepest();
         }
@@ -161,11 +161,9 @@ namespace {
                     m_focus = Focus_Climb;
                     stepStart(1);
                 }
-                else if (tap.is(Zone_Roster) && tap.index >= 0
-                    && tap.index < int(m_roster.size())) {
-                    m_focus = Focus_Roster;
-                    m_cursor = tap.index;
-                    toggle();
+                else if (tap.is(Zone_Party)) {
+                    m_focus = Focus_Party;
+                    app.pushOverlay(makeQuestPartyScene());
                 }
                 return;
             }
@@ -186,6 +184,12 @@ namespace {
                 return;
             }
 
+            // The party screen writes who goes into the store, and popping an
+            // overlay does not re-enter the scene underneath, so it is read
+            // back here - only when it has changed, which is a comparison of
+            // four short strings on every other frame.
+            followParty(app);
+
             // The gear screen is drawn over this one and can change what
             // the party is worth, and popping an overlay does not re-enter
             // the scene underneath, so the shown sheets are re-read every
@@ -197,18 +201,15 @@ namespace {
             }
             syncUnits();
 
-            // Up and down move between the roster and the button that
-            // sets off, so the button is somewhere the stick can actually
-            // get to.
+            // Up and down move between the two buttons: the one that opens
+            // the party screen, and the one that sets off.
             if (input.navUp || input.navDown)
-                m_focus = m_focus == Focus_Roster ? Focus_Climb : Focus_Roster;
-            if (m_focus == Focus_Roster) {
-                if (input.navLeft)
-                    moveCursor(-1);
-                if (input.navRight)
-                    moveCursor(1);
-                if (input.accept())
-                    toggle();
+                m_focus = m_focus == Focus_Party ? Focus_Climb : Focus_Party;
+            if (m_focus == Focus_Party) {
+                if (input.accept()) {
+                    app.pushOverlay(makeQuestPartyScene());
+                    return;
+                }
             } else {
                 // On the button, left and right have nothing else to do, so
                 // they step the start floor as well - the chevrons are right
@@ -228,6 +229,12 @@ namespace {
             if (input.pressed(HidNpadButton_R))
                 stepStart(1);
 
+            // X for the party from either button: a shortcut rather than a
+            // third thing to focus.
+            if (input.pressed(HidNpadButton_X)) {
+                app.pushOverlay(makeQuestPartyScene());
+                return;
+            }
             if (input.pressed(HidNpadButton_Y))
                 app.pushOverlay(makeQuestGearScene(party()));
             if (input.pressed(HidNpadButton_ZR))
@@ -252,7 +259,7 @@ namespace {
                 drawBossSide(r);
                 drawField(r);
                 drawPanel(r, true);
-                drawRoster(app, r);
+                drawPartyButton(app, r);
                 drawPartyHints(app, r);
                 return;
             }
@@ -400,10 +407,6 @@ namespace {
 
         static constexpr float kRosterY = 700.0f;
         static constexpr float kRosterH = 168.0f;
-        // Wide enough for the longest class in any of the eleven: the
-        // Portuguese Mender is CURANDEIRO, ten uppercase characters, and
-        // at 104 it ran straight out of its card.
-        static constexpr float kRosterCell = 124.0f;
 
         // ------------------------------------------------------- the roster
 
@@ -449,11 +452,86 @@ namespace {
                 [](const Member& a, const Member& b) { return worth(a) > worth(b); });
 
             m_slots = partySlots(record.uniquePeople);
-            m_cursor = 0;
             m_chosen.clear();
-            for (size_t i = 0; i < m_roster.size() && int(m_chosen.size()) < m_slots - 1;
-                 i++)
-                m_chosen.push_back(int(i));
+
+            // The first time, the strongest, so the screen opens on a
+            // sensible party rather than on you alone.
+            if (!store.hasQuestParty()) {
+                for (size_t i = 0;
+                     i < m_roster.size() && int(m_chosen.size()) < m_slots - 1; i++)
+                    m_chosen.push_back(int(i));
+                rememberParty(app);
+                return;
+            }
+
+            // After that, exactly whoever was chosen last time, in the order
+            // they were picked - across a climb, and across quitting the app.
+            // It used to be the strongest every time the screen opened, which
+            // quietly undid every choice the moment a climb ended.
+            //
+            // A place left empty stays empty: a smaller party is a choice,
+            // and so is who goes in a place that has only just opened - the
+            // count over the roster says it is there. The one place that is
+            // filled for you is one whose person has left the collection,
+            // which nobody chose.
+            int gone = 0;
+            for (const std::string& id : store.questParty()) {
+                if (int(m_chosen.size()) + gone >= m_slots - 1)
+                    break;
+                bool found = false;
+                for (size_t i = 0; i < m_roster.size(); i++) {
+                    if (m_roster[i].id == id && !inParty(int(i))) {
+                        m_chosen.push_back(int(i));
+                        found = true;
+                        break;
+                    }
+                }
+                if (!found)
+                    gone++;
+            }
+            for (size_t i = 0; i < m_roster.size() && gone > 0; i++) {
+                if (!inParty(int(i))) {
+                    m_chosen.push_back(int(i));
+                    gone--;
+                }
+            }
+            rememberParty(app);
+        }
+
+        // What the party screen has chosen, into profile.json. Called
+        // whenever the choice changes, so a quit at any moment keeps it.
+        void rememberParty(App& app)
+        {
+            std::vector<std::string> ids;
+            for (int index : m_chosen) {
+                if (index >= 0 && index < int(m_roster.size()))
+                    ids.push_back(m_roster[size_t(index)].id);
+            }
+            app.store().setQuestParty(ids);
+            m_partyIds = ids;
+        }
+
+        // The other half: whatever the party screen has written since, read
+        // back into places on this one. Anybody no longer in the roster is
+        // simply not found; buildRoster() is the one that fills their place.
+        void followParty(App& app)
+        {
+            std::vector<std::string> ids = app.store().questParty();
+            if (ids == m_partyIds)
+                return;
+            m_partyIds = ids;
+            m_chosen.clear();
+            for (const std::string& id : ids) {
+                if (int(m_chosen.size()) >= m_slots - 1)
+                    break;
+                for (size_t i = 0; i < m_roster.size(); i++) {
+                    if (m_roster[i].id == id && !inParty(int(i))) {
+                        m_chosen.push_back(int(i));
+                        break;
+                    }
+                }
+            }
+            syncUnits();
         }
 
         // Base plus whatever they are wearing. Read here rather than during
@@ -498,37 +576,6 @@ namespace {
             return out;
         }
 
-        void moveCursor(int by)
-        {
-            if (m_roster.empty())
-                return;
-            int count = int(m_roster.size());
-            m_cursor = (m_cursor + by % count + count) % count;
-        }
-
-        void toggle()
-        {
-            if (m_phase != Phase_Party || m_roster.empty())
-                return;
-            auto it = std::find(m_chosen.begin(), m_chosen.end(), m_cursor);
-            if (it != m_chosen.end()) {
-                m_chosen.erase(it);
-                syncUnits();
-                return;
-            }
-            // The party opens full: buildRoster fills every place with the
-            // strongest people in the collection, so "there is no room" is
-            // the normal case and not the edge one. Refusing here made A do
-            // nothing at all for anybody who had not first taken somebody
-            // out - which is to say, for everybody. The longest-standing
-            // pick steps aside instead, and your own Mii keeps the first
-            // place whatever happens.
-            if (int(m_chosen.size()) >= m_slots - 1 && !m_chosen.empty())
-                m_chosen.erase(m_chosen.begin());
-            m_chosen.push_back(m_cursor);
-            syncUnits();
-        }
-
         // -------------------------------------------------------- the climb
 
         // Back to choosing. The roster is rebuilt because a climb can have
@@ -543,7 +590,7 @@ namespace {
             syncUnits();
             previewFloor();
             m_phase = Phase_Party;
-            m_focus = Focus_Roster;
+            m_focus = Focus_Party;
             m_clock = 0.0f;
         }
 
@@ -1778,53 +1825,67 @@ namespace {
             }
         }
 
-        // Everyone you have crossed, as a strip of heads. The party is picked
-        // out of this rather than out of a menu, because the faces are the
-        // part somebody recognises.
-        // Each one carries a face, a name and a class,
-        // because "who should I bring" is a question
-        // about what they do, and a strip of bare heads made you count
-        // rather than choose.
-        void drawRoster(App& app, Renderer& r)
+        // Where the roster strip used to be: who is going, in one line,
+        // and the way into the screen that chooses them. The strip showed
+        // eight faces and moved one at a time, which stopped working long
+        // before a collection stopped growing - see quest_party.cpp.
+        void drawPartyButton(App& app, Renderer& r)
         {
-            Rect strip { theme::edge, kRosterY, kPanelX - theme::s5 - theme::edge,
+            Rect area { theme::edge, kRosterY, kPanelX - theme::s5 - theme::edge,
                 kRosterH };
             if (m_roster.empty()) {
                 TextStyle empty;
                 empty.size = theme::textSm;
                 empty.color = theme::fg3;
-                r.textWrapped(strip, tr("Nobody has crossed you yet - you climb alone."),
+                r.textWrapped(area, tr("Nobody has crossed you yet - you climb alone."),
                     empty, 2);
                 return;
             }
 
-            int fits = std::max(1, int(strip.w / kRosterCell));
-            int first = std::max(0,
-                std::min(m_cursor - fits / 2, int(m_roster.size()) - fits));
-            // Room for the ring. ui::card draws its focus outside the box,
-            // so a clip tight to the strip sliced the top and bottom off
-            // whichever cell the cursor was on.
-            r.pushClipVertical(strip.inset(0.0f, -theme::focusRoom));
-            // Only the cells that fit whole. The clip is vertical, so a
-            // loop that ran on while a cell merely started inside the strip
-            // drew the last one straight across the party panel once there
-            // were enough people to reach it.
-            float x = strip.x;
-            int last = std::min(int(m_roster.size()), first + fits);
-            for (int i = first; i < last; i++) {
-                const Member& m = m_roster[size_t(i)];
-                Rect cell { x, strip.y, kRosterCell - theme::s2, strip.h };
-                bool chosen = inParty(i);
-                bool focused = i == m_cursor;
-                app.touchZone(cell, Zone_Roster, i);
-                ui::card(r, cell, focused ? 0.7f + 0.3f * m_pulse : 0.0f,
-                    chosen ? theme::bg2 : theme::bg1, theme::r2);
+            // The button on the left, centred on the cards beside it, and
+            // the cards the roster strip used to draw - only for who is
+            // going now, with a dashed one for each place still free, since
+            // choosing is the party screen's job.
+            bool onButton = m_focus == Focus_Party;
+            std::string label = tr("Choose the party");
+            float width = ui::actionButtonWidth(r, label);
+            constexpr float kButtonH = 72.0f;
+            Rect button { area.x, area.y + (area.h - kButtonH) * 0.5f, width, kButtonH };
+            app.touchZone(button, Zone_Party);
+            ui::actionButton(r, button, label, onButton,
+                app.touchHeld(Zone_Party) ? 1.0f
+                                          : (onButton ? 0.7f + 0.3f * m_pulse : 0.0f));
 
-                // Every face at full strength. Whether they are coming is
-                // already said by the card's fill, the dot in its corner and
-                // the colour of the name and the class under it; fading the
-                // face as well read as a half-drawn Mii rather than as a
-                // fifth way of saying the same thing.
+            std::vector<const Member*> going { &m_you };
+            for (int index : m_chosen) {
+                if (index >= 0 && index < int(m_roster.size()))
+                    going.push_back(&m_roster[size_t(index)]);
+            }
+
+            constexpr float kCell = 124.0f;
+            float x = button.right() + theme::s6;
+            for (int i = 0; i < m_slots; i++) {
+                Rect cell { x + float(i) * kCell, area.y, kCell - theme::s2, area.h };
+                if (cell.right() > area.right())
+                    break;
+                // Any of them is a way into the same screen as the button.
+                app.touchZone(cell, Zone_Party);
+
+                if (i >= int(going.size())) {
+                    ui::card(r, cell, 0.0f, theme::bg0, theme::r2);
+                    r.strokeRect(cell, theme::r2, theme::stroke * 2.0f, theme::stroke2);
+                    TextStyle room;
+                    room.size = theme::textXs;
+                    room.color = theme::fg4;
+                    room.tracking = theme::trackingWide;
+                    room.uppercase = true;
+                    r.text(cell, tr("free"), room, Align::Center, VAlign::Middle);
+                    continue;
+                }
+
+                const Member& m = *going[size_t(i)];
+                ui::card(r, cell, 0.0f, theme::bg2, theme::r2);
+
                 constexpr float kHead = 80.0f;
                 ui::miiHead(r, Rect { cell.centerX() - kHead * 0.5f, cell.y + 18.0f,
                                 kHead, kHead },
@@ -1833,66 +1894,55 @@ namespace {
                 TextStyle name;
                 name.size = theme::textXs;
                 name.weight = FontWeight::Bold;
-                name.color = chosen ? theme::fg1 : theme::fg3;
+                name.color = theme::fg1;
                 r.text(Rect { cell.x + 4.0f, cell.y + kHead + 32.0f, cell.w - 8.0f,
                           22.0f },
                     r.ellipsize(m.name, name, cell.w - 8.0f), name, Align::Center,
                     VAlign::Top);
 
-                // No wide tracking here, unlike every other small-caps
-                // label in the app: the six per cent it adds is six per
-                // cent this cell has not got. Ellipsized as a backstop, so
-                // a language that grows one of these later loses a letter
-                // rather than painting over the card next to it.
+                // No wide tracking, as on the strip this replaces: the six per
+                // cent it adds is six per cent a cell this narrow has not got,
+                // and the Portuguese Mender is CURANDEIRO.
                 TextStyle role;
                 role.size = theme::textXs;
-                role.color = chosen ? theme::accent : theme::fg4;
+                role.color = theme::accent;
                 role.uppercase = true;
                 float room = cell.w - 8.0f;
                 r.text(Rect { cell.x + 4.0f, cell.y + kHead + 58.0f, room, 22.0f },
                     r.ellipsize(tr(className(m.sheet.cls)), role, room), role,
                     Align::Center, VAlign::Top);
-
-                if (chosen)
-                    r.circle(cell.right() - 15.0f, cell.y + 15.0f, 7.0f, theme::accent);
-                x += kRosterCell;
             }
-            r.popClip();
-
-            // What the one under the cursor is worth, which is the whole
-            // question when they are not in the party and their row is not
-            // in the panel.
-            const Member& at = m_roster[size_t(m_cursor)];
-            TextStyle line;
-            line.size = theme::textXs;
-            line.color = theme::fg3;
-            line.tracking = theme::trackingWide;
-            r.text(strip.x, strip.bottom() + theme::s3,
-                format("HP %u   ATK %u   DEF %u   SPD %u   MP %u",
-                    unsigned(at.sheet.hp), unsigned(at.sheet.atk),
-                    unsigned(at.sheet.def), unsigned(at.sheet.spd),
-                    unsigned(at.sheet.mp)),
-                line);
         }
 
         void drawPartyHints(App& app, Renderer& r)
         {
+            // Six fit in the strip, so what is shown follows the focus: the
+            // start floor only matters on the way up, and X is only worth
+            // saying where A is not already the party.
             bool onButton = m_focus == Focus_Climb;
-            app.hint("A",
-                onButton ? "climb"
-                         : (inParty(m_cursor) ? "leave behind" : "bring along"));
-            if (topStart() >= 10)
+            app.hint("A", onButton ? "climb" : "choose the party");
+            if (onButton && topStart() >= 10)
                 app.hint("L/R", "where to start");
+            else if (onButton)
+                app.hint("X", "choose the party");
             app.hint("Y", "gear");
             app.hint("ZL", "the shadows");
             app.hint("ZR", "the bag");
             app.hint("B", "back");
 
+            // How full the party is, and loudly when it is not: a place can
+            // be left empty on purpose, or open up by meeting more people,
+            // and either way it should not be easy to miss.
+            int freePlaces = std::min(m_slots - 1, int(m_roster.size()))
+                - int(m_chosen.size());
             std::string label = format(tr("%d of %d places"), int(m_chosen.size()) + 1,
                 m_slots);
+            if (freePlaces > 0)
+                label += "   " + format(tr("free places: %d"), freePlaces);
             TextStyle note;
             note.size = theme::textSm;
-            note.color = theme::fg3;
+            note.color = freePlaces > 0 ? theme::accent : theme::fg3;
+            note.weight = freePlaces > 0 ? FontWeight::Bold : FontWeight::Regular;
             r.text(Rect { theme::edge, kRosterY - 34.0f, kPanelX - theme::s5
                       - theme::edge, 28.0f },
                 label, note, Align::Left, VAlign::Top);
@@ -2221,14 +2271,14 @@ namespace {
         Member m_you;
         std::vector<Member> m_roster; // the collection, strongest first
         std::vector<int> m_chosen;    // indices into m_roster
+        std::vector<std::string> m_partyIds; // what the store said last frame
         int m_slots = 3;
-        int m_cursor = 0;
 
         enum Focus : int {
-            Focus_Roster = 0,
+            Focus_Party = 0,
             Focus_Climb,
         };
-        int m_focus = Focus_Roster;
+        int m_focus = Focus_Party;
 
         std::vector<Member> m_units; // the party as it stands this climb
         int m_floor = 1;

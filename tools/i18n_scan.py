@@ -96,7 +96,7 @@ CONSTANTS = (
 # of sight of the call.
 RETURNERS = ("tierName", "filterName", "symbolName", "ordinal", "sortLabel",
              "nextSortHint", "stateLabel", "proximityLabel", "fillHintFor",
-             "caption", "subtitleText", "className")
+             "caption", "subtitleText", "className", "sortName")
 
 # A table of rows whose labels are translated where they are drawn rather than
 # where the table is filled (see the note in i18n.h about statics). `fields` is

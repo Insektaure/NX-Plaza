@@ -134,6 +134,7 @@ is the score. Clearing the last one ends the climb on a screen of its own.
 | | |
 | --- | --- |
 | **Who climbs** | Their numbers come off their Mii and how often you have crossed them; their favourite colour decides whether they guard, strike, sap or mend. Three go up, four once you have met ten people, five at twenty-five. |
+| **Choosing the party** | **Choose the party** (or **X**) opens your whole collection as a grid: **L / R** shows one class, **X** changes the order, **A** brings someone along or leaves them behind. Your choice is kept between climbs. |
 | **Auto equip** | **X** on somebody's pegs fills them with the best gear nobody else is wearing. It never takes a piece off another person and never swaps a peg for something worse. |
 | **Worth wearing** | A green arrow on anything that would improve somebody: in the bag, better than what anybody has on that peg; on the gear screen, better than what the person in front of you has on. |
 | **What falls** | Half the shadows leave a piece of gear - a weapon, armour, a ring or an accessory, common up to godlike. Deeper is better, and two pieces of the same rank are never the same piece. |

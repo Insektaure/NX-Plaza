@@ -97,6 +97,11 @@ void Store::load()
             }
         }
 
+        // Four is the most anybody can bring along; eight is room for a
+        // party that grows without a file that claims a hundred.
+        m_questParty = js::getStrArray(profile, "quest_party", 8);
+        m_hasQuestParty = js::getArr(profile, "quest_party") != nullptr;
+
         if (json_t* scores = js::getObj(profile, "scores")) {
             const char* game = nullptr;
             json_t* value = nullptr;
@@ -353,6 +358,8 @@ void Store::saveProfileLocked()
     for (const std::pair<const std::string, uint32_t>& e : m_bestScores)
         json_object_set_new(scores, e.first.c_str(), json_integer(json_int_t(e.second)));
     json_object_set_new(root, "scores", scores);
+    if (m_hasQuestParty)
+        json_object_set_new(root, "quest_party", js::strArray(m_questParty));
 
     json_object_set_new(root, "settings", s);
     json_object_set_new(root, "pass", m_pass.toJson());
@@ -911,6 +918,28 @@ TrophyFacts Store::trophyFacts() const
     f.ownTheme = m_pass.theme != 0;
     f.passSent = m_passesSent >= 1;
     return f;
+}
+
+std::vector<std::string> Store::questParty() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_questParty;
+}
+
+void Store::setQuestParty(const std::vector<std::string>& ids)
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    if (m_hasQuestParty && ids == m_questParty)
+        return;
+    m_questParty = ids;
+    m_hasQuestParty = true;
+    m_profileDirty = true;
+}
+
+bool Store::hasQuestParty() const
+{
+    std::lock_guard<std::recursive_mutex> lock(m_mutex);
+    return m_hasQuestParty;
 }
 
 uint32_t Store::bestScore(const std::string& game) const
